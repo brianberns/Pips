@@ -79,14 +79,54 @@ module Puzzle =
             |> Array.forall (
                 Region.isSolved puzzle.Board)
 
-    let rec solve puzzle =
+    let private allCells puzzle =
+        puzzle.Regions
+        |> Array.collect (fun region -> region.Cells)
+
+    let rec solve puzzle : Set<Board> =
         if isSolved puzzle then
-            Set.singleton puzzle
+            Set.singleton puzzle.Board
         else
             match puzzle.UnplacedDominoes with
-                | [] -> Set.empty
-                | domino :: rest ->
-                    Set.empty
+            | [] -> Set.empty
+            | domino :: rest ->
+                allCells puzzle
+                |> Array.fold (
+                    fun solutions cell1 ->
+                        allCells puzzle
+                        |> Array.fold (
+                            fun solutions cell2 ->
+                                if Cell.adjacent cell1 cell2 && not (Map.containsKey cell1 puzzle.Board) && not (Map.containsKey cell2 puzzle.Board) then
+                                    let newBoard =
+                                        puzzle.Board
+                                        |> Map.add cell1 domino.Left
+                                        |> Map.add cell2 domino.Right
+
+                                    let newPuzzle =
+                                        {
+                                            puzzle with
+                                                UnplacedDominoes = rest
+                                                Board = newBoard
+                                        }
+
+                                    let solutionsAfterFirstOrientation = Set.union solutions (solve newPuzzle)
+
+                                    let newBoardReversed = 
+                                        puzzle.Board
+                                        |> Map.add cell1 domino.Right
+                                        |> Map.add cell2 domino.Left
+
+                                    let newPuzzleReversed = 
+                                        { puzzle with
+                                            UnplacedDominoes = rest
+                                            Board = newBoardReversed
+                                        }
+
+                                    Set.union solutionsAfterFirstOrientation (solve newPuzzleReversed)
+                                else
+                                    solutions
+                        ) solutions
+                ) Set.empty
 
 let puzzle =
     {
@@ -131,4 +171,18 @@ let puzzle =
         Board = Map.empty
     }
 
-printfn $"{Puzzle.solve puzzle}"
+
+let print boards =
+    boards
+    |> Set.iter (fun board ->
+        let maxRow = puzzle.Regions |> Array.collect (fun r -> r.Cells) |> Array.map (fun c -> c.Row) |> Array.max
+        let maxCol = puzzle.Regions |> Array.collect (fun r -> r.Cells) |> Array.map (fun c -> c.Column) |> Array.max
+        for r in 0..maxRow do
+            for c in 0..maxCol do
+                match Map.tryFind { Row = r; Column = c } board with
+                | Some v -> printf $"{v} "
+                | None -> printf "  "
+            printfn ""
+    )
+
+print (Puzzle.solve puzzle)
