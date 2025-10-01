@@ -11,7 +11,12 @@
     <Compile Include="Board.fs" />
     <Compile Include="Region.fs" />
     <Compile Include="Puzzle.fs" />
+    <Compile Include="Daily.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="9.0.9" />
   </ItemGroup>
 
 </Project>

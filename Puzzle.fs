@@ -9,6 +9,13 @@ type Puzzle =
 
 module Puzzle =
 
+    let create dominoes regions =
+        {
+            UnplacedDominoes = dominoes
+            Regions = regions
+            Board = Board.empty
+        }
+
     let isSolved puzzle =
         puzzle.Regions
             |> Array.forall (
