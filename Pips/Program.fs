@@ -65,6 +65,26 @@ module Region =
             | Some values, Sum n ->
                 Array.sum values = n
 
+module Board =
+
+    let print regions (board : Board) =
+        let maxRow =
+            regions
+                |> Array.collect _.Cells
+                |> Array.map _.Row
+                |> Array.max
+        let maxCol =
+            regions
+                |> Array.collect _.Cells
+                |> Array.map _.Column
+                |> Array.max
+        for r in 0 .. maxRow do
+            for c in 0 .. maxCol do
+                match Map.tryFind { Row = r; Column = c } board with
+                    | Some v -> printf $"{v} "
+                    | None -> printf "  "
+            printfn ""
+
 type Puzzle =
     {
         UnplacedDominoes : List<Domino>
@@ -88,45 +108,45 @@ module Puzzle =
             Set.singleton puzzle.Board
         else
             match puzzle.UnplacedDominoes with
-            | [] -> Set.empty
-            | domino :: rest ->
-                allCells puzzle
-                |> Array.fold (
-                    fun solutions cell1 ->
-                        allCells puzzle
-                        |> Array.fold (
-                            fun solutions cell2 ->
-                                if Cell.adjacent cell1 cell2 && not (Map.containsKey cell1 puzzle.Board) && not (Map.containsKey cell2 puzzle.Board) then
-                                    let newBoard =
-                                        puzzle.Board
-                                        |> Map.add cell1 domino.Left
-                                        |> Map.add cell2 domino.Right
+                | [] -> Set.empty
+                | domino :: rest ->
+                    allCells puzzle
+                    |> Array.fold (
+                        fun solutions cell1 ->
+                            allCells puzzle
+                            |> Array.fold (
+                                fun solutions cell2 ->
+                                    if Cell.adjacent cell1 cell2 && not (Map.containsKey cell1 puzzle.Board) && not (Map.containsKey cell2 puzzle.Board) then
+                                        let newBoard =
+                                            puzzle.Board
+                                            |> Map.add cell1 domino.Left
+                                            |> Map.add cell2 domino.Right
 
-                                    let newPuzzle =
-                                        {
-                                            puzzle with
+                                        let newPuzzle =
+                                            {
+                                                puzzle with
+                                                    UnplacedDominoes = rest
+                                                    Board = newBoard
+                                            }
+
+                                        let solutionsAfterFirstOrientation = Set.union solutions (solve newPuzzle)
+
+                                        let newBoardReversed = 
+                                            puzzle.Board
+                                            |> Map.add cell1 domino.Right
+                                            |> Map.add cell2 domino.Left
+
+                                        let newPuzzleReversed = 
+                                            { puzzle with
                                                 UnplacedDominoes = rest
-                                                Board = newBoard
-                                        }
+                                                Board = newBoardReversed
+                                            }
 
-                                    let solutionsAfterFirstOrientation = Set.union solutions (solve newPuzzle)
-
-                                    let newBoardReversed = 
-                                        puzzle.Board
-                                        |> Map.add cell1 domino.Right
-                                        |> Map.add cell2 domino.Left
-
-                                    let newPuzzleReversed = 
-                                        { puzzle with
-                                            UnplacedDominoes = rest
-                                            Board = newBoardReversed
-                                        }
-
-                                    Set.union solutionsAfterFirstOrientation (solve newPuzzleReversed)
-                                else
-                                    solutions
-                        ) solutions
-                ) Set.empty
+                                        Set.union solutionsAfterFirstOrientation (solve newPuzzleReversed)
+                                    else
+                                        solutions
+                            ) solutions
+                    ) Set.empty
 
 let puzzle =
     {
@@ -173,16 +193,8 @@ let puzzle =
 
 
 let print boards =
-    boards
-    |> Set.iter (fun board ->
-        let maxRow = puzzle.Regions |> Array.collect (fun r -> r.Cells) |> Array.map (fun c -> c.Row) |> Array.max
-        let maxCol = puzzle.Regions |> Array.collect (fun r -> r.Cells) |> Array.map (fun c -> c.Column) |> Array.max
-        for r in 0..maxRow do
-            for c in 0..maxCol do
-                match Map.tryFind { Row = r; Column = c } board with
-                | Some v -> printf $"{v} "
-                | None -> printf "  "
-            printfn ""
-    )
+    for board in boards do
+        Board.print puzzle.Regions board
+        printfn ""
 
 print (Puzzle.solve puzzle)
