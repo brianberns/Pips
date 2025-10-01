@@ -28,7 +28,37 @@ module Cell =
             || (cellA.Column = cellB.Column
                 && abs (cellA.Row - cellB.Row) = 1)
 
-type Board = Map<Cell, Value>
+type Board =
+    {
+        Dominoes : Set<Domino * Cell * Cell>
+        CellMap : Map<Cell, Value>
+    }
+
+module Board =
+
+    let empty =
+        {
+            Dominoes = Set.empty
+            CellMap = Map.empty
+        }
+
+    let place domino cellLeft cellRight board =
+        assert(Cell.adjacent cellLeft cellRight)
+        assert(not (Map.containsKey cellLeft board.CellMap))
+        assert(not (Map.containsKey cellRight board.CellMap))
+        {
+            CellMap =
+                board.CellMap
+                    |> Map.add cellLeft domino.Left
+                    |> Map.add cellRight domino.Right
+            Dominoes =
+                board.Dominoes
+                    |> Set.add (domino, cellLeft, cellRight)
+        }
+
+    let tryGetValue cell board =
+        board.CellMap
+            |> Map.tryFind cell
 
 type Region =
     {
@@ -38,10 +68,20 @@ type Region =
 
 module Region =
 
-    let getValues (board : Board) region =
+    let allCells regions =
+        let cells =
+            Array.collect _.Cells regions
+        assert(
+            cells
+                |> Seq.distinct
+                |> Seq.length
+                    = cells.Length)
+        cells
+
+    let getValues board region =
         region.Cells
             |> Array.choose (fun cell ->
-                Map.tryFind cell board)
+                Board.tryGetValue cell board)
 
     let tryGetValues board region =
         let values = getValues board region
@@ -65,26 +105,6 @@ module Region =
             | Some values, Sum n ->
                 Array.sum values = n
 
-module Board =
-
-    let print regions (board : Board) =
-        let maxRow =
-            regions
-                |> Array.collect _.Cells
-                |> Array.map _.Row
-                |> Array.max
-        let maxCol =
-            regions
-                |> Array.collect _.Cells
-                |> Array.map _.Column
-                |> Array.max
-        for r in 0 .. maxRow do
-            for c in 0 .. maxCol do
-                match Map.tryFind { Row = r; Column = c } board with
-                    | Some v -> printf $"{v} "
-                    | None -> printf "  "
-            printfn ""
-
 type Puzzle =
     {
         UnplacedDominoes : List<Domino>
@@ -99,54 +119,61 @@ module Puzzle =
             |> Array.forall (
                 Region.isSolved puzzle.Board)
 
-    let private allCells puzzle =
-        puzzle.Regions
-        |> Array.collect (fun region -> region.Cells)
+    let isEmpty cell puzzle =
+        Board.tryGetValue cell puzzle.Board
+            |> Option.isNone
 
-    let rec solve puzzle : Set<Board> =
-        if isSolved puzzle then
-            Set.singleton puzzle.Board
-        else
-            match puzzle.UnplacedDominoes with
-                | [] -> Set.empty
-                | domino :: rest ->
-                    allCells puzzle
-                    |> Array.fold (
-                        fun solutions cell1 ->
-                            allCells puzzle
-                            |> Array.fold (
-                                fun solutions cell2 ->
-                                    if Cell.adjacent cell1 cell2 && not (Map.containsKey cell1 puzzle.Board) && not (Map.containsKey cell2 puzzle.Board) then
-                                        let newBoard =
-                                            puzzle.Board
-                                            |> Map.add cell1 domino.Left
-                                            |> Map.add cell2 domino.Right
+    let rec solve puzzle =
+        [
+            if isSolved puzzle then
+                puzzle.Board
+            else
+                match puzzle.UnplacedDominoes with
+                    | domino :: rest ->
+                        let cells =
+                            Region.allCells puzzle.Regions
+                                |> Array.where (fun cell ->
+                                    isEmpty cell puzzle)
+                        let pairs =
+                            seq {
+                                for i = 0 to cells.Length - 2 do
+                                    for j = 1 to cells.Length - 1 do
+                                        cells[i], cells[j]
+                            }
+                        for (cellA, cellB) in pairs do
+                            if Cell.adjacent cellA cellB then
+                                yield! loop domino rest cellA cellB puzzle
+                                if domino.Left <> domino.Right then
+                                    yield! loop domino rest cellB cellA puzzle
+                    | [] -> ()
+        ]
 
-                                        let newPuzzle =
-                                            {
-                                                puzzle with
-                                                    UnplacedDominoes = rest
-                                                    Board = newBoard
-                                            }
+    and loop domino rest cellLeft cellRight puzzle =
+        solve {
+            puzzle with
+                UnplacedDominoes = rest
+                Board =
+                    Board.place
+                        domino cellLeft cellRight puzzle.Board
+        }
 
-                                        let solutionsAfterFirstOrientation = Set.union solutions (solve newPuzzle)
-
-                                        let newBoardReversed = 
-                                            puzzle.Board
-                                            |> Map.add cell1 domino.Right
-                                            |> Map.add cell2 domino.Left
-
-                                        let newPuzzleReversed = 
-                                            { puzzle with
-                                                UnplacedDominoes = rest
-                                                Board = newBoardReversed
-                                            }
-
-                                        Set.union solutionsAfterFirstOrientation (solve newPuzzleReversed)
-                                    else
-                                        solutions
-                            ) solutions
-                    ) Set.empty
+    let printBoard board puzzle =
+        let maxRow =
+            puzzle.Regions
+                |> Array.collect _.Cells
+                |> Array.map _.Row
+                |> Array.max
+        let maxCol =
+            puzzle.Regions
+                |> Array.collect _.Cells
+                |> Array.map _.Column
+                |> Array.max
+        for r in 0 .. maxRow do
+            for c in 0 .. maxCol do
+                match Board.tryGetValue { Row = r; Column = c } board with
+                    | Some v -> printf $"{v} "
+                    | None -> printf "  "
+            printfn ""
 
 let puzzle =
     {
@@ -188,13 +215,12 @@ let puzzle =
                     Type = SumGreater 4
                 }
             |]
-        Board = Map.empty
+        Board = Board.empty
     }
-
 
 let print boards =
     for board in boards do
-        Board.print puzzle.Regions board
+        Puzzle.printBoard board puzzle
         printfn ""
 
 print (Puzzle.solve puzzle)
