@@ -7,11 +7,11 @@ type Domino =
     }
 
 type RegionType =
-    | Empty
+    | Unspecified
     | Equal
     | Unequal
-    | Less of int
-    | Greater of int
+    | SumLess of int
+    | SumGreater of int
     | Sum of int
 
 type Cell =
@@ -26,12 +26,48 @@ type Region =
         Type : RegionType
     }
 
+module Region =
+
+    let getValues board region =
+        region.Cells
+            |> Array.choose (fun cell ->
+                Map.tryFind cell board)
+
+    let tryGetValues board region =
+        let values = getValues board region
+        if values.Length = region.Cells.Length then
+            Some values
+        else
+            None
+
+    let isSolved board region =
+        match tryGetValues board region, region.Type with
+            | None, _ -> false
+            | Some values, Unspecified -> true
+            | Some values, Equal ->
+                (Array.distinct values).Length = 1
+            | Some values, Unequal ->
+                (Array.distinct values).Length = values.Length
+            | Some values, SumLess n ->
+                Array.sum values < n
+            | Some values, SumGreater n ->
+                Array.sum values > n
+            | Some values, Sum n ->
+                Array.sum values = n
+
 type Puzzle =
     {
         UnplacedDominoes : List<Domino>
         Regions : Region[]
         Board : Map<Cell, Value>
     }
+
+module Puzzle =
+
+    let isSolved puzzle =
+        puzzle.Regions
+            |> Array.forall (
+                Region.isSolved puzzle.Board)
 
 let puzzle =
     {
@@ -47,7 +83,7 @@ let puzzle =
                 {
                     Cells = [|
                         { Row = 0; Column = 1 } |]
-                    Type = Greater 3
+                    Type = SumGreater 3
                 }
                 {
                     Cells = [|
@@ -60,20 +96,20 @@ let puzzle =
                 {
                     Cells = [|
                         { Row = 1; Column = 0 } |]
-                    Type = Empty
+                    Type = Unspecified
                 }
                 {
                     Cells = [|
                         { Row = 1; Column = 3 } |]
-                    Type = Less 3
+                    Type = SumLess 3
                 }
                 {
                     Cells = [|
                         { Row = 2; Column = 1 } |]
-                    Type = Greater 4
+                    Type = SumGreater 4
                 }
             |]
         Board = Map.empty
     }
 
-printfn $"{puzzle}"
+printfn $"{Puzzle.isSolved puzzle}"
