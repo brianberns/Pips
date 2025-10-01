@@ -20,6 +20,14 @@ type Cell =
         Column : int
     }
 
+module Cell =
+
+    let adjacent cellA cellB =
+        (cellA.Row = cellB.Row
+            && abs (cellA.Column - cellB.Column) = 1)
+            || (cellA.Column = cellB.Column
+                && abs (cellA.Row - cellB.Row) = 1)
+
 type Region =
     {
         Cells : Cell[]
@@ -69,14 +77,14 @@ module Puzzle =
             |> Array.forall (
                 Region.isSolved puzzle.Board)
 
-    let rec trySolve puzzle =
+    let rec solve puzzle =
         if isSolved puzzle then
-            Some puzzle
+            Set.singleton puzzle
         else
             match puzzle.UnplacedDominoes with
-                | [] -> None
+                | [] -> Set.empty
                 | domino :: rest ->
-                    None
+                    Set.empty
 
 let puzzle =
     {
@@ -121,4 +129,4 @@ let puzzle =
         Board = Map.empty
     }
 
-printfn $"{Puzzle.isSolved puzzle}"
+printfn $"{Puzzle.solve puzzle}"
