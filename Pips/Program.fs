@@ -28,6 +28,8 @@ module Cell =
             || (cellA.Column = cellB.Column
                 && abs (cellA.Row - cellB.Row) = 1)
 
+type Board = Map<Cell, Value>
+
 type Region =
     {
         Cells : Cell[]
@@ -36,7 +38,7 @@ type Region =
 
 module Region =
 
-    let getValues board region =
+    let getValues (board : Board) region =
         region.Cells
             |> Array.choose (fun cell ->
                 Map.tryFind cell board)
@@ -67,7 +69,7 @@ type Puzzle =
     {
         UnplacedDominoes : List<Domino>
         Regions : Region[]
-        Board : Map<Cell, Value>
+        Board : Board
     }
 
 module Puzzle =
