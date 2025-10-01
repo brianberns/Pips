@@ -1,10 +1,8 @@
-namespace Pips
+﻿namespace Pips
 
-open System
 open System.Net.Http
 open System.Text.Json
 
-[<CLIMutable>]
 type JsonRegion =
     {
         indices : int[][]
@@ -12,7 +10,6 @@ type JsonRegion =
         target : int
     }
 
-[<CLIMutable>]
 type JsonPuzzle =
     {
         id : int
