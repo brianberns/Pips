@@ -42,10 +42,17 @@ module Board =
             CellMap = Map.empty
         }
 
+    let tryGetValue cell board =
+        board.CellMap
+            |> Map.tryFind cell
+
+    let isEmpty board cell =
+        not (board.CellMap.ContainsKey(cell))
+
     let place domino cellLeft cellRight board =
         assert(Cell.adjacent cellLeft cellRight)
-        assert(not (Map.containsKey cellLeft board.CellMap))
-        assert(not (Map.containsKey cellRight board.CellMap))
+        assert(isEmpty board cellLeft)
+        assert(isEmpty board cellRight)
         {
             CellMap =
                 board.CellMap
@@ -56,10 +63,6 @@ module Board =
                     |> Set.add (domino, cellLeft, cellRight)
         }
 
-    let tryGetValue cell board =
-        board.CellMap
-            |> Map.tryFind cell
-
 type Region =
     {
         Cells : Cell[]
@@ -67,16 +70,6 @@ type Region =
     }
 
 module Region =
-
-    let allCells regions =
-        let cells =
-            Array.collect _.Cells regions
-        assert(
-            cells
-                |> Seq.distinct
-                |> Seq.length
-                    = cells.Length)
-        cells
 
     let getValues board region =
         region.Cells
@@ -119,9 +112,8 @@ module Puzzle =
             |> Array.forall (
                 Region.isSolved puzzle.Board)
 
-    let isEmpty cell puzzle =
-        Board.tryGetValue cell puzzle.Board
-            |> Option.isNone
+    let isEmpty puzzle cell =
+        Board.isEmpty puzzle.Board cell
 
     let rec solve puzzle =
         [
@@ -131,9 +123,10 @@ module Puzzle =
                 match puzzle.UnplacedDominoes with
                     | domino :: rest ->
                         let cells =
-                            Region.allCells puzzle.Regions
-                                |> Array.where (fun cell ->
-                                    isEmpty cell puzzle)
+                            puzzle.Regions
+                                |> Seq.collect _.Cells
+                                |> Seq.where (isEmpty puzzle)
+                                |> Seq.toArray
                         let pairs =
                             seq {
                                 for i = 0 to cells.Length - 2 do
