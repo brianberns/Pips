@@ -6,8 +6,8 @@ type Domino =
         Right : Value
     }
 
-type RegionType =
-    | Unspecified
+type Constraint =
+    | Unconstrained
     | Equal
     | Unequal
     | SumLess of int
@@ -23,7 +23,7 @@ type Cell =
 type Region =
     {
         Cells : Cell[]
-        Type : RegionType
+        Type : Constraint
     }
 
 module Region =
@@ -43,7 +43,7 @@ module Region =
     let isSolved board region =
         match tryGetValues board region, region.Type with
             | None, _ -> false
-            | Some values, Unspecified -> true
+            | Some _, Unconstrained -> true
             | Some values, Equal ->
                 (Array.distinct values).Length = 1
             | Some values, Unequal ->
@@ -68,6 +68,15 @@ module Puzzle =
         puzzle.Regions
             |> Array.forall (
                 Region.isSolved puzzle.Board)
+
+    let rec trySolve puzzle =
+        if isSolved puzzle then
+            Some puzzle
+        else
+            match puzzle.UnplacedDominoes with
+                | [] -> None
+                | domino :: rest ->
+                    None
 
 let puzzle =
     {
@@ -96,7 +105,7 @@ let puzzle =
                 {
                     Cells = [|
                         { Row = 1; Column = 0 } |]
-                    Type = Unspecified
+                    Type = Unconstrained
                 }
                 {
                     Cells = [|
