@@ -45,9 +45,6 @@ module Program =
             Board = Board.empty
         }
 
-    let print boards =
-        for board in boards do
-            Puzzle.printBoard board puzzle
-            printfn ""
-
-    print (Puzzle.solve puzzle)
+    for solution in Puzzle.solve puzzle do
+        Puzzle.printBoard solution
+        printfn ""

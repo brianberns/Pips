@@ -20,7 +20,7 @@ module Puzzle =
     let rec solve puzzle =
         [
             if isSolved puzzle then
-                puzzle.Board
+                puzzle
             else
                 match puzzle.UnplacedDominoes with
                     | domino :: rest ->
@@ -52,7 +52,7 @@ module Puzzle =
                         domino cellLeft cellRight puzzle.Board
         }
 
-    let printBoard board puzzle =
+    let printBoard puzzle =
         let maxRow =
             puzzle.Regions
                 |> Array.collect _.Cells
@@ -63,9 +63,10 @@ module Puzzle =
                 |> Array.collect _.Cells
                 |> Array.map _.Column
                 |> Array.max
-        for r in 0 .. maxRow do
-            for c in 0 .. maxCol do
-                match Board.tryGetValue { Row = r; Column = c } board with
+        for row in 0 .. maxRow do
+            for col in 0 .. maxCol do
+                let cell = { Row = row; Column = col }
+                match Board.tryGetValue cell puzzle.Board with
                     | Some v -> printf $"{v} "
                     | None -> printf "  "
             printfn ""
