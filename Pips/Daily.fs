@@ -1,5 +1,6 @@
 ﻿namespace Pips
 
+open System.IO
 open System.Net.Http
 open System.Text.Json
 
@@ -56,11 +57,8 @@ module DailyPuzzle =
 
 module Daily =
 
-    let parse (uri : string) =
-        use client = new HttpClient()
-        let content = client.GetStringAsync(uri).Result
-        let options = JsonSerializerOptions()
-        let dailyJson = JsonDocument.Parse(content)
+    let parse (text : string) =
+        let dailyJson = JsonDocument.Parse(text)
         let root = dailyJson.RootElement
         Map [
             for prop in root.EnumerateObject() do
@@ -70,6 +68,15 @@ module Daily =
                     | _ ->
                         let puzzle =
                             JsonSerializer.Deserialize<DailyPuzzle>(
-                                prop.Value.GetRawText(), options)
+                                prop.Value.GetRawText())
                         yield prop.Name, DailyPuzzle.convert puzzle
         ]
+
+    let loadFile =
+        File.ReadAllText >> parse
+
+    let loadHttp (uri : string) =
+        use client = new HttpClient()
+        client.GetStringAsync(uri)
+            .Result
+            |> parse

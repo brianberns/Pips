@@ -4,8 +4,8 @@ open System.Diagnostics
 
 module Program =
 
-    let puzzleMap =
-        Daily.parse "https://www.nytimes.com/svc/pips/v1/2025-09-30.json"
+    let puzzleMap = Daily.loadFile "Daily.json"
+
     for name in [ "easy"; "medium"; "hard" ] do
         printfn ""
         printfn $"{name}:"
