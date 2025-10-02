@@ -2,7 +2,7 @@
 
 type Board =
     {
-        Dominoes : Set<struct (Domino * Cell * Cell)>
+        Dominoes : Set<Domino * Cell * Cell>
         CellMap : Map<Cell, PipCount>
     }
 
