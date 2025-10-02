@@ -27,7 +27,7 @@ module Region =
         match region.Type with
             | RegionType.Unconstrained -> true
             | RegionType.Equal ->
-                (Array.distinct pipCounts).Length = 1
+                (Array.distinct pipCounts).Length <= 1
             | RegionType.Unequal ->
                 (Array.distinct pipCounts).Length = pipCounts.Length
             | RegionType.SumLess n ->
