@@ -4,7 +4,7 @@ open System.Diagnostics
 
 module Program =
 
-    let puzzleMap = Daily.loadFile "Daily.json"
+    let puzzleMap = Daily.loadFile "2025-09-30.json"
 
     for name in [ "easy"; "medium"; "hard" ] do
         printfn ""

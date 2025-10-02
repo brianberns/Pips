@@ -15,7 +15,7 @@ module Test =
             { Row = rightRow; Column = rightCol }
             board
 
-    let private puzzleMap = Daily.loadFile "Daily.json"
+    let private puzzleMap = Daily.loadFile "2025-09-30.json"
 
     [<Fact>]
     let Easy () =
