@@ -1,5 +1,7 @@
 ﻿namespace Pips
 
+open System.Diagnostics
+
 module Program =
 
     let puzzleMap =
@@ -8,8 +10,9 @@ module Program =
         printfn ""
         printfn $"{name}:"
         printfn ""
+        let stopwatch = Stopwatch.StartNew()
         let solutions = Puzzle.solve puzzleMap[name]
-        printfn $"{solutions.Length} solution(s)"
+        printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
         printfn ""
         for solution in solutions do
             printfn $"{Puzzle.printBoard solution}"
