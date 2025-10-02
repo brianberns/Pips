@@ -10,10 +10,21 @@ type Puzzle =
 module Puzzle =
 
     let create dominoes regions =
+        let cells =
+            regions
+                |> Array.collect _.Cells
+        let maxRow =
+            cells
+                |> Seq.map _.Row
+                |> Seq.max
+        let maxColumn =
+            cells
+                |> Seq.map _.Column
+                |> Seq.max
         {
             UnplacedDominoes = Seq.toList dominoes
             Regions = regions
-            Board = Board.empty
+            Board = Board.create (maxRow + 1) (maxColumn + 1)
         }
 
     let isValid puzzle =
