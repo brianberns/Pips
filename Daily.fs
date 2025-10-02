@@ -3,36 +3,58 @@
 open System.Net.Http
 open System.Text.Json
 
-type JsonRegion =
+type DailyRegion =
     {
         indices : int[][]
         ``type`` : string
         target : int
     }
 
-type JsonPuzzle =
+module DailyRegion =
+
+    let convert region =
+        let cells =
+            region.indices
+                |> Array.map (fun pair ->
+                    assert(pair.Length = 2)
+                    { Row = pair[0]; Column = pair[1] })
+        let typ =
+            match region.``type`` with
+                | "empty"   -> RegionType.Unconstrained
+                | "equals"  -> RegionType.Equal
+                | "greater" -> RegionType.SumGreater region.target
+                | "less"    -> RegionType.SumLess region.target
+                | "sum"     -> RegionType.Sum region.target
+                | "unequal" -> RegionType.Unequal
+                | typ -> failwith $"Unexpected region type: {typ}"
+        {
+            Cells = cells
+            Type = typ
+        }
+
+type DailyPuzzle =
     {
         id : int
         constructors : string
         dominoes : int[][]
-        regions : JsonRegion[]
+        regions : DailyRegion[]
         solution : int[][][]
     }
 
-module Daily =
+module DailyPuzzle =
 
-    (*
-    let private fromJson (jsonPuzzle : JsonPuzzle) =
+    let convert puzzle =
         let dominoes =
-            jsonPuzzle.dominoes
-                |> Array.map (fun d -> { Left = d[0]; Right = d[1] })
-                |> Array.toList
+            puzzle.dominoes
+                |> Array.map (fun pair ->
+                    assert(pair.Length = 2)
+                    { Left = pair[0]; Right = pair[1] })
         let regions =
-            jsonPuzzle.regions
-                |> Array.map Region.fromJson
-        let board = Board.empty
+            puzzle.regions
+                |> Array.map DailyRegion.convert
         Puzzle.create dominoes regions
-    *)
+
+module Daily =
 
     let parse (uri : string) =
         use client = new HttpClient()
@@ -47,7 +69,7 @@ module Daily =
                     | "editor" -> ()
                     | _ ->
                         let puzzle =
-                            JsonSerializer.Deserialize<JsonPuzzle>(
+                            JsonSerializer.Deserialize<DailyPuzzle>(
                                 prop.Value.GetRawText(), options)
-                        yield prop.Name, puzzle
+                        yield prop.Name, DailyPuzzle.convert puzzle
         ]

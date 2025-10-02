@@ -11,7 +11,7 @@ module Puzzle =
 
     let create dominoes regions =
         {
-            UnplacedDominoes = dominoes
+            UnplacedDominoes = Seq.toList dominoes
             Regions = regions
             Board = Board.empty
         }

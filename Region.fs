@@ -1,6 +1,7 @@
 ﻿namespace Pips
 
-type Constraint =
+[<RequireQualifiedAccess>]
+type RegionType =
     | Unconstrained
     | Equal
     | Unequal
@@ -11,7 +12,7 @@ type Constraint =
 type Region =
     {
         Cells : Cell[]
-        Type : Constraint
+        Type : RegionType
     }
 
 module Region =
@@ -31,14 +32,14 @@ module Region =
     let isSolved board region =
         match tryGetValues board region, region.Type with
             | None, _ -> false
-            | Some _, Unconstrained -> true
-            | Some values, Equal ->
+            | Some _, RegionType.Unconstrained -> true
+            | Some values, RegionType.Equal ->
                 (Array.distinct values).Length = 1
-            | Some values, Unequal ->
+            | Some values, RegionType.Unequal ->
                 (Array.distinct values).Length = values.Length
-            | Some values, SumLess n ->
+            | Some values, RegionType.SumLess n ->
                 Array.sum values < n
-            | Some values, SumGreater n ->
+            | Some values, RegionType.SumGreater n ->
                 Array.sum values > n
-            | Some values, Sum n ->
+            | Some values, RegionType.Sum n ->
                 Array.sum values = n
