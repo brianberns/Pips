@@ -7,5 +7,9 @@ module Program =
     for name in [ "easy"; "medium"; "hard" ] do
         printfn ""
         printfn $"{name}:"
-        for solution in Puzzle.solve puzzleMap[name] do
+        printfn ""
+        let solutions = Puzzle.solve puzzleMap[name]
+        printfn $"{solutions.Length} solution(s)"
+        printfn ""
+        for solution in solutions do
             printfn $"{Puzzle.printBoard solution}"

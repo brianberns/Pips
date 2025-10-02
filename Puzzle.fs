@@ -39,7 +39,7 @@ module Puzzle =
                         let pairs =
                             seq {
                                 for i = 0 to cells.Length - 2 do
-                                    for j = 1 to cells.Length - 1 do
+                                    for j = i + 1 to cells.Length - 1 do
                                         cells[i], cells[j]
                             }
                         for (cellA, cellB) in pairs do
