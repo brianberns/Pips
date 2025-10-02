@@ -1,9 +1,14 @@
 ﻿namespace Pips
 
-type Value = int
+type PipCount = int
+
+module PipCount =
+
+    let minValue = 0
+    let maxValue = 6
 
 type Domino =
     {
-        Left : Value
-        Right : Value
+        Left : PipCount
+        Right : PipCount
     }

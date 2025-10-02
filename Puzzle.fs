@@ -16,6 +16,11 @@ module Puzzle =
             Board = Board.empty
         }
 
+    let isValid puzzle =
+        puzzle.Regions
+            |> Array.forall (
+                Region.isValid puzzle.Board)
+
     let isSolved puzzle =
         puzzle.Regions
             |> Array.forall (
@@ -26,28 +31,30 @@ module Puzzle =
 
     let rec solve puzzle =
         [
-            if isSolved puzzle then
-                puzzle
-            else
-                match puzzle.UnplacedDominoes with
-                    | domino :: rest ->
-                        let cells =
-                            puzzle.Regions
-                                |> Seq.collect _.Cells
-                                |> Seq.where (isEmpty puzzle)
-                                |> Seq.toArray
-                        let pairs =
-                            seq {
-                                for i = 0 to cells.Length - 2 do
-                                    for j = i + 1 to cells.Length - 1 do
-                                        cells[i], cells[j]
-                            }
-                        for (cellA, cellB) in pairs do
-                            if Cell.adjacent cellA cellB then
-                                yield! loop domino rest cellA cellB puzzle
-                                if domino.Left <> domino.Right then
-                                    yield! loop domino rest cellB cellA puzzle
-                    | [] -> ()
+            if isValid puzzle then
+                if puzzle.UnplacedDominoes.IsEmpty then
+                    assert(isSolved puzzle)
+                    puzzle
+                else
+                    match puzzle.UnplacedDominoes with
+                        | domino :: rest ->
+                            let cells =
+                                puzzle.Regions
+                                    |> Seq.collect _.Cells
+                                    |> Seq.where (isEmpty puzzle)
+                                    |> Seq.toArray
+                            let pairs =
+                                seq {
+                                    for i = 0 to cells.Length - 2 do
+                                        for j = i + 1 to cells.Length - 1 do
+                                            cells[i], cells[j]
+                                }
+                            for (cellA, cellB) in pairs do
+                                if Cell.adjacent cellA cellB then
+                                    yield! loop domino rest cellA cellB puzzle
+                                    if domino.Left <> domino.Right then
+                                        yield! loop domino rest cellB cellA puzzle
+                        | [] -> ()
         ]
 
     and loop domino rest cellLeft cellRight puzzle =
@@ -73,7 +80,7 @@ module Puzzle =
         for row in 0 .. maxRow do
             for col in 0 .. maxCol do
                 let cell = { Row = row; Column = col }
-                match Board.tryGetValue cell puzzle.Board with
+                match Board.tryGetPipCount cell puzzle.Board with
                     | Some v -> printf $"{v} "
                     | None -> printf "  "
             printfn ""

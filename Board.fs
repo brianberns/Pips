@@ -3,7 +3,7 @@
 type Board =
     {
         Dominoes : Set<Domino * Cell * Cell>
-        CellMap : Map<Cell, Value>
+        CellMap : Map<Cell, PipCount>
     }
 
 module Board =
@@ -14,7 +14,7 @@ module Board =
             CellMap = Map.empty
         }
 
-    let tryGetValue cell board =
+    let tryGetPipCount cell board =
         board.CellMap
             |> Map.tryFind cell
 
