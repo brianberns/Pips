@@ -2,6 +2,7 @@
 
 open System
 open System.Diagnostics
+open System.Threading
 
 module Program =
 
@@ -19,6 +20,25 @@ module Program =
         printfn ""
         printfn $"{Puzzle.printBoard solutions[0]}"
 
+
+    let run timeout work =
+        let work =
+            async {
+                let! child =
+                    Async.StartChild(
+                        async { return work () },
+                        timeout)
+                return! child
+            }
+        try
+            Async.RunSynchronously(work, timeout)
+        with :? TimeoutException ->
+            printfn "Timeout"
+            printfn ""
+
     let startDate = DateOnly.Parse("9/1/2025")
     for offset = 0 to 30 do
-        solve (startDate.AddDays(offset))
+        let work () =
+            solve (startDate.AddDays(offset))
+        run 10000 work
+    printfn "End"
