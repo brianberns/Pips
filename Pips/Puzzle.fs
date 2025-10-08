@@ -50,7 +50,7 @@ module Puzzle =
                         puzzle
                     else
                         for tiling in tilings do
-                            let (Node ((cellA, cellB), tilings)) = tiling
+                            let (Node (cellA, cellB, tilings)) = tiling
                             for domino in puzzle.UnplacedDominoes do
                                 yield! place domino tilings cellA cellB puzzle
                                 if domino.Left <> domino.Right then
