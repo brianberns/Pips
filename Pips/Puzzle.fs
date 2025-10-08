@@ -91,7 +91,7 @@ module Puzzle =
         for row in 0 .. maxRow do
             for col in 0 .. maxCol do
                 let cell = { Row = row; Column = col }
-                match Board.tryGetPipCount cell puzzle.Board with
-                    | Some v -> printf $"{v} "
-                    | None -> printf "  "
+                match puzzle.Board[cell] with
+                    | Board.empty -> printf "  "
+                    | v -> printf $"{v} "
             printfn ""

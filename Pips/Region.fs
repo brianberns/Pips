@@ -17,10 +17,10 @@ type Region =
 
 module Region =
 
-    let getPipCounts board region =
+    let getPipCounts (board : Board) region =
         region.Cells
-            |> Array.choose (fun cell ->
-                Board.tryGetPipCount cell board)
+            |> Array.map (fun cell -> board[cell])
+            |> Array.where (fun value -> value <> Board.empty)
 
     let private hasLessThanTwoDistinct (array : _[]) =
         if array.Length < 2 then true

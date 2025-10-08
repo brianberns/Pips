@@ -11,18 +11,14 @@ type Board =
 
 module Board =
 
-    let private empty : PipCount = -1
+    [<Literal>]
+    let empty : PipCount = -1
 
     let create numRows numColumns =
         {
             Dominoes = Set.empty
             Cells = Array2D.create numRows numColumns empty
         }
-
-    let tryGetPipCount cell (board : Board) =
-        let value = board[cell]
-        if value = empty then None
-        else Some value
 
     let isEmpty (board : Board) cell =
         board[cell] = empty
