@@ -11,7 +11,7 @@ module Program =
             Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
         let stopwatch = Stopwatch.StartNew()
         let solutions = Puzzle.solve puzzleMap["hard"]
-        stopwatch.Elapsed.TotalSeconds, solutions[0]
+        stopwatch.Elapsed.TotalSeconds, solutions
 
     let run timeout work =
         let work =
@@ -29,10 +29,10 @@ module Program =
 
     let print date resultOpt =
         match resultOpt with
-            | Some (time, puzzle) ->
-                printfn $"{date}: {time} seconds"
+            | Some (time, (puzzles : List<_>)) ->
+                printfn $"{date}: {time} seconds, {puzzles.Length} solution(s)"
                 printfn ""
-                printfn $"{Puzzle.printBoard puzzle}"
+                printfn $"{Puzzle.printBoard puzzles[0]}"
             | None ->
                 printfn $"{date}: timeout"
 
@@ -42,7 +42,7 @@ module Program =
             |> Seq.map (fun offset ->
                 let date = startDate.AddDays(offset)
                 let work () = solve date
-                let resultOpt = run 10000 work
+                let resultOpt = run 100000 work
                 print date resultOpt
                 date, resultOpt)
             |> Seq.maxBy snd
