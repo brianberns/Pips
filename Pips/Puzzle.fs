@@ -54,14 +54,16 @@ module Puzzle =
                                     |> Seq.collect _.Cells
                                     |> Seq.where (isEmpty puzzle)
                                     |> Seq.toArray
+                            let graph = Graph.create (set cells)
                             for i = 0 to cells.Length - 2 do
                                 for j = i + 1 to cells.Length - 1 do
                                 let cellA = cells[i]
                                 let cellB = cells[j]
                                 if Cell.adjacent cellA cellB then
-                                    yield! loop domino rest cellA cellB puzzle
-                                    if domino.Left <> domino.Right then
-                                        yield! loop domino rest cellB cellA puzzle
+                                    if Graph.isEdgePossible cellA cellB graph then
+                                        yield! loop domino rest cellA cellB puzzle
+                                        if domino.Left <> domino.Right then
+                                            yield! loop domino rest cellB cellA puzzle
                         | [] -> ()
         ]
 

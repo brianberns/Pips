@@ -10,7 +10,7 @@ type Graph = Map<Cell, Set<Cell> (*adjacent cells*)>
 module Graph =
 
     /// Creates a graph from a set of cells.
-    let buildGraph (cells : Set<_>) : Graph =
+    let create (cells : Set<_>) : Graph =
         Map [
             for cell in cells do
                 let neighbors =
@@ -72,7 +72,8 @@ module Graph =
     /// Checks if an edge can be part of a perfect matching.
     /// An edge is impossible if removing it creates a component
     /// with an odd cell count.
-    let isEdgePossible ((cellA, cellB) : Edge) (graph : Graph) =
+    let isEdgePossible cellA cellB (graph : Graph) =
+        assert(Cell.adjacent cellA cellB)
     
         // Check all connected components in the remaining graph
         let rec checkComponents (graph : Graph) =
@@ -91,7 +92,7 @@ module Graph =
                 else
                     false   // odd cell count means component is not tileable
 
-        // Remove the two cells covered by this edge
+            // remove the two cells covered by this edge and check the resulting components
         graph
             |> remove cellA
             |> remove cellB
