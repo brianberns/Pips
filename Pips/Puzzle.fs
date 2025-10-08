@@ -49,20 +49,33 @@ module Puzzle =
                 else
                     match puzzle.UnplacedDominoes with
                         | domino :: rest ->
+
                             let cells =
                                 puzzle.Regions
                                     |> Seq.collect _.Cells
                                     |> Seq.where (isEmpty puzzle)
                                     |> Seq.toArray
-                            let graph = Graph.create (set cells)
-                            for i = 0 to cells.Length - 2 do
-                                for j = i + 1 to cells.Length - 1 do
-                                    let cellA = cells[i]
-                                    let cellB = cells[j]
-                                    if Graph.isEdgePossible cellA cellB graph then
-                                        yield! loop domino rest cellA cellB puzzle
-                                        if domino.Left <> domino.Right then
-                                            yield! loop domino rest cellB cellA puzzle
+
+                            if cells.Length > 20 then
+                                let graph = Graph.create (set cells)
+                                for i = 0 to cells.Length - 2 do
+                                    for j = i + 1 to cells.Length - 1 do
+                                        let cellA = cells[i]
+                                        let cellB = cells[j]
+                                        if Graph.isEdgePossible cellA cellB graph then
+                                            yield! loop domino rest cellA cellB puzzle
+                                            if domino.Left <> domino.Right then
+                                                yield! loop domino rest cellB cellA puzzle
+                            else
+                                for i = 0 to cells.Length - 2 do
+                                    for j = i + 1 to cells.Length - 1 do
+                                        let cellA = cells[i]
+                                        let cellB = cells[j]
+                                        if Cell.adjacent cellA cellB then
+                                            yield! loop domino rest cellA cellB puzzle
+                                            if domino.Left <> domino.Right then
+                                                yield! loop domino rest cellB cellA puzzle
+
                         | [] -> ()
         ]
 
