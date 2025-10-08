@@ -10,22 +10,21 @@ module Tiling =
     /// Gets all tilings (i.e. "perfect matchings") for a
     /// set of cells.
     let rec getAll (cells : Set<_>) =
-        if cells.IsEmpty then Array.empty
+        if cells.IsEmpty then
+            Array.empty   // all done: perfect matching found
         else
                 // pick an arbitrary cell
             let cell = Seq.head cells
             
-                // try all (normalized) edges that include this cell
+                // try all edges that include this cell
             Cell.getAdjacent cell
-                |> Seq.where (fun adj ->
-                    cells.Contains(adj) && cell < adj)
-                |> Seq.map (fun adj -> 
+                |> Array.choose (fun adj ->
+                    if cells.Contains(adj) && cell < adj then   // normalize edges to avoid redundancy
 
-                        // remove this edge from further consideration
-                    let cells = cells.Remove(cell).Remove(adj)
+                            // remove this edge from further consideration
+                        let cells = cells.Remove(cell).Remove(adj)
 
-                        // get child tilings
-                    let children = getAll cells
-                    Node (cell, adj, children))
+                            // get child tilings
+                        Some (Node (cell, adj, getAll cells))
 
-                |> Seq.toArray
+                    else None)
