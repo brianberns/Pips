@@ -17,24 +17,15 @@ module Tiling =
 
     let private count tilings =
         let rec loop (Node (_, _, children)) =
-            (Array.sumBy loop children) + 1
+            if children.Length = 0 then 1
+            else Array.sumBy loop children
         Array.sumBy loop tilings
-
-    let private print tilings =
-        let rec loop indent (Node (c1, c2, children)) =
-            if children.Length = 0 then
-                printfn "%sEdge: %A - %A (leaf)" indent c1 c2
-            else
-                printfn "%sEdge: %A - %A" indent c1 c2
-                children |> Seq.iter (loop (indent + "  "))
-        tilings |> Seq.iter (loop "")
 
     [<Fact>]
     let Example () =
         let cells =
             createCells [(0, 0); (0, 1); (1, 0); (1, 1)]
         let tilings = Tiling.getAll cells
-        print tilings
         Assert.Equal(2, count tilings)
 
 module Puzzle =
