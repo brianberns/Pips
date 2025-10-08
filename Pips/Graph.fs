@@ -20,19 +20,6 @@ module Graph =
                 cell, neighbors
         ]
 
-    /// Gets all edges in a graph.
-    let private getAllEdges (graph : Graph) =
-        graph
-            |> Map.toSeq
-            |> Seq.collect (fun (cell, neighbors) ->
-                neighbors
-                    |> Seq.choose (fun neighbor ->
-                        assert(cell <> neighbor)
-                        if cell < neighbor then   // traverse only from smaller to larger cells to avoid duplicates
-                            Some ((cell, neighbor) : Edge)
-                        else None))
-            |> set   // to-do: don't need a set?
-
     /// Removes a cell from a graph.
     let private remove cell (graph : Graph) =
         match Map.tryFind cell graph with
@@ -73,7 +60,6 @@ module Graph =
     /// An edge is impossible if removing it creates a component
     /// with an odd cell count.
     let isEdgePossible cellA cellB (graph : Graph) =
-        assert(Cell.adjacent cellA cellB)
     
         // Check all connected components in the remaining graph
         let rec checkComponents (graph : Graph) =
@@ -93,7 +79,9 @@ module Graph =
                     false   // odd cell count means component is not tileable
 
             // remove the two cells covered by this edge and check the resulting components
-        graph
-            |> remove cellA
-            |> remove cellB
-            |> checkComponents
+        if Cell.adjacent cellA cellB then
+            graph
+                |> remove cellA
+                |> remove cellB
+                |> checkComponents
+        else false
