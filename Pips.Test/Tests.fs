@@ -22,11 +22,25 @@ module Tiling =
         Array.sumBy loop tilings
 
     [<Fact>]
-    let Example () =
+    let ``1x1 grid`` () =
+        let cells =
+            createCells [(0, 0)]
+        let tilings = Tiling.getAll cells
+        Assert.Equal(0, count tilings)
+
+    [<Fact>]
+    let ``2x2 grid`` () =
         let cells =
             createCells [(0, 0); (0, 1); (1, 0); (1, 1)]
         let tilings = Tiling.getAll cells
         Assert.Equal(2, count tilings)
+
+    [<Fact>]
+    let ``2025-10-18-Easy`` () =
+        let cells =
+            createCells [(0,3); (1,3); (2,3); (2,2); (2,1); (3,1); (4,1); (4,0)]
+        let tilings = Tiling.getAll cells
+        Assert.Equal(1, count tilings)
 
 module Assert =
 
@@ -49,7 +63,7 @@ module Puzzle =
     let private puzzleMap = Daily.loadFile "2025-09-30.json"
 
     [<Fact>]
-    let Easy () =
+    let ``2025-09-30-Easy`` () =
         let puzzle = puzzleMap["easy"]
         let expected =
             List.singleton {
