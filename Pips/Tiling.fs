@@ -11,17 +11,6 @@ type Tiling = Node of Edge * List<Tiling>
 
 module Tiling =
     
-    /// Gets all (normalized) edges from a set of cells.
-    let private getValidEdges (cells : Set<_>) =
-        cells
-            |> Seq.collect (fun cell ->
-                Cell.getAdjacent cell
-                    |> List.choose (fun adj -> 
-                        if cells.Contains(adj) && cell < adj then
-                            Some (cell, adj)
-                        else None))
-            |> Seq.toList
-    
     /// Finds all connected components in a set of cells.
     let private getConnectedComponents (cells : Set<Cell>) =
 
@@ -33,7 +22,7 @@ module Tiling =
                         dfs visited rest comp
                     else
                         let visited = visited.Add(cell)
-                        let neighbors = 
+                        let neighbors =
                             Cell.getAdjacent cell
                                 |> List.where (fun adj ->
                                     cells.Contains(adj)
@@ -50,8 +39,9 @@ module Tiling =
         
         findComponents cells []
         
-    /// Checks if a set of cells can potentially have a perfect matching.
-    /// All connected components must have an even number of cells.
+    /// Checks if a set of cells can potentially have a perfect
+    /// matching. All connected components must have an even
+    /// number of cells.
     let private canHavePerfectMatching (cells : Set<Cell>) =
         if Set.isEmpty cells then true
         else
@@ -74,28 +64,20 @@ module Tiling =
             Some (Node (edge, findAllMatchings cells))
     
     /// Finds all perfect matchings for a set of cells.
-    and private findAllMatchings (cells : Set<Cell>) =
-        if Set.isEmpty cells then
-            []
-        elif not (canHavePerfectMatching cells) then
-            []
+    and private findAllMatchings (cells : Set<_>) =
+        if cells.IsEmpty then []
+        elif not (canHavePerfectMatching cells) then []
         else
                 // pick an arbitrary cell
             let cell = Seq.head cells
             
-            // Try all edges that include this cell
-            let validEdges =
-                Cell.getAdjacent cell
-                    |> List.choose (fun adj -> 
-                        if cells.Contains(adj) && cell < adj then
-                            Some (cell, adj)
-                        else None)
-            
-            // For each valid edge, find all matchings using that edge
-            // Filter out None results (invalid matchings)
-            validEdges
-                |> List.choose (loop cells)
+                // try all (normalized) edges that include this cell
+            Cell.getAdjacent cell
+                |> List.choose (fun adj -> 
+                    if cells.Contains(adj) && cell < adj then
+                        loop cells (cell, adj)
+                    else None)
     
-    // Main entry point
+    /// Main entry point.
     let findPerfectMatchings cells =
         findAllMatchings (set cells)
