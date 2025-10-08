@@ -3,7 +3,7 @@
 type Board =
     {
         Dominoes : Set<Domino * Cell * Cell>
-        Cells : Option<PipCount>[(*row*),(*column*)]
+        Cells : Option<PipCount>[(*row*), (*column*)]
     }
 
     member board.Item(cell) =
