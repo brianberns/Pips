@@ -11,30 +11,25 @@ type Tiling = Node of Edge * Tiling[]
 
 module Tiling =
     
-    /// Finds all perfect matchings for a set of cells.
-    let findPerfectMatchings cells =
-
-        let rec loop (cells : Set<_>) =
-            if cells.IsEmpty then Array.empty
-            else
-                    // pick an arbitrary cell
-                let cell = Seq.head cells
+    /// Gets all tilings (i.e. "perfect matchings") for a
+    /// set of cells.
+    let rec getAll (cells : Set<_>) =
+        if cells.IsEmpty then Array.empty
+        else
+                // pick an arbitrary cell
+            let cell = Seq.head cells
             
-                    // try all (normalized) edges that include this cell
-                Cell.getAdjacent cell
-                    |> Seq.where (fun adj ->
-                        cells.Contains(adj) && cell < adj)
-                    |> Seq.map (fun adj -> 
+                // try all (normalized) edges that include this cell
+            Cell.getAdjacent cell
+                |> Seq.where (fun adj ->
+                    cells.Contains(adj) && cell < adj)
+                |> Seq.map (fun adj -> 
 
-                            // remove this edge from further consideration
-                        let cells = cells.Remove(cell).Remove(adj)
+                        // remove this edge from further consideration
+                    let cells = cells.Remove(cell).Remove(adj)
 
-                            // perfect matching is possible?
-                        let children =
-                            if cells.IsEmpty then Array.empty
-                            else loop cells
-                        Node ((cell, adj), children))
+                        // get child tilings
+                    let children = getAll cells
+                    Node ((cell, adj), children))
 
-                    |> Seq.toArray
-
-        loop (set cells)
+                |> Seq.toArray

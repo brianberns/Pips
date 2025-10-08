@@ -42,23 +42,23 @@ module Puzzle =
 
     let solve puzzle =
 
-        let rec loop matchings puzzle =
+        let rec loop tilings puzzle =
             [
                 if isValid puzzle then
                     if puzzle.UnplacedDominoes.IsEmpty then
                         assert(isSolved puzzle)
                         puzzle
                     else
-                        for (matching : Tiling) in matchings do
-                            let (Node ((cellA, cellB), matchings)) = matching
+                        for tiling in tilings do
+                            let (Node ((cellA, cellB), tilings)) = tiling
                             for domino in puzzle.UnplacedDominoes do
-                                yield! place domino matchings cellA cellB puzzle
+                                yield! place domino tilings cellA cellB puzzle
                                 if domino.Left <> domino.Right then
-                                    yield! place domino matchings cellB cellA puzzle
+                                    yield! place domino tilings cellB cellA puzzle
             ]
 
-        and place domino matching cellLeft cellRight puzzle =
-            loop matching {
+        and place domino tiling cellLeft cellRight puzzle =
+            loop tiling {
                 puzzle with
                     UnplacedDominoes =
                         puzzle.UnplacedDominoes.Remove(domino)
@@ -71,10 +71,10 @@ module Puzzle =
             puzzle.Regions
                 |> Seq.collect _.Cells
                 |> Seq.where (isEmpty puzzle)
-                |> Seq.toList
+                |> set
 
-        let matchings = Tiling.findPerfectMatchings cells
-        loop matchings puzzle
+        let tilings = Tiling.getAll cells
+        loop tilings puzzle
 
     let printBoard puzzle =
         let maxRow =
