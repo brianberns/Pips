@@ -24,7 +24,7 @@ module Test =
         let expected =
             Array.singleton {
                 puzzle with
-                    UnplacedDominoes = List.empty
+                    UnplacedDominoes = Set.empty
                     Board =
                         puzzle.Board
                             |> place dominoes[0] (0, 1) (0, 2)

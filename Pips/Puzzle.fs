@@ -2,7 +2,7 @@
 
 type Puzzle =
     {
-        UnplacedDominoes : List<Domino>
+        UnplacedDominoes : Set<Domino>   // assume no duplicates
         Regions : Region[]
         Board : Board
     }
@@ -22,7 +22,7 @@ module Puzzle =
                 |> Seq.map _.Column
                 |> Seq.max
         {
-            UnplacedDominoes = Seq.toList dominoes
+            UnplacedDominoes = set dominoes
             Regions = regions
             Board = Board.create (maxRow + 1) (maxColumn + 1)
         }
@@ -40,53 +40,41 @@ module Puzzle =
     let isEmpty puzzle cell =
         Board.isEmpty puzzle.Board cell
 
-    let rec solve puzzle =
-        [
-            if isValid puzzle then
-                if puzzle.UnplacedDominoes.IsEmpty then
-                    assert(isSolved puzzle)
-                    puzzle
-                else
-                    match puzzle.UnplacedDominoes with
-                        | domino :: rest ->
+    let solve puzzle =
 
-                            let cells =
-                                puzzle.Regions
-                                    |> Seq.collect _.Cells
-                                    |> Seq.where (isEmpty puzzle)
-                                    |> Seq.toArray
+        let rec loop matchings puzzle =
+            [
+                if isValid puzzle then
+                    if puzzle.UnplacedDominoes.IsEmpty then
+                        assert(isSolved puzzle)
+                        puzzle
+                    else
+                        for (matching : Tiling) in matchings do
+                            let (Node ((cellA, cellB), matchings)) = matching
+                            for domino in puzzle.UnplacedDominoes do
+                                yield! place domino matchings cellA cellB puzzle
+                                if domino.Left <> domino.Right then
+                                    yield! place domino matchings cellB cellA puzzle
+            ]
 
-                            if cells.Length > 20 then
-                                let graph = Graph.create (set cells)
-                                for i = 0 to cells.Length - 2 do
-                                    for j = i + 1 to cells.Length - 1 do
-                                        let cellA = cells[i]
-                                        let cellB = cells[j]
-                                        if Graph.isEdgePossible cellA cellB graph then
-                                            yield! loop domino rest cellA cellB puzzle
-                                            if domino.Left <> domino.Right then
-                                                yield! loop domino rest cellB cellA puzzle
-                            else
-                                for i = 0 to cells.Length - 2 do
-                                    for j = i + 1 to cells.Length - 1 do
-                                        let cellA = cells[i]
-                                        let cellB = cells[j]
-                                        if Cell.adjacent cellA cellB then
-                                            yield! loop domino rest cellA cellB puzzle
-                                            if domino.Left <> domino.Right then
-                                                yield! loop domino rest cellB cellA puzzle
+        and place domino matching cellLeft cellRight puzzle =
+            loop matching {
+                puzzle with
+                    UnplacedDominoes =
+                        puzzle.UnplacedDominoes.Remove(domino)
+                    Board =
+                        Board.place
+                            domino cellLeft cellRight puzzle.Board
+            }
 
-                        | [] -> ()
-        ]
+        let cells =
+            puzzle.Regions
+                |> Seq.collect _.Cells
+                |> Seq.where (isEmpty puzzle)
+                |> Seq.toList
 
-    and loop domino rest cellLeft cellRight puzzle =
-        solve {
-            puzzle with
-                UnplacedDominoes = rest
-                Board =
-                    Board.place
-                        domino cellLeft cellRight puzzle.Board
-        }
+        let matchings = Tiling.findPerfectMatchings cells
+        loop matchings puzzle
 
     let printBoard puzzle =
         let maxRow =

@@ -9,7 +9,7 @@
     <Compile Include="Cell.fs" />
     <Compile Include="Board.fs" />
     <Compile Include="Region.fs" />
-    <Compile Include="Graph.fs" />
+    <Compile Include="Tiling.fs" />
     <Compile Include="Puzzle.fs" />
     <Compile Include="Daily.fs" />
   </ItemGroup>
