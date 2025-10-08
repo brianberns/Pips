@@ -28,17 +28,22 @@ module Tiling =
         let tilings = Tiling.getAll cells
         Assert.Equal(2, count tilings)
 
+module Assert =
+
+    let Equal<'t>(expected : seq<'t>, actual : seq<'t>) =
+        Assert.Equal<seq<'t>>(expected, actual)
+
 module Puzzle =
 
     let private place
-        domino
+        (leftPipCount, rightPipCount)
         (leftRow, leftCol)
         (rightRow, rightCol)
         board =
         Board.place
-            domino
-            { Row = leftRow; Column = leftCol }
-            { Row = rightRow; Column = rightCol }
+            { Left = leftPipCount; Right = rightPipCount }
+            (Cell.create leftRow leftCol)
+            (Cell.create rightRow rightCol)
             board
 
     let private puzzleMap = Daily.loadFile "2025-09-30.json"
@@ -46,16 +51,16 @@ module Puzzle =
     [<Fact>]
     let Easy () =
         let puzzle = puzzleMap["easy"]
-        let dominoes = Seq.toArray puzzle.UnplacedDominoes
         let expected =
-            Array.singleton {
+            List.singleton {
                 puzzle with
                     UnplacedDominoes = Set.empty
                     Board =
                         puzzle.Board
-                            |> place dominoes[0] (0, 1) (0, 2)
-                            |> place dominoes[1] (2, 2) (2, 1)
-                            |> place dominoes[2] (1, 1) (1, 0)
-                            |> place dominoes[3] (1, 2) (1, 3)
+                            |> place (4, 4) (0, 1) (0, 2)
+                            |> place (3, 5) (2, 2) (2, 1)
+                            |> place (0, 3) (1, 1) (1, 0)
+                            |> place (2, 2) (1, 2) (1, 3)
             }
-        Assert.Equal(expected, Puzzle.solve puzzle)
+        let actual = Puzzle.solve puzzle
+        Assert.Equal(expected, actual)
