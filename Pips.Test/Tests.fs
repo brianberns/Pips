@@ -29,11 +29,25 @@ module Tiling =
         Assert.Equal(0, count tilings)
 
     [<Fact>]
+    let ``1x4 grid`` () =
+        let cells =
+            createCells [(0, 0); (0, 1); (0, 2); (0, 3)]
+        let tilings = Tiling.getAll cells
+        Assert.Equal(1, count tilings)
+
+    [<Fact>]
     let ``2x2 grid`` () =
         let cells =
             createCells [(0, 0); (0, 1); (1, 0); (1, 1)]
         let tilings = Tiling.getAll cells
         Assert.Equal(2, count tilings)
+
+    [<Fact>]
+    let ``L-shape`` () =
+        let cells =
+            createCells [(0, 0); (0, 1); (0, 2); (1, 0)]
+        let tilings = Tiling.getAll cells
+        Assert.Equal(1, count tilings)
 
     [<Fact>]
     let ``2025-10-18-Easy`` () =
