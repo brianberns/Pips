@@ -3,7 +3,7 @@
 type Board =
     {
         Dominoes : Set<Domino * Cell * Cell>
-        Cells : Option<PipCount>[(*row*), (*column*)]
+        Cells : PipCount[(*row*), (*column*)]
     }
 
     member board.Item(cell) =
@@ -11,25 +11,29 @@ type Board =
 
 module Board =
 
+    let private empty : PipCount = -1
+
     let create numRows numColumns =
         {
             Dominoes = Set.empty
-            Cells = Array2D.zeroCreate numRows numColumns
+            Cells = Array2D.create numRows numColumns empty
         }
 
     let tryGetPipCount cell (board : Board) =
-        board[cell]
+        let value = board[cell]
+        if value = empty then None
+        else Some value
 
     let isEmpty (board : Board) cell =
-        board[cell].IsNone
+        board[cell] = empty
 
     let place domino cellLeft cellRight board =
         assert(Cell.adjacent cellLeft cellRight)
         assert(isEmpty board cellLeft)
         assert(isEmpty board cellRight)
         let cells = Array2D.copy board.Cells
-        cells[cellLeft.Row, cellLeft.Column] <- Some domino.Left
-        cells[cellRight.Row, cellRight.Column] <- Some domino.Right
+        cells[cellLeft.Row, cellLeft.Column] <- domino.Left
+        cells[cellRight.Row, cellRight.Column] <- domino.Right
         {
             Cells = cells
             Dominoes =
