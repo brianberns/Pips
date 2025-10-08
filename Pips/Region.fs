@@ -19,8 +19,8 @@ module Region =
 
     let getPipCounts (board : Board) region =
         region.Cells
-            |> Array.map (fun cell -> board[cell])
-            |> Array.where (fun value -> value <> Board.empty)
+            |> Array.map board.Item
+            |> Array.where ((<>) Board.empty)
 
     let private hasLessThanTwoDistinct (array : _[]) =
         if array.Length < 2 then true
