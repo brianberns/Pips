@@ -2,7 +2,7 @@
 
 type Board =
     {
-        Dominoes : Set<Domino * Cell * Cell>
+        // Dominoes : Set<Domino * Cell * Cell>
         Cells : PipCount[(*row*), (*column*)]
     }
 
@@ -16,7 +16,7 @@ module Board =
 
     let create numRows numColumns =
         {
-            Dominoes = Set.empty
+            // Dominoes = Set.empty
             Cells = Array2D.create numRows numColumns empty
         }
 
@@ -32,7 +32,9 @@ module Board =
         cells[cellRight.Row, cellRight.Column] <- domino.Right
         {
             Cells = cells
+            (*
             Dominoes =
                 board.Dominoes
                     |> Set.add (domino, cellLeft, cellRight)
+            *)
         }
