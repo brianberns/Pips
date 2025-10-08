@@ -1,5 +1,6 @@
 ﻿namespace Pips
 
+[<Struct>]
 type Cell =
     {
         Row : int
