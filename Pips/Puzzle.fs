@@ -54,13 +54,10 @@ module Puzzle =
                                     |> Seq.collect _.Cells
                                     |> Seq.where (isEmpty puzzle)
                                     |> Seq.toArray
-                            let pairs =
-                                seq {
-                                    for i = 0 to cells.Length - 2 do
-                                        for j = i + 1 to cells.Length - 1 do
-                                            cells[i], cells[j]
-                                }
-                            for (cellA, cellB) in pairs do
+                            for i = 0 to cells.Length - 2 do
+                                for j = i + 1 to cells.Length - 1 do
+                                let cellA = cells[i]
+                                let cellB = cells[j]
                                 if Cell.adjacent cellA cellB then
                                     yield! loop domino rest cellA cellB puzzle
                                     if domino.Left <> domino.Right then
