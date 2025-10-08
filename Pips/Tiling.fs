@@ -9,22 +9,34 @@ module Tiling =
     
     /// Gets all tilings (i.e. "perfect matchings") for a
     /// set of cells.
-    let rec getAll (cells : Set<_>) =
-        if cells.IsEmpty then
-            Array.empty   // all done: perfect matching found
-        else
-                // pick an arbitrary cell
-            let cell = Seq.head cells
+    let getAll cells =
+
+        let rec loop (cells : Set<_>) : Option<_[]> =
+            if cells.IsEmpty then
+                Some Array.empty   // all done: perfect matching found
+            else
+                    // pick an arbitrary cell
+                let cell = Seq.head cells
             
-                // try all edges that include this cell
-            Cell.getAdjacent cell
-                |> Array.choose (fun adj ->
-                    if cells.Contains(adj) && cell < adj then   // normalize edges to avoid redundancy
+                    // try all edges that include this cell
+                let tilings =
+                    Cell.getAdjacent cell
+                        |> Array.choose (fun adj ->
+                            if cells.Contains(adj) && cell < adj then   // normalize edges to avoid redundancy
 
-                            // remove this edge from further consideration
-                        let cells = cells.Remove(cell).Remove(adj)
+                                    // remove this edge from further consideration
+                                let cells = cells.Remove(cell).Remove(adj)
 
-                            // get child tilings
-                        Some (Node (cell, adj, getAll cells))
+                                    // get child tilings
+                                loop cells
+                                    |> Option.map (fun tilings ->
+                                        Node (cell, adj, tilings))
 
-                    else None)
+                            else None)
+
+                    // tiled this cell successfully?
+                if tilings.Length = 0 then None
+                else Some tilings
+
+        loop cells
+            |> Option.defaultValue Array.empty
