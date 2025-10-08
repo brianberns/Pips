@@ -23,20 +23,24 @@ module Region =
                 Board.tryGetPipCount cell board)
 
     let isValid board region =
-        let pipCounts = getPipCounts board region
         match region.Type with
             | RegionType.Unconstrained -> true
             | RegionType.Equal ->
+                let pipCounts = getPipCounts board region
                 (Array.distinct pipCounts).Length <= 1
             | RegionType.Unequal ->
+                let pipCounts = getPipCounts board region
                 (Array.distinct pipCounts).Length = pipCounts.Length
             | RegionType.SumLess n ->
+                let pipCounts = getPipCounts board region
                 assert(PipCount.minValue = 0)
                 Array.sum pipCounts < n
             | RegionType.SumGreater n ->
+                let pipCounts = getPipCounts board region
                 let nEmpty = region.Cells.Length - pipCounts.Length
                 (Array.sum pipCounts) + (PipCount.maxValue * nEmpty) > n
             | RegionType.Sum n ->
+                let pipCounts = getPipCounts board region
                 let sum = Array.sum pipCounts
                 if pipCounts.Length = region.Cells.Length then
                     sum = n
