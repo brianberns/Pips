@@ -22,12 +22,18 @@ module Region =
             |> Array.choose (fun cell ->
                 Board.tryGetPipCount cell board)
 
+    let private hasLessThanTwoDistinct (array : _[]) =
+        if array.Length < 2 then true
+        else
+            let elem = array[0]
+            Array.forall ((=) elem) array[1..]
+
     let isValid board region =
         match region.Type with
             | RegionType.Unconstrained -> true
             | RegionType.Equal ->
                 let pipCounts = getPipCounts board region
-                (Array.distinct pipCounts).Length <= 1
+                hasLessThanTwoDistinct pipCounts
             | RegionType.Unequal ->
                 let pipCounts = getPipCounts board region
                 (Array.distinct pipCounts).Length = pipCounts.Length
