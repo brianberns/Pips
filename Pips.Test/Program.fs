@@ -13,6 +13,25 @@ module Program =
         let solutions = Puzzle.solve puzzleMap["hard"]
         stopwatch.Elapsed.TotalSeconds, solutions
 
+    let printBoard puzzle =
+        let maxRow =
+            puzzle.Regions
+                |> Array.collect _.Cells
+                |> Array.map _.Row
+                |> Array.max
+        let maxCol =
+            puzzle.Regions
+                |> Array.collect _.Cells
+                |> Array.map _.Column
+                |> Array.max
+        for row in 0 .. maxRow do
+            for col in 0 .. maxCol do
+                let cell = { Row = row; Column = col }
+                match puzzle.Board[cell] with
+                    | Board.empty -> printf "  "
+                    | v -> printf $"{v} "
+            printfn ""
+
     let solveMany () =
 
         let run timeout work =
@@ -34,7 +53,7 @@ module Program =
                 | Some (time, (puzzles : List<_>)) ->
                     printfn $"{date}: {time} seconds, {puzzles.Length} solution(s)"
                     printfn ""
-                    printfn $"{Puzzle.printBoard puzzles[0]}"
+                    printfn $"{printBoard puzzles[0]}"
                 | None ->
                     printfn $"{date}: timeout"
 
@@ -59,6 +78,6 @@ module Program =
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
         printfn ""
         for solution in solutions do
-            printfn $"{Puzzle.printBoard solution}"
+            printfn $"{printBoard solution}"
 
     solveMany ()

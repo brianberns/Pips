@@ -115,22 +115,3 @@ module Puzzle =
 
         let tilings = Tiling.getAll cells
         loop tilings puzzle
-
-    let printBoard puzzle =
-        let maxRow =
-            puzzle.Regions
-                |> Array.collect _.Cells
-                |> Array.map _.Row
-                |> Array.max
-        let maxCol =
-            puzzle.Regions
-                |> Array.collect _.Cells
-                |> Array.map _.Column
-                |> Array.max
-        for row in 0 .. maxRow do
-            for col in 0 .. maxCol do
-                let cell = { Row = row; Column = col }
-                match puzzle.Board[cell] with
-                    | Board.empty -> printf "  "
-                    | v -> printf $"{v} "
-            printfn ""
