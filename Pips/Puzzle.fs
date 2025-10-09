@@ -27,6 +27,14 @@ module Puzzle =
             Board = Board.create (maxRow + 1) (maxColumn + 1)
         }
 
+    let simplify puzzle =
+        {
+            puzzle with
+                Regions =
+                    Array.collect
+                        Region.simplify puzzle.Regions
+        }
+
     let isValid puzzle =
         puzzle.Regions
             |> Array.forall (
@@ -74,7 +82,7 @@ module Puzzle =
                 |> set
 
         let tilings = Tiling.getAll cells
-        loop tilings puzzle
+        loop tilings (simplify puzzle)
 
     let trySolve puzzle =
 
