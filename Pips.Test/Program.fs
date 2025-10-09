@@ -47,13 +47,13 @@ module Program =
 
         let hasHorizontalBorder row col =
             let cell = Cell.create row col
-            let topCell = { cell with Row = row - 1 }
+            let topCell = Cell.create (row - 1) cell.Column
             (not (isCellEmpty cell) || not (isCellEmpty topCell))
                 && not (inSameDomino cell topCell)
 
         let hasVerticalBorder row col =
             let cell = Cell.create row col
-            let leftCell = { cell with Column = col - 1 }
+            let leftCell = Cell.create cell.Row (col - 1)
             (not (isCellEmpty cell) || not (isCellEmpty leftCell))
                 && not (inSameDomino cell leftCell)
 

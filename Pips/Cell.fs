@@ -12,6 +12,10 @@ type Cell =
 
 module Cell =
 
+    /// Creates a cell.
+    let create row col =
+        { Row = row; Column = col }
+
     /// Gets all possible cells adjacent to the given cell.
     /// Some of these cells might not actually exist, though.
     let getAdjacent cell =

@@ -2,11 +2,6 @@ namespace Pips
 
 open Xunit
 
-module Cell =
-
-    let create row col =
-        { Row = row; Column = col }
-
 module Tiling =
 
     let private createCells pairs =

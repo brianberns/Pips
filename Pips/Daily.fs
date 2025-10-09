@@ -18,7 +18,7 @@ module DailyRegion =
             region.indices
                 |> Array.map (fun pair ->
                     assert(pair.Length = 2)
-                    { Row = pair[0]; Column = pair[1] })
+                    Cell.create pair[0] pair[1])
         let typ =
             match region.``type`` with
                 | "empty"   -> RegionType.Unconstrained
