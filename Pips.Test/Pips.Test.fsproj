@@ -12,11 +12,10 @@
     <Content Include="2025-09-30.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="Tests.fs" />
+    <Compile Include="Tiling.fs" />
+    <Compile Include="Puzzle.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />

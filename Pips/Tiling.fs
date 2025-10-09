@@ -1,4 +1,4 @@
-namespace Pips
+﻿namespace Pips
 
 /// A tiling in the form of a tree. Each node represents a
 /// single edge with child tilings that cover the remaining
