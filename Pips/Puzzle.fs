@@ -60,33 +60,48 @@ module Puzzle =
     let isEmpty puzzle cell =
         Board.isEmpty puzzle.Board cell
 
+    /// Places the given domino in the given location in
+    /// the given puzzle.
+    let place domino cellLeft cellRight puzzle =
+        {
+            puzzle with
+                UnplacedDominoes =
+                    puzzle.UnplacedDominoes.Remove(domino)
+                Board =
+                    Board.place
+                        domino cellLeft cellRight puzzle.Board
+        }
+
     /// Finds all solutions for the given puzzle.
     let solve puzzle =
 
-        let rec loop tilings puzzle =
+        /// Finds all solutions to the given puzzle, guided
+        /// by the given possible tilings.
+        let rec tile tilings puzzle =
             [
                 if isValid puzzle then
+
+                        // all dominoes have been placed successfully?
                     if puzzle.UnplacedDominoes.IsEmpty then
                         assert(isSolved puzzle)
                         puzzle
                     else
+                            // try each possible tiling
                         for tiling in tilings do
+
+                                // get edge to cover in this tiling
                             let (Node (cellA, cellB, tilings)) = tiling
+
+                                // try each domino on that edge
                             for domino in puzzle.UnplacedDominoes do
-                                yield! place domino tilings cellA cellB puzzle
+                                yield! loop tilings domino cellA cellB puzzle
                                 if domino.Left <> domino.Right then
-                                    yield! place domino tilings cellB cellA puzzle
+                                    yield! loop tilings domino cellB cellA puzzle
             ]
 
-        and place domino tiling cellLeft cellRight puzzle =
-            loop tiling {
-                puzzle with
-                    UnplacedDominoes =
-                        puzzle.UnplacedDominoes.Remove(domino)
-                    Board =
-                        Board.place
-                            domino cellLeft cellRight puzzle.Board
-            }
+        and loop tilings domino cellLeft cellRight puzzle =
+            place domino cellLeft cellRight puzzle
+                |> tile tilings
 
         let cells =
             puzzle.Regions
@@ -95,7 +110,7 @@ module Puzzle =
                 |> set
 
         let tilings = Tiling.getAll cells
-        loop tilings puzzle
+        tile tilings puzzle
 
     /// Finds a arbitrary solution for the given puzzle,
     /// if at least one exists.
@@ -112,23 +127,17 @@ module Puzzle =
                             let (Node (cellA, cellB, tilings)) = tiling
                             puzzle.UnplacedDominoes
                                 |> Seq.tryPick (fun domino ->
-                                    match place domino tilings cellA cellB puzzle with
+                                    match moo tilings domino cellA cellB puzzle with
                                         | Some moo -> Some moo
                                         | None ->
                                             if domino.Left <> domino.Right then
-                                                place domino tilings cellB cellA puzzle
+                                                moo tilings domino cellB cellA puzzle
                                             else None))
             else None
 
-        and place domino tiling cellLeft cellRight puzzle =
-            loop tiling {
-                puzzle with
-                    UnplacedDominoes =
-                        puzzle.UnplacedDominoes.Remove(domino)
-                    Board =
-                        Board.place
-                            domino cellLeft cellRight puzzle.Board
-            }
+        and moo tilings domino cellLeft cellRight puzzle =
+            place domino cellLeft cellRight puzzle
+                |> loop tilings
 
         let cells =
             puzzle.Regions
