@@ -8,10 +8,10 @@ open System
 [<CustomEquality; NoComparison>]
 type Board =
     {
-        /// Location of each domino.
+        /// Location of each domino placed on the board.
         Dominoes : List<Domino * Cell (*left*) * Cell (*right*)>
 
-        /// Value in each cell.
+        /// Value in each cell, if any.
         Cells : PipCount[(*row*), (*column*)]
     }
 
