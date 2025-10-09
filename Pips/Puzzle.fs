@@ -76,6 +76,46 @@ module Puzzle =
         let tilings = Tiling.getAll cells
         loop tilings puzzle
 
+    let trySolve puzzle =
+
+        let rec loop tilings puzzle =
+            if isValid puzzle then
+                if puzzle.UnplacedDominoes.IsEmpty then
+                    assert(isSolved puzzle)
+                    Some puzzle
+                else
+                    tilings
+                        |> Seq.tryPick (fun tiling ->
+                            let (Node (cellA, cellB, tilings)) = tiling
+                            puzzle.UnplacedDominoes
+                                |> Seq.tryPick (fun domino ->
+                                    match place domino tilings cellA cellB puzzle with
+                                        | Some moo -> Some moo
+                                        | None ->
+                                            if domino.Left <> domino.Right then
+                                                place domino tilings cellB cellA puzzle
+                                            else None))
+            else None
+
+        and place domino tiling cellLeft cellRight puzzle =
+            loop tiling {
+                puzzle with
+                    UnplacedDominoes =
+                        puzzle.UnplacedDominoes.Remove(domino)
+                    Board =
+                        Board.place
+                            domino cellLeft cellRight puzzle.Board
+            }
+
+        let cells =
+            puzzle.Regions
+                |> Seq.collect _.Cells
+                |> Seq.where (isEmpty puzzle)
+                |> set
+
+        let tilings = Tiling.getAll cells
+        loop tilings puzzle
+
     let printBoard puzzle =
         let maxRow =
             puzzle.Regions
