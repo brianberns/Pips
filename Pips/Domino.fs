@@ -28,3 +28,12 @@ type Domino =
         /// Right pips.
         Right : PipCount
     }
+
+module Domino =
+
+    /// Creates a domino.
+    let create left right =
+        {
+            Left = left
+            Right = right
+        }

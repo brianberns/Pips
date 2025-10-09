@@ -10,7 +10,7 @@ module Puzzle =
         (rightRow, rightCol)
         board =
         Board.place
-            { Left = leftPipCount; Right = rightPipCount }
+            (Domino.create leftPipCount rightPipCount)
             (Cell.create leftRow leftCol)
             (Cell.create rightRow rightCol)
             board
