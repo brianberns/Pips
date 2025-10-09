@@ -24,7 +24,7 @@ module Board =
         board[cell] = empty
 
     let place domino cellLeft cellRight board =
-        assert(Cell.adjacent cellLeft cellRight)
+        assert(Cell.areAdjacent cellLeft cellRight)
         assert(isEmpty board cellLeft)
         assert(isEmpty board cellRight)
         let cells = Array2D.copy board.Cells

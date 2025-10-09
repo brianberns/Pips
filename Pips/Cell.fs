@@ -1,9 +1,13 @@
 ﻿namespace Pips
 
+/// A cell on a 2D lattice.
 [<Struct>]
 type Cell =
     {
+        /// 0-based row.
         Row : int
+
+        /// 0-based column.
         Column : int
     }
 
@@ -19,7 +23,8 @@ module Cell =
             { cell with Column = cell.Column + 1 }
         |]
 
-    let adjacent cellA cellB =
+    /// Determines whether the given cells are adjacent.
+    let areAdjacent cellA cellB =
         (cellA.Row = cellB.Row
             && abs (cellA.Column - cellB.Column) = 1)
             || (cellA.Column = cellB.Column
