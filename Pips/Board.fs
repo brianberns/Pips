@@ -1,8 +1,11 @@
 ﻿namespace Pips
 
+open System
+
 /// A 2D lattice with dominoes on it. This is stored in a redundant
 /// data structure for speed. We have the location of each domino,
 /// and also a way to look up the value at any cell on the board.
+[<CustomEquality; NoComparison>]
 type Board =
     {
         /// Location of each domino.
@@ -15,6 +18,16 @@ type Board =
     /// Pip count of each cell.
     member board.Item(cell) =
         board.Cells[cell.Row, cell.Column]
+
+    /// Domino placement order doesn't matter for equality.
+    member this.Equals(other : Board) = 
+        (set this.Dominoes) = (set other.Dominoes)
+
+    interface IEquatable<Board> with
+
+        /// Domino placement order doesn't matter for equality.
+        member this.Equals(other : Board) = 
+            this.Equals(other)
 
 module Board =
 

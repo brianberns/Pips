@@ -153,7 +153,7 @@ module Program =
                     print date resultOpt
                     Threading.Thread.Sleep(500)
                     date, resultOpt)
-                |> Seq.maxBy snd
+                |> Seq.maxBy (snd >> Option.map fst)
         printfn "Longest:"
         print date resultOpt
 
