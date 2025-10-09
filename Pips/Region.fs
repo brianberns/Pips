@@ -1,10 +1,11 @@
 ﻿namespace Pips
 
-/// Region type.
+/// A region type defines a constraint on the cells in a
+/// region.
 [<RequireQualifiedAccess>]
 type RegionType =
 
-    /// Can hold any value.
+    /// Cells in the region can have any value.
     | Any
 
     /// All cells in the region must have the same value.
@@ -25,9 +26,13 @@ type RegionType =
     /// a certain amount.
     | Sum of int
 
+/// A region of cells on a board.
 type Region =
     {
+        /// Cells in the region.
         Cells : Cell[]
+
+        /// Constraint on the cells in the region.
         Type : RegionType
     }
 
