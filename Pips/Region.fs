@@ -38,16 +38,20 @@ type Region =
 
 module Region =
 
+    /// Gets the pip counts covering cells in the given region
+    /// on the given board.
     let private getPipCounts (board : Board) region =
         region.Cells
             |> Array.map board.Item
-            |> Array.where ((<>) Board.empty)
+            |> Array.where ((<>) Board.emptyCell)
 
+    /// Determines whether the given array has fewer than two
+    /// distinct elements.
     let private hasLessThanTwoDistinct (array : _[]) =
         if array.Length < 2 then true
         else
             let elem = array[0]
-            Array.forall ((=) elem) array[1..]
+            Array.forall ((=) elem) array[1..]   // fail early if a second value is found
 
     let isValid board region =
         match region.Type with

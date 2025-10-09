@@ -34,18 +34,18 @@ module Board =
     /// Special pip count for an uncovered cell. We use this,
     /// rather than an Option, for speed.
     [<Literal>]
-    let empty : PipCount = -1
+    let emptyCell : PipCount = -1
 
     /// Creates an empty board of the given size.
     let create numRows numColumns =
         {
             Dominoes = List.empty
-            Cells = Array2D.create numRows numColumns empty
+            Cells = Array2D.create numRows numColumns emptyCell
         }
 
     /// Is the given cell empty (i.e. not covered by a domino)?
     let isEmpty (board : Board) cell =
-        board[cell] = empty
+        board[cell] = emptyCell
 
     /// Places the given domino in the given location on the
     /// board. The left side of the domino is placed on the left

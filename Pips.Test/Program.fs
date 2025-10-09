@@ -43,7 +43,7 @@ module Program =
                 || cell.Column < 0
                 || cell.Column > maxCol then true
             else
-                puzzle.Board[cell] = Board.empty
+                puzzle.Board[cell] = Board.emptyCell
 
         let hasHorizontalBorder row col =
             let cell = Cell.create row col
@@ -101,7 +101,7 @@ module Program =
                 
                 let cell = Cell.create row col
                 match puzzle.Board[cell] with
-                    | Board.empty -> printf "   "
+                    | Board.emptyCell -> printf "   "
                     | v -> printf " %d " v
             
             if hasVerticalBorder row (maxCol + 1) then
