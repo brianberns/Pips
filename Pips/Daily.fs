@@ -21,7 +21,7 @@ module DailyRegion =
                     Cell.create pair[0] pair[1])
         let typ =
             match region.``type`` with
-                | "empty"   -> RegionType.Unconstrained
+                | "empty"   -> RegionType.Any
                 | "equals"  -> RegionType.Equal
                 | "greater" -> RegionType.SumGreater region.target
                 | "less"    -> RegionType.SumLess region.target

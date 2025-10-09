@@ -1,12 +1,28 @@
 ﻿namespace Pips
 
+/// Region type.
 [<RequireQualifiedAccess>]
 type RegionType =
-    | Unconstrained
+
+    /// Can hold any value.
+    | Any
+
+    /// All cells in the region must have the same value.
     | Equal
+
+    /// All cells in the region must have a distinct value.
     | Unequal
+
+    /// Sum of cell values in the region must be less than
+    /// a certain amount.
     | SumLess of int
+
+    /// Sum of cell values in the region must be greater than
+    /// a certain amount.
     | SumGreater of int
+
+    /// Sum of cell values in the region must be equal to
+    /// a certain amount.
     | Sum of int
 
 type Region =
@@ -30,7 +46,7 @@ module Region =
 
     let isValid board region =
         match region.Type with
-            | RegionType.Unconstrained -> true
+            | RegionType.Any -> true
             | RegionType.Equal ->
                 let pipCounts = getPipCounts board region
                 hasLessThanTwoDistinct pipCounts
@@ -61,7 +77,7 @@ module Region =
         let pipCounts = getPipCounts board region
         if pipCounts.Length = region.Cells.Length then
             match region.Type with
-                | RegionType.Unconstrained -> true
+                | RegionType.Any -> true
                 | RegionType.Equal ->
                     (Array.distinct pipCounts).Length = 1
                 | RegionType.Unequal ->
