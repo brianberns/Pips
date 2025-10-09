@@ -1,7 +1,6 @@
 ﻿namespace Pips
 
 /// A cell on a 2D lattice.
-[<Struct>]
 type Cell =
     {
         /// 0-based row.

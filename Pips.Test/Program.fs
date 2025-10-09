@@ -158,7 +158,7 @@ module Program =
         print date resultOpt
 
     let solveOne () =
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-05.json"
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
         let stopwatch = Stopwatch.StartNew()
         let solutions = Puzzle.solve puzzleMap["hard"]
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
