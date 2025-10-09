@@ -23,21 +23,28 @@ module Region =
             |> Array.where ((<>) Board.empty)
 
     let simplify region =
-        [|
-            match region.Type with
 
-                    // e.g. 3-cell region with sum = 18 must contain all 6's
-                | RegionType.Sum n
-                    when n = PipCount.maxValue * region.Cells.Length ->
-                    for cell in region.Cells do
-                        {
-                            Cells = [| cell |]
-                            Type = RegionType.Sum PipCount.maxValue
-                        }
+        /// E.g. 3-cell region with sum = 18 must contain all 6's.
+        let splitMax region =
+            region.Cells
+                |> Array.map (fun cell ->
+                    {
+                        Cells = [| cell |]
+                        Type = RegionType.Sum PipCount.maxValue
+                    })
 
-                    // no change
-                | _ -> region
-        |]
+        match region.Type with
+
+            | RegionType.Sum n
+                when n = PipCount.maxValue * region.Cells.Length ->
+                splitMax region
+
+            | RegionType.SumGreater n
+                when n = (PipCount.maxValue * region.Cells.Length) - 1 ->
+                splitMax region
+
+                // no change
+            | _ -> Array.singleton region
 
     let private hasLessThanTwoDistinct (array : _[]) =
         if array.Length < 2 then true
