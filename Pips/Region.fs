@@ -22,30 +22,6 @@ module Region =
             |> Array.map board.Item
             |> Array.where ((<>) Board.empty)
 
-    let simplify region =
-
-        /// E.g. 3-cell region with sum = 18 must contain all 6's.
-        let splitMax region =
-            region.Cells
-                |> Array.map (fun cell ->
-                    {
-                        Cells = [| cell |]
-                        Type = RegionType.Sum PipCount.maxValue
-                    })
-
-        match region.Type with
-
-            | RegionType.Sum n
-                when n = PipCount.maxValue * region.Cells.Length ->
-                splitMax region
-
-            | RegionType.SumGreater n
-                when n = (PipCount.maxValue * region.Cells.Length) - 1 ->
-                splitMax region
-
-                // no change
-            | _ -> Array.singleton region
-
     let private hasLessThanTwoDistinct (array : _[]) =
         if array.Length < 2 then true
         else
@@ -76,7 +52,10 @@ module Region =
                     sum = n
                 else
                     assert(PipCount.minValue = 0)
-                    sum <= n
+                    if sum <= n then
+                        let nEmpty = region.Cells.Length - pipCounts.Length
+                        sum + (PipCount.maxValue * nEmpty) >= n
+                    else false
 
     let isSolved board region =
         let pipCounts = getPipCounts board region
