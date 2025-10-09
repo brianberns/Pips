@@ -45,53 +45,78 @@ module Program =
             else
                 puzzle.Board[cell] = Board.empty
 
+        let hasHorizontalBorder row col =
+            let cell = Cell.create row col
+            let topCell = { cell with Row = row - 1 }
+            (not (isCellEmpty cell) || not (isCellEmpty topCell))
+                && not (inSameDomino cell topCell)
+
+        let hasVerticalBorder row col =
+            let cell = Cell.create row col
+            let leftCell = { cell with Column = col - 1 }
+            (not (isCellEmpty cell) || not (isCellEmpty leftCell))
+                && not (inSameDomino cell leftCell)
+
+        let getCornerChar row col =
+            let right = hasHorizontalBorder row col
+            let left = hasHorizontalBorder row (col - 1)
+            let down = hasVerticalBorder row col
+            let up = hasVerticalBorder (row - 1) col
+
+            match up, down, left, right with
+                | false, false, true, true -> "─"
+                | true, true, false, false -> "│"
+                | false, true, false, true -> "┌"
+                | false, true, true, false -> "┐"
+                | true, false, false, true -> "└"
+                | true, false, true, false -> "┘"
+                | false, true, true, true -> "┬"
+                | true, false, true, true -> "┴"
+                | true, true, false, true -> "├"
+                | true, true, true, false -> "┤"
+                | true, true, true, true -> "┼"
+                | true, false, false, false -> "│"
+                | false, true, false, false -> "│"
+                | false, false, true, false -> "─"
+                | false, false, false, true -> "─"
+                | _ -> " "
+
         for row in 0 .. maxRow do
 
-                // print top border
+                // print top border line
             for col in 0 .. maxCol do
-                let cell = Cell.create row col
-                let topCell = { cell with Row = row - 1 }
-                if (not (isCellEmpty cell) || not (isCellEmpty topCell))
-                    && not (inSameDomino cell topCell) then
-                    printf "+---"
+                printf "%s" (getCornerChar row col)
+                if hasHorizontalBorder row col then
+                    printf "───"
                 else
-                    printf "+   "
-            printfn "+"
+                    printf "   "
+            printfn "%s" (getCornerChar row (maxCol + 1))
 
-                // print cell content and side borders
+                // print cell content and vertical borders
             for col in 0 .. maxCol do
-
-                let cell = Cell.create row col
-
-                let leftCell = { cell with Column = col - 1 }
-                if (not (isCellEmpty cell) || not (isCellEmpty leftCell))
-                    && not (inSameDomino cell leftCell) then
-                    printf "|"
+                if hasVerticalBorder row col then
+                    printf "│"
                 else
                     printf " "
                 
+                let cell = Cell.create row col
                 match puzzle.Board[cell] with
                     | Board.empty -> printf "   "
                     | v -> printf " %d " v
             
-            let rightCell = Cell.create row (maxCol + 1)
-            let lastCell = Cell.create row maxCol
-            if (not (isCellEmpty lastCell) || not (isCellEmpty rightCell))
-                && not (inSameDomino lastCell rightCell) then
-                printfn "|"
+            if hasVerticalBorder row (maxCol + 1) then
+                printfn "│"
             else
                 printfn ""
 
             // print bottom border for the last row
         for col in 0 .. maxCol do
-            let cell = Cell.create maxRow col
-            let bottomCell = { cell with Row = maxRow + 1 }
-            if (not (isCellEmpty cell) || not (isCellEmpty bottomCell))
-                && not (inSameDomino cell bottomCell) then
-                printf "+---"
+            printf "%s" (getCornerChar (maxRow + 1) col)
+            if hasHorizontalBorder (maxRow + 1) col then
+                printf "───"
             else
-                printf "+   "
-        printfn "+"
+                printf "   "
+        printfn "%s" (getCornerChar (maxRow + 1) (maxCol + 1))
 
     let solveMany () =
 
