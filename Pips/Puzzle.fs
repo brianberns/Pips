@@ -72,6 +72,14 @@ module Puzzle =
                         domino cellLeft cellRight puzzle.Board
         }
 
+    /// Gets all possible tilings for the given puzzle.
+    let private getAllTilings puzzle =
+        puzzle.Regions
+            |> Seq.collect _.Cells
+            |> Seq.where (isEmpty puzzle)
+            |> set
+            |> Tiling.getAll
+
     /// Finds all solutions for the given puzzle.
     let solve puzzle =
 
@@ -99,17 +107,15 @@ module Puzzle =
                                     yield! loop tilings domino cellB cellA puzzle
             ]
 
+        /// Places the given domino in the given location and
+        /// then continues to look for solutions using the given
+        /// child tilings.
         and loop tilings domino cellLeft cellRight puzzle =
             place domino cellLeft cellRight puzzle
                 |> tile tilings
 
-        let cells =
-            puzzle.Regions
-                |> Seq.collect _.Cells
-                |> Seq.where (isEmpty puzzle)
-                |> set
-
-        let tilings = Tiling.getAll cells
+            // solve the puzzle using possible tilings
+        let tilings = getAllTilings puzzle
         tile tilings puzzle
 
     /// Finds a arbitrary solution for the given puzzle,
