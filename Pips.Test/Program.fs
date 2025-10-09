@@ -13,7 +13,7 @@ module Program =
         let solutions = Puzzle.solve puzzleMap["hard"]
         stopwatch.Elapsed.TotalSeconds, solutions
 
-    let solveMonth () =
+    let solveMany () =
 
         let run timeout work =
             let work =
@@ -38,14 +38,15 @@ module Program =
                 | None ->
                     printfn $"{date}: timeout"
 
-        let startDate = DateOnly.Parse("9/1/2025")
+        let startDate = DateOnly.Parse("8/18/2025")
         let date, resultOpt =
-            [ 0 .. 30 ]
+            [ 0 .. 80 ]
                 |> Seq.map (fun offset ->
                     let date = startDate.AddDays(offset)
-                    let work () = solve date
-                    let resultOpt = run 100000 work
+                    let resultOpt =
+                        run 10000 (fun () -> solve date)
                     print date resultOpt
+                    Threading.Thread.Sleep(500)
                     date, resultOpt)
                 |> Seq.maxBy snd
         printfn "Longest:"
@@ -60,4 +61,4 @@ module Program =
         for solution in solutions do
             printfn $"{Puzzle.printBoard solution}"
 
-    solveOne ()
+    solveMany ()
