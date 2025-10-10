@@ -4,6 +4,10 @@ open System.IO
 open System.Net.Http
 open System.Text.Json
 
+(*
+ * Support for NY Times daily JSON format.
+ *)
+
 type DailyRegion =
     {
         indices : int[][]
@@ -57,6 +61,7 @@ module DailyPuzzle =
 
 module Daily =
 
+    /// Parses puzzles from the given JSON text.
     let parse (text : string) =
         let dailyJson = JsonDocument.Parse(text)
         let root = dailyJson.RootElement
@@ -72,9 +77,11 @@ module Daily =
                         yield prop.Name, DailyPuzzle.convert puzzle
         ]
 
+    /// Loads puzzles from the given JSON file.
     let loadFile =
         File.ReadAllText >> parse
 
+    /// Loads puzzles from the given JSON URL.
     let loadHttp (uri : string) =
         use client = new HttpClient()
         client.GetStringAsync(uri)
