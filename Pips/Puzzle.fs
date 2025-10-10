@@ -1,7 +1,7 @@
 ﻿namespace Pips
 
 /// Computation builder that short-circuits on the first Some value
-/// in a for loop.
+/// in a `for` loop.
 type TryPickBuilder() =
     member _.Bind(opt, f) = Option.bind f opt
     member _.Return(x) = Some x
@@ -12,9 +12,12 @@ type TryPickBuilder() =
     member _.Delay(f) = f
     member _.Run(f) = f()
 
+    /// Combines multiple yields by only evaluating the second one if
+    /// the first one fails.
     member _.Combine(opt, thunk) =
         Option.orElseWith thunk opt
 
+    /// Short-circuit `for` loop.
     member _.For(seq, body) =
         Seq.tryPick body seq
 
