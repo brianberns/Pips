@@ -20,6 +20,9 @@ type TryPickBuilder() =
 
 [<AutoOpen>]
 module TryPickBuilder =
+
+    /// Computation builder that short-circuits on the first Some value
+    /// in a for loop.
     let tryPick = TryPickBuilder()
 
 /// A Pips puzzle in some state of being solved.
