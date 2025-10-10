@@ -82,6 +82,7 @@ module Daily =
         File.ReadAllText >> parse
 
     /// Loads puzzles from the given JSON URL.
+    /// E.g. "https://www.nytimes.com/svc/pips/v1/2025-10-14.json".
     let loadHttp (uri : string) =
         use client = new HttpClient()
         client.GetStringAsync(uri)
