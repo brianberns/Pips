@@ -147,11 +147,11 @@ module Program =
 
         let startDate = DateOnly.Parse("8/18/2025")
         let pairs =
-            [ 0 .. 80 ]
+            [ 0 .. 81 ]
                 |> Seq.map (fun offset ->
                     let date = startDate.AddDays(offset)
                     let resultOpt =
-                        run 30000 (fun () -> solve date)
+                        run 15000 (fun () -> solve date)
                     print date resultOpt
                     Threading.Thread.Sleep(500)
                     date, resultOpt)
@@ -159,9 +159,9 @@ module Program =
         for (date, resultOpt) in pairs do
             match resultOpt with
                 | Some (time, _) ->
-                    printfn $"{date}, {time} seconds"
+                    printfn $"{date}, {time}"
                 | None ->
-                    printfn $"{date}: timeout"
+                    printfn $"{date}, timeout"
 
     let solveOne () =
         let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
