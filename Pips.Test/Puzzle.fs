@@ -20,8 +20,8 @@ module Puzzle =
     [<Fact>]
     let ``2025-09-30-Easy`` () =
         let puzzle = puzzleMap["easy"]
-        let expected =
-            List.singleton {
+        let solution =
+            {
                 puzzle with
                     UnplacedDominoes = Set.empty
                     Board =
@@ -31,5 +31,9 @@ module Puzzle =
                             |> place (0, 3) (1, 1) (1, 0)
                             |> place (2, 2) (1, 2) (1, 3)
             }
+
         let actual = Puzzle.solve puzzle
-        Assert.Equal<List<_>>(expected, actual)
+        Assert.Equal<List<_>>([solution], actual)
+
+        let actual = Puzzle.trySolve puzzle
+        Assert.Equal(Some solution, actual)

@@ -122,34 +122,40 @@ module Puzzle =
     /// if at least one exists.
     let trySolve puzzle =
 
-        let rec loop tilings puzzle =
+        /// Finds all solutions to the given puzzle, guided
+        /// by the given possible tilings.
+        let rec tile tilings puzzle =
             if isValid puzzle then
+
+                    // all dominoes have been placed successfully?
                 if puzzle.UnplacedDominoes.IsEmpty then
                     assert(isSolved puzzle)
                     Some puzzle
                 else
+                        // try each possible tiling
                     tilings
                         |> Seq.tryPick (fun tiling ->
+
+                                // get edge to cover in this tiling
                             let (Node (cellA, cellB, tilings)) = tiling
+
+                                // try each domino on that edge
                             puzzle.UnplacedDominoes
                                 |> Seq.tryPick (fun domino ->
-                                    match moo tilings domino cellA cellB puzzle with
-                                        | Some moo -> Some moo
-                                        | None ->
+                                    loop tilings domino cellA cellB puzzle
+                                        |> Option.orElseWith (fun () ->
                                             if domino.Left <> domino.Right then
-                                                moo tilings domino cellB cellA puzzle
-                                            else None))
+                                                loop tilings domino cellB cellA puzzle
+                                            else None)))
             else None
 
-        and moo tilings domino cellLeft cellRight puzzle =
+        /// Places the given domino in the given location and
+        /// then continues to look for solutions using the given
+        /// child tilings.
+        and loop tilings domino cellLeft cellRight puzzle =
             place domino cellLeft cellRight puzzle
-                |> loop tilings
+                |> tile tilings
 
-        let cells =
-            puzzle.Regions
-                |> Seq.collect _.Cells
-                |> Seq.where (isEmpty puzzle)
-                |> set
-
-        let tilings = Tiling.getAll cells
-        loop tilings puzzle
+            // solve the puzzle using possible tilings
+        let tilings = getAllTilings puzzle
+        tile tilings puzzle
