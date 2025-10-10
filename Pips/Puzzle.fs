@@ -1,5 +1,27 @@
 ﻿namespace Pips
 
+/// Computation builder that short-circuits on the first Some value
+/// in a for loop.
+type TryPickBuilder() =
+    member _.Bind(opt, f) = Option.bind f opt
+    member _.Return(x) = Some x
+    member _.ReturnFrom(opt : Option<_>) = opt
+    member _.Zero() = None
+    member _.Yield(x) = Some x
+    member _.YieldFrom(opt : Option<_>) = opt
+    member _.Delay(f) = f
+    member _.Run(f) = f()
+
+    member _.Combine(opt, thunk) =
+        Option.orElseWith thunk opt
+
+    member _.For(seq, body) =
+        Seq.tryPick body seq
+
+[<AutoOpen>]
+module TryPickBuilder =
+    let tryPick = TryPickBuilder()
+
 /// A Pips puzzle in some state of being solved.
 type Puzzle =
     {
@@ -125,29 +147,26 @@ module Puzzle =
         /// Finds all solutions to the given puzzle, guided
         /// by the given possible tilings.
         let rec tile tilings puzzle =
-            if isValid puzzle then
+            tryPick {
+                if isValid puzzle then
 
-                    // all dominoes have been placed successfully?
-                if puzzle.UnplacedDominoes.IsEmpty then
-                    assert(isSolved puzzle)
-                    Some puzzle
-                else
-                        // try each possible tiling
-                    tilings
-                        |> Seq.tryPick (fun tiling ->
+                        // all dominoes have been placed successfully?
+                    if puzzle.UnplacedDominoes.IsEmpty then
+                        assert(isSolved puzzle)
+                        puzzle
+                    else
+                            // try each possible tiling
+                        for tiling in tilings do
 
                                 // get edge to cover in this tiling
                             let (Node (cellA, cellB, tilings)) = tiling
 
                                 // try each domino on that edge
-                            puzzle.UnplacedDominoes
-                                |> Seq.tryPick (fun domino ->
-                                    loop tilings domino cellA cellB puzzle
-                                        |> Option.orElseWith (fun () ->
-                                            if domino.Left <> domino.Right then
-                                                loop tilings domino cellB cellA puzzle
-                                            else None)))
-            else None
+                            for domino in puzzle.UnplacedDominoes do
+                                yield! loop tilings domino cellA cellB puzzle
+                                if domino.Left <> domino.Right then
+                                    yield! loop tilings domino cellB cellA puzzle
+            }
 
         /// Places the given domino in the given location and
         /// then continues to look for solutions using the given
