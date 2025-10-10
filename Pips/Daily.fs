@@ -53,7 +53,7 @@ module DailyPuzzle =
             puzzle.dominoes
                 |> Array.map (fun pair ->
                     assert(pair.Length = 2)
-                    { Left = pair[0]; Right = pair[1] })
+                    Domino.create pair[0] pair[1])
         let regions =
             puzzle.regions
                 |> Array.map DailyRegion.convert
