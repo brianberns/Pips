@@ -5,14 +5,6 @@ open System.Diagnostics
 
 module Program =
 
-    let solve (date : DateOnly) =
-        let puzzleMap =
-            let dateStr = date.ToString("yyyy-MM-dd")
-            Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-        let stopwatch = Stopwatch.StartNew()
-        let solutions = Puzzle.solve puzzleMap["hard"]
-        stopwatch.Elapsed.TotalSeconds, solutions
-
     let printBoard puzzle =
 
         let maxRow =
@@ -120,6 +112,16 @@ module Program =
 
     let solveMany () =
 
+        let solve (date : DateOnly) =
+            let puzzleMap =
+                let dateStr = date.ToString("yyyy-MM-dd")
+                Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+            let stopwatch = Stopwatch.StartNew()
+            match Puzzle.trySolve puzzleMap["hard"] with
+                | Some solution ->
+                    stopwatch.Elapsed.TotalSeconds, solution
+                | None -> failwith "No solution"
+
         let run timeout work =
             let work =
                 async {
@@ -134,28 +136,32 @@ module Program =
             with :? TimeoutException ->
                 None
 
-        let print date resultOpt =
-            match resultOpt with
-                | Some (time, (puzzles : List<_>)) ->
-                    printfn $"{date}: {time} seconds, {puzzles.Length} solution(s)"
-                    printfn ""
-                    printfn $"{printBoard puzzles[0]}"
-                | None ->
-                    printfn $"{date}: timeout"
+        let print (date : DateOnly) = function
+            | Some (time : float, puzzle) ->
+                printfn $"{date}: {time} seconds"
+                printfn ""
+                printfn $"{printBoard puzzle}"
+            | None ->
+                printfn $"{date}: timeout"
+                printfn ""
 
         let startDate = DateOnly.Parse("8/18/2025")
-        let date, resultOpt =
+        let pairs =
             [ 0 .. 80 ]
                 |> Seq.map (fun offset ->
                     let date = startDate.AddDays(offset)
                     let resultOpt =
-                        run 20000 (fun () -> solve date)
+                        run 30000 (fun () -> solve date)
                     print date resultOpt
                     Threading.Thread.Sleep(500)
                     date, resultOpt)
-                |> Seq.maxBy (snd >> Option.map fst)
-        printfn "Longest:"
-        print date resultOpt
+                |> Seq.sortBy (snd >> Option.map fst)
+        for (date, resultOpt) in pairs do
+            match resultOpt with
+                | Some (time, _) ->
+                    printfn $"{date}, {time} seconds"
+                | None ->
+                    printfn $"{date}: timeout"
 
     let solveOne () =
         let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
@@ -166,4 +172,4 @@ module Program =
         for solution in solutions do
             printfn $"{printBoard solution}"
 
-    solveOne ()
+    solveMany ()
