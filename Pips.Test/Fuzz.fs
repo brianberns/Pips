@@ -5,16 +5,6 @@ open FsCheck.Xunit
 
 open Pips
 
-type Edge = Cell * Cell
-
-module Edge =
-
-    let contains cell ((cellA, cellB) : Edge) =
-        cell = cellA || cell = cellB
-
-    let reverse ((cellA, cellB) : Edge) : Edge =
-        cellB, cellA
-
 module Puzzle =
 
     let allDominoes =
@@ -49,11 +39,11 @@ module Puzzle =
                             not (Edge.contains cellA edge)
                                 && not (Edge.contains cellB edge))
                 let! flag = Gen.elements [ true; false ]
-                let cellLeft, cellRight =
+                let edge =
                     if flag then edge
                     else Edge.reverse edge
                 let puzzle =
-                    Puzzle.place domino cellLeft cellRight puzzle
+                    Puzzle.place domino edge puzzle
                 return! place emptyEdges puzzle
         }
 

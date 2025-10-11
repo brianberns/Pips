@@ -172,4 +172,4 @@ module Program =
         for solution in solutions do
             printfn $"{printBoard solution}"
 
-    solveMany ()
+    solveOne ()

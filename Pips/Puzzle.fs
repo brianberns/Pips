@@ -90,14 +90,13 @@ module Puzzle =
 
     /// Places the given domino in the given location in
     /// the given puzzle.
-    let place domino cellLeft cellRight puzzle =
+    let place domino edge puzzle =
         {
             puzzle with
                 UnplacedDominoes =
                     puzzle.UnplacedDominoes.Remove(domino)
                 Board =
-                    Board.place
-                        domino cellLeft cellRight puzzle.Board
+                    Board.place domino edge puzzle.Board
         }
 
     /// Gets all possible tilings for the given puzzle.
@@ -126,20 +125,21 @@ module Puzzle =
                         for tiling in tilings do
 
                                 // get edge to cover in this tiling
-                            let (Node (cellA, cellB, tilings)) = tiling
+                            let (Node (edge, tilings)) = tiling
 
                                 // try each domino on that edge
                             for domino in puzzle.UnplacedDominoes do
-                                yield! loop tilings domino cellA cellB puzzle
+                                yield! loop tilings domino edge puzzle
                                 if domino.Left <> domino.Right then
-                                    yield! loop tilings domino cellB cellA puzzle
+                                    let edge = Edge.reverse edge
+                                    yield! loop tilings domino edge puzzle
             ]
 
         /// Places the given domino in the given location and
         /// then continues to look for solutions using the given
         /// child tilings.
-        and loop tilings domino cellLeft cellRight puzzle =
-            place domino cellLeft cellRight puzzle
+        and loop tilings domino edge puzzle =
+            place domino edge puzzle
                 |> tile tilings
 
             // solve the puzzle using possible tilings
@@ -165,20 +165,21 @@ module Puzzle =
                         for tiling in tilings do
 
                                 // get edge to cover in this tiling
-                            let (Node (cellA, cellB, tilings)) = tiling
+                            let (Node (edge, tilings)) = tiling
 
                                 // try each domino on that edge
                             for domino in puzzle.UnplacedDominoes do
-                                yield! loop tilings domino cellA cellB puzzle
+                                yield! loop tilings domino edge puzzle
                                 if domino.Left <> domino.Right then
-                                    yield! loop tilings domino cellB cellA puzzle
+                                    let edge = Edge.reverse edge
+                                    yield! loop tilings domino edge puzzle
             }
 
         /// Places the given domino in the given location and
         /// then continues to look for solutions using the given
         /// child tilings.
-        and loop tilings domino cellLeft cellRight puzzle =
-            place domino cellLeft cellRight puzzle
+        and loop tilings domino edge puzzle =
+            place domino edge puzzle
                 |> tile tilings
 
             // solve the puzzle using possible tilings

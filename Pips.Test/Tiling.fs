@@ -11,7 +11,7 @@ module Tiling =
             |> set
 
     let private count tilings =
-        let rec loop (Node (_, _, children)) =
+        let rec loop (Node (_, children)) =
             if children.Length = 0 then 1
             else Array.sumBy loop children
         Array.sumBy loop tilings

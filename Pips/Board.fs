@@ -29,6 +29,19 @@ type Board =
         member this.Equals(other : Board) = 
             this.Equals(other)
 
+/// A pair of adjacent cells.
+type Edge = Cell * Cell
+
+module Edge =
+
+    /// Determines whether the given edge contains the given cell.
+    let contains cell ((cellA, cellB) : Edge) =
+        cell = cellA || cell = cellB
+
+    /// Reverses the given edge.
+    let reverse ((cellA, cellB) : Edge) : Edge =
+        cellB, cellA
+
 module Board =
 
     /// Special pip count for an uncovered cell. We use this,
@@ -51,7 +64,7 @@ module Board =
     /// board. The left side of the domino is placed on the left
     /// cell and the right side of the domino is placed on the
     /// right cell. We use a 2D array for speed.
-    let place domino cellLeft cellRight board =
+    let place domino ((cellLeft, cellRight) : Edge) board =
         assert(Cell.areAdjacent cellLeft cellRight)
         assert(isEmpty board cellLeft)
         assert(isEmpty board cellRight)

@@ -11,8 +11,8 @@ module Puzzle =
         board =
         Board.place
             (Domino.create leftPipCount rightPipCount)
-            (Cell.create leftRow leftCol)
-            (Cell.create rightRow rightCol)
+            (Cell.create leftRow leftCol,
+             Cell.create rightRow rightCol)
             board
 
     let private puzzleMap = Daily.loadFile "2025-09-30.json"

@@ -3,7 +3,7 @@
 /// A tiling in the form of a tree. Each node represents a
 /// single edge with child tilings that cover the remaining
 /// edges.
-type Tiling = Node of Cell * Cell * Tiling[]
+type Tiling = Node of Edge * Tiling[]
 
 module Tiling =
     
@@ -30,7 +30,7 @@ module Tiling =
                                     // get child tilings
                                 loop cells
                                     |> Option.map (fun tilings ->
-                                        Node (cell, adj, tilings))
+                                        Node ((cell, adj), tilings))
 
                             else None)
 
