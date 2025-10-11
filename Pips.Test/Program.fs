@@ -3,21 +3,29 @@
 open System
 open System.Diagnostics
 
+open FsCheck.FSharp
+
 module Program =
 
     let printBoard puzzle =
 
-        let maxRow =
+        let cells =
             puzzle.Regions
                 |> Array.collect _.Cells
-                |> Array.map _.Row
-                |> Array.max
+
+        let maxRow =
+            if Array.isEmpty cells then 0
+            else
+                cells
+                    |> Array.map _.Row
+                    |> Array.max
 
         let maxCol =
-            puzzle.Regions
-                |> Array.collect _.Cells
-                |> Array.map _.Column
-                |> Array.max
+            if Array.isEmpty cells then 0
+            else
+                cells
+                    |> Array.map _.Column
+                    |> Array.max
 
         let dominoMap =
             puzzle.Board.DominoPlaces
@@ -172,4 +180,13 @@ module Program =
         for solution in solutions do
             printfn $"{printBoard solution}"
 
-    solveOne ()
+    let generate () =
+        let samples =
+            Gen.sample 10 SolvedPuzzle.gen
+        for solved in samples do
+            printBoard solved.Solution
+            printfn ""
+            printfn "----------------------------------------------------------------------------"
+            printfn ""
+
+    generate ()
