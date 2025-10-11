@@ -1,11 +1,17 @@
-﻿namespace Pips.Fuzz
+﻿namespace Pips
 
 open FsCheck.FSharp
 open FsCheck.Xunit
 
 open Pips
 
-module Puzzle =
+type SolvedPuzzle =
+    {
+        Puzzle : Puzzle
+        Solution : Puzzle
+    }
+
+module SolvedPuzzle =
 
     let allDominoes =
         let range = [| PipCount.minValue .. PipCount.maxValue |]
@@ -51,12 +57,13 @@ module Puzzle =
         gen {
             let! dominoes =
                 Gen.subListOf allDominoes
-            let! puzzle =
-                place allEmptyEdges {
+            let puzzle =
+                {
                     UnplacedDominoes = set dominoes
                     Regions = Array.empty
                     Board = emptyBoard
                 }
+            let! solution = place allEmptyEdges puzzle
             let cells =
                 puzzle.Board.Dominoes
                     |> Seq.collect (fun (_, (cellA, cellB)) ->
@@ -67,13 +74,20 @@ module Puzzle =
                     Cells = cells
                     Type = RegionType.Any
                 }
-            return { puzzle with Regions = [| region |] }
+            let puzzle = {
+                puzzle with
+                    Regions = [| region |]
+            }
+            return {
+                Puzzle = puzzle
+                Solution = solution
+            }
         }
         
     let arb = Arb.fromGen gen
 
 type Generators =
-    static member Puzzle() = Puzzle.arb
+    static member SolvedPuzzle() = SolvedPuzzle.arb
 
 module Generators =
 
@@ -85,5 +99,5 @@ module Generators =
 module Fuzz =
 
     [<Property>]
-    let ``Solvable`` puzzle =
-        Puzzle.trySolve puzzle |> Option.isSome
+    let ``Solvable`` solved =
+        Puzzle.trySolve solved.Puzzle = Some solved.Solution
