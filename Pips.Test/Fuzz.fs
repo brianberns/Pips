@@ -57,7 +57,11 @@ module SolvedPuzzle =
     let gen =
         gen {
             let! dominoes =
-                Gen.subListOf allDominoes
+                gen {
+                    let! n = Gen.choose(0, min 10 allDominoes.Length)   // keep to a reasonable number of dominoes
+                    let! shuffled = Gen.shuffle allDominoes
+                    return Seq.truncate n shuffled
+                }
             let puzzle =
                 {
                     UnplacedDominoes = set dominoes
@@ -96,7 +100,7 @@ module Generators =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Generators> |],
-        MaxTest = 1)>]
+        MaxTest = 10)>]
     do ()
 
 module Fuzz =
