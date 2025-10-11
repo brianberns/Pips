@@ -7,7 +7,7 @@ type Edge = Cell * Cell
 
 module Edge =
 
-    /// Determines whether the given edge contains the given cell.
+    /// Does the given edge contain the given cell?
     let contains cell ((cellA, cellB) : Edge) =
         cell = cellA || cell = cellB
 
