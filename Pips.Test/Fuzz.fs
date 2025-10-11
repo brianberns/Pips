@@ -12,6 +12,9 @@ module Edge =
     let contains cell ((cellA, cellB) : Edge) =
         cell = cellA || cell = cellB
 
+    let reverse ((cellA, cellB) : Edge) : Edge =
+        cellB, cellA
+
 module Puzzle =
 
     let allDominoes =
@@ -47,8 +50,8 @@ module Puzzle =
                                 && not (Edge.contains cellB edge))
                 let! flag = Gen.elements [ true; false ]
                 let cellLeft, cellRight =
-                    if flag then fst edge, snd edge
-                    else snd edge, fst edge
+                    if flag then edge
+                    else Edge.reverse edge
                 let puzzle =
                     Puzzle.place domino cellLeft cellRight puzzle
                 return! place emptyEdges puzzle
@@ -57,12 +60,10 @@ module Puzzle =
     let gen =
         gen {
             let! dominoes =
-                allDominoes
-                    |> Gen.subListOf
-                    |> Gen.map set
+                Gen.subListOf allDominoes
             let! puzzle =
                 place allEmptyEdges {
-                    UnplacedDominoes = dominoes
+                    UnplacedDominoes = set dominoes
                     Regions = Array.empty
                     Board = emptyBoard
                 }
@@ -96,4 +97,3 @@ module Fuzz =
     [<Property>]
     let ``Solvable`` puzzle =
         Puzzle.trySolve puzzle |> Option.isSome
-
