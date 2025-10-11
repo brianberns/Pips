@@ -35,39 +35,43 @@ module SolvedPuzzle =
         |]
 
     /// Places dominoes on empty edges in the given puzzle.
-    let rec place emptyEdges puzzle =
-        gen {
-                // all dominoes have been placed?
-            if puzzle.UnplacedDominoes.IsEmpty then
-                return puzzle
-            else
-                    // pick an arbitrary domino to place
-                let! domino = Gen.elements puzzle.UnplacedDominoes
+    let place puzzle =
 
-                    // pick an arbitrary edge to place it on
-                assert(not (Array.isEmpty emptyEdges))   // this can fail if the board is too small
-                let! edge : Edge = Gen.elements emptyEdges
+        let rec loop emptyEdges puzzle =
+            gen {
+                    // all dominoes have been placed?
+                if puzzle.UnplacedDominoes.IsEmpty then
+                    return puzzle
+                else
+                        // pick an arbitrary domino to place
+                    let! domino = Gen.elements puzzle.UnplacedDominoes
 
-                    // pick an arbitrary orientation for the domino
-                let! flag = Gen.elements [ true; false ]
-                let edge =
-                    if domino.Left = domino.Right || flag then edge   // avoid creating a denormalized placement
-                    else Edge.reverse edge
+                        // pick an arbitrary edge to place it on
+                    assert(not (Array.isEmpty emptyEdges))   // this can fail if the board is too small
+                    let! edge : Edge = Gen.elements emptyEdges
 
-                    // place the domino
-                let puzzle =
-                    Puzzle.place domino edge puzzle
+                        // pick an arbitrary orientation for the domino
+                    let! flag = Gen.elements [ true; false ]
+                    let edge =
+                        if domino.Left = domino.Right || flag then edge   // avoid creating a denormalized placement
+                        else Edge.reverse edge
 
-                    // remove any edges that are now at least partially covered by this domino
-                let emptyEdges =
-                    emptyEdges
-                        |> Array.where (fun (cellA, cellB) ->
-                            not (Edge.contains cellA edge)
-                                && not (Edge.contains cellB edge))
+                        // place the domino
+                    let puzzle =
+                        Puzzle.place domino edge puzzle
 
-                    // continue placing dominoes
-                return! place emptyEdges puzzle
-        }
+                        // remove any edges that are now at least partially covered by this domino
+                    let emptyEdges =
+                        emptyEdges
+                            |> Array.where (fun (cellA, cellB) ->
+                                not (Edge.contains cellA edge)
+                                    && not (Edge.contains cellB edge))
+
+                        // continue placing dominoes
+                    return! loop emptyEdges puzzle
+            }
+
+        loop allEmptyEdges puzzle
 
     let gen =
         gen {
@@ -79,16 +83,14 @@ module SolvedPuzzle =
                     return Seq.truncate n shuffled
                 }
 
-                // initialize puzzle with these dominoes
+                // place the dominoes on an empty puzzle to create a solution
             let puzzle =
                 {
                     UnplacedDominoes = set dominoes
                     Regions = Array.empty
                     Board = emptyBoard
                 }
-
-                // place the dominoes on the puzzle to create a solution
-            let! solution = place allEmptyEdges puzzle
+            let! solution = place puzzle
 
                 // gather all covered cells in the solution.
             let cells =
