@@ -59,7 +59,7 @@ module Puzzle =
                 }
             let cells =
                 puzzle.Board.Dominoes
-                    |> Seq.collect (fun (_, cellA, cellB) ->
+                    |> Seq.collect (fun (_, (cellA, cellB)) ->
                         [ cellA; cellB ])
                     |> Seq.toArray
             let region =

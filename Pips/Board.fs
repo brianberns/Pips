@@ -2,6 +2,19 @@
 
 open System
 
+/// A pair of adjacent cells.
+type Edge = Cell * Cell
+
+module Edge =
+
+    /// Determines whether the given edge contains the given cell.
+    let contains cell ((cellA, cellB) : Edge) =
+        cell = cellA || cell = cellB
+
+    /// Reverses the given edge.
+    let reverse ((cellA, cellB) : Edge) : Edge =
+        cellB, cellA
+
 /// A 2D lattice with dominoes on it. This is stored in a redundant
 /// data structure for speed. We have the location of each domino,
 /// and also a way to look up the value at any cell on the board.
@@ -9,7 +22,7 @@ open System
 type Board =
     {
         /// Location of each domino placed on the board.
-        Dominoes : List<Domino * Cell (*left*) * Cell (*right*)>
+        Dominoes : List<Domino * Edge>
 
         /// Value in each cell, if any.
         Cells : PipCount[(*row*), (*column*)]
@@ -28,19 +41,6 @@ type Board =
         /// Domino placement order doesn't matter for equality.
         member this.Equals(other : Board) = 
             this.Equals(other)
-
-/// A pair of adjacent cells.
-type Edge = Cell * Cell
-
-module Edge =
-
-    /// Determines whether the given edge contains the given cell.
-    let contains cell ((cellA, cellB) : Edge) =
-        cell = cellA || cell = cellB
-
-    /// Reverses the given edge.
-    let reverse ((cellA, cellB) : Edge) : Edge =
-        cellB, cellA
 
 module Board =
 
@@ -64,7 +64,7 @@ module Board =
     /// board. The left side of the domino is placed on the left
     /// cell and the right side of the domino is placed on the
     /// right cell. We use a 2D array for speed.
-    let place domino ((cellLeft, cellRight) : Edge) board =
+    let place domino ((cellLeft, cellRight) as edge : Edge) board =
         assert(Cell.areAdjacent cellLeft cellRight)
         assert(isEmpty board cellLeft)
         assert(isEmpty board cellRight)
@@ -77,5 +77,5 @@ module Board =
         {
             Cells = cells
             Dominoes =
-                (domino, cellLeft, cellRight) :: board.Dominoes
+                (domino, edge) :: board.Dominoes
         }
