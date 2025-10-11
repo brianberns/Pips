@@ -79,3 +79,11 @@ module Board =
             DominoPlaces =
                 (domino, edge) :: board.DominoPlaces
         }
+
+    /// Determines whether the given board contains the given
+    /// cell.
+    let contains cell board =
+        cell.Row >= 0
+            && cell.Column >= 0
+            && cell.Row < board.Cells.GetLength(0)
+            && cell.Column < board.Cells.GetLength(1)
