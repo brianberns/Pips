@@ -7,6 +7,11 @@ open Pips
 
 type Edge = Cell * Cell
 
+module Edge =
+
+    let contains cell ((cellA, cellB) : Edge) =
+        cell = cellA || cell = cellB
+
 module Puzzle =
 
     let allDominoes =
@@ -17,8 +22,8 @@ module Puzzle =
 
     let emptyBoard = Board.create 10 10
 
-    let allEmptyEdges : Set<Edge> =
-        set [
+    let allEmptyEdges : Edge[] =
+        [|
             for row = 0 to emptyBoard.Cells.GetLength(0) - 2 do
                 for col = 0 to emptyBoard.Cells.GetLength(1) - 2 do
                     let cellA = Cell.create row col
@@ -26,21 +31,26 @@ module Puzzle =
                     let cellC = Cell.create row (col + 1)
                     yield cellA, cellB   // down
                     yield cellA, cellC   // right
-        ]
+        |]
 
-    let rec place (emptyEdges : Set<_>) puzzle =
+    let rec place emptyEdges puzzle =
         gen {
             if puzzle.UnplacedDominoes.IsEmpty then
                 return puzzle
             else
                 let! domino = Gen.elements puzzle.UnplacedDominoes
                 let! edge : Edge = Gen.elements emptyEdges
-                let emptyEdges = emptyEdges.Remove(edge)
+                let emptyEdges =
+                    emptyEdges
+                        |> Array.where (fun (cellA, cellB) ->
+                            not (Edge.contains cellA edge)
+                                && not (Edge.contains cellB edge))
                 let! flag = Gen.elements [ true; false ]
                 let cellLeft, cellRight =
                     if flag then fst edge, snd edge
                     else snd edge, fst edge
-                let puzzle = Puzzle.place domino cellLeft cellRight puzzle
+                let puzzle =
+                    Puzzle.place domino cellLeft cellRight puzzle
                 return! place emptyEdges puzzle
         }
 
