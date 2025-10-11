@@ -75,6 +75,43 @@ module SolvedPuzzle =
 
         loop allEmptyEdges puzzle
 
+    let getContigousCells cell =
+
+        let rec visit cell (visited : Set<_>) =
+            if visited.Contains(cell) then
+                visited
+            else
+                (Cell.getAdjacent cell, visited)
+                    ||> Seq.foldBack visit
+
+        visit cell Set.empty
+
+    let createRegion (cells : Set<Cell>) =
+        gen {
+            let! cell = Gen.elements cells
+            let contiguous = getContigousCells cell
+            let region =
+                {
+                    Cells = Seq.toArray contiguous
+                    Type = RegionType.Any
+                }
+            return region, cells - contiguous
+        }
+
+    let createRegions cells =
+
+        let rec loop (cells : Set<_>) regions =
+            gen {
+                if cells.IsEmpty then
+                    return regions
+                else
+                    let! region, cells = createRegion cells
+                    return! loop cells (region :: regions)
+            }
+
+        loop (set cells) List.empty
+            |> Gen.map Seq.toArray
+
     let gen =
         gen {
                 // pick an arbitrary subset of dominoes (w/ no duplicates)
@@ -101,18 +138,11 @@ module SolvedPuzzle =
                         [ cellA; cellB ])
                     |> Seq.toArray
 
-
-            let region =
-                {
-                    Cells = cells
-                    Type = RegionType.Any
-                }
+            let! regions = createRegions cells
             let puzzle =
-                { puzzle with
-                    Regions = [| region |] }
+                { puzzle with Regions = regions }
             let solution =
-                { solution with
-                    Regions = [| region |] }
+                { puzzle with Regions = regions }
             return {
                 Puzzle = puzzle
                 Solution = solution
