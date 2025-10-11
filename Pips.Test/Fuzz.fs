@@ -65,7 +65,7 @@ module SolvedPuzzle =
                 }
             let! solution = place allEmptyEdges puzzle
             let cells =
-                puzzle.Board.Dominoes
+                solution.Board.Dominoes
                     |> Seq.collect (fun (_, (cellA, cellB)) ->
                         [ cellA; cellB ])
                     |> Seq.toArray
@@ -74,10 +74,12 @@ module SolvedPuzzle =
                     Cells = cells
                     Type = RegionType.Any
                 }
-            let puzzle = {
-                puzzle with
-                    Regions = [| region |]
-            }
+            let puzzle =
+                { puzzle with
+                    Regions = [| region |] }
+            let solution =
+                { solution with
+                    Regions = [| region |] }
             return {
                 Puzzle = puzzle
                 Solution = solution
@@ -100,4 +102,5 @@ module Fuzz =
 
     [<Property>]
     let ``Solvable`` solved =
-        Puzzle.trySolve solved.Puzzle = Some solved.Solution
+        let solutions = Puzzle.solve solved.Puzzle
+        Seq.contains solved.Solution solutions
