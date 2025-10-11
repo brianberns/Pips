@@ -85,7 +85,7 @@ module Puzzle =
 
     /// Is the given cell on the given puzzle's board not
     /// covered by a domino?
-    let isEmpty puzzle cell =
+    let isEmpty cell puzzle =
         Board.isEmpty puzzle.Board cell
 
     /// Places the given domino in the given location in
@@ -103,7 +103,7 @@ module Puzzle =
     let private getAllTilings puzzle =
         puzzle.Regions
             |> Seq.collect _.Cells
-            |> Seq.where (isEmpty puzzle)
+            |> Seq.where (flip isEmpty puzzle)
             |> set
             |> Tiling.getAll
 

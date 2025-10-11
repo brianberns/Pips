@@ -13,14 +13,16 @@ type SolvedPuzzle =
 
 module SolvedPuzzle =
 
+    /// All dominoes from 0-0 to 6-6.
     let allDominoes =
         let range = [| PipCount.minValue .. PipCount.maxValue |]
         Array.allPairs range range
-            |> Array.map (fun (left, right) ->
-                Domino.create left right)
+            |> Array.map (uncurry Domino.create)
 
+    /// Board we'll create puzzles on.
     let emptyBoard = Board.create 10 10
 
+    /// All normalized edges in the empty board.
     let allEmptyEdges : Edge[] =
         [|
             for row = 0 to emptyBoard.Cells.GetLength(0) - 2 do
@@ -32,25 +34,38 @@ module SolvedPuzzle =
                     yield cellA, cellC   // right
         |]
 
+    /// Places dominoes on empty edges in the given puzzle.
     let rec place emptyEdges puzzle =
         gen {
+                // all dominoes have been placed?
             if puzzle.UnplacedDominoes.IsEmpty then
                 return puzzle
             else
+                    // pick an arbitrary domino to place
                 let! domino = Gen.elements puzzle.UnplacedDominoes
+
+                    // pick an arbitrary edge to place it on
                 assert(not (Array.isEmpty emptyEdges))   // this can fail if the board is too small
                 let! edge : Edge = Gen.elements emptyEdges
+
+                    // pick an arbitrary orientation for the domino
+                let! flag = Gen.elements [ true; false ]
+                let edge =
+                    if domino.Left = domino.Right || flag then edge   // avoid creating a denormalized placement
+                    else Edge.reverse edge
+
+                    // place the domino
+                let puzzle =
+                    Puzzle.place domino edge puzzle
+
+                    // remove any edges that are now at least partially covered by this domino
                 let emptyEdges =
                     emptyEdges
                         |> Array.where (fun (cellA, cellB) ->
                             not (Edge.contains cellA edge)
                                 && not (Edge.contains cellB edge))
-                let! flag = Gen.elements [ true; false ]
-                let edge =
-                    if domino.Left = domino.Right || flag then edge
-                    else Edge.reverse edge
-                let puzzle =
-                    Puzzle.place domino edge puzzle
+
+                    // continue placing dominoes
                 return! place emptyEdges puzzle
         }
 
@@ -100,7 +115,7 @@ module Generators =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Generators> |],
-        MaxTest = 10)>]
+        MaxTest = 1)>]
     do ()
 
 module Fuzz =

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Prelude.fs" />
     <Compile Include="Domino.fs" />
     <Compile Include="Cell.fs" />
     <Compile Include="Board.fs" />
