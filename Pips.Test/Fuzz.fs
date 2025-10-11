@@ -37,6 +37,7 @@ module SolvedPuzzle =
     /// Places dominoes on empty edges in the given puzzle.
     let place puzzle =
 
+        /// Places dominoes one at a time.
         let rec loop emptyEdges puzzle =
             gen {
                     // all dominoes have been placed?
@@ -47,7 +48,8 @@ module SolvedPuzzle =
                     let! domino = Gen.elements puzzle.UnplacedDominoes
 
                         // pick an arbitrary edge to place it on
-                    assert(not (Array.isEmpty emptyEdges))   // this can fail if the board is too small
+                    if Array.isEmpty emptyEdges then
+                        failwith "Board too small"
                     let! edge : Edge = Gen.elements emptyEdges
 
                         // pick an arbitrary orientation for the domino
@@ -126,7 +128,7 @@ module Generators =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Generators> |],
-        MaxTest = 1)>]
+        MaxTest = 10)>]
     do ()
 
 module Fuzz =
