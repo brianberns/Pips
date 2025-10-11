@@ -20,7 +20,7 @@ module SolvedPuzzle =
             |> Array.map (uncurry Domino.create)
 
     /// Board we'll create puzzles on.
-    let emptyBoard = Board.create 10 10
+    let emptyBoard = Board.create 8 8
 
     /// All normalized edges in the empty board.
     let allEmptyEdges : Edge[] =
@@ -74,7 +74,7 @@ module SolvedPuzzle =
                 // pick an arbitrary subset of dominoes (w/ no duplicates)
             let! dominoes =
                 gen {
-                    let! n = Gen.choose(0, min 10 allDominoes.Length)   // keep to a reasonable number of dominoes
+                    let! n = Gen.choose(0, min 12 allDominoes.Length)   // keep to a reasonable number of dominoes
                     let! shuffled = Gen.shuffle allDominoes
                     return Seq.truncate n shuffled
                 }

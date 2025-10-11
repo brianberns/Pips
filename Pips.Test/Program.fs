@@ -182,11 +182,17 @@ module Program =
 
     let generate () =
         let samples =
-            Gen.sample 10 SolvedPuzzle.gen
+            Gen.sample 1000 SolvedPuzzle.gen
         for solved in samples do
+            printfn "----------------------------------------------------------------------"
+            printfn ""
+            printfn "Puzzle:"
+            printfn ""
             printBoard solved.Solution
             printfn ""
-            printfn "----------------------------------------------------------------------------"
+            let solutions = Puzzle.solve solved.Puzzle
+            printfn $"Found {solutions.Length} solution(s)"
             printfn ""
+            printfn $"{printBoard solutions[0]}"
 
     generate ()
