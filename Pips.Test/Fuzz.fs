@@ -71,24 +71,33 @@ module SolvedPuzzle =
 
     let gen =
         gen {
+                // pick an arbitrary subset of dominoes (w/ no duplicates)
             let! dominoes =
                 gen {
                     let! n = Gen.choose(0, min 10 allDominoes.Length)   // keep to a reasonable number of dominoes
                     let! shuffled = Gen.shuffle allDominoes
                     return Seq.truncate n shuffled
                 }
+
+                // initialize puzzle with these dominoes
             let puzzle =
                 {
                     UnplacedDominoes = set dominoes
                     Regions = Array.empty
                     Board = emptyBoard
                 }
+
+                // place the dominoes on the puzzle to create a solution
             let! solution = place allEmptyEdges puzzle
+
+                // gather all covered cells in the solution.
             let cells =
                 solution.Board.DominoPlaces
                     |> Seq.collect (fun (_, (cellA, cellB)) ->
                         [ cellA; cellB ])
                     |> Seq.toArray
+
+
             let region =
                 {
                     Cells = cells
