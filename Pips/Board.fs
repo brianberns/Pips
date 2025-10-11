@@ -22,7 +22,7 @@ module Edge =
 type Board =
     {
         /// Location of each domino placed on the board.
-        Dominoes : List<Domino * Edge>
+        DominoPlaces : List<Domino * Edge>
 
         /// Value in each cell, if any.
         Cells : PipCount[(*row*), (*column*)]
@@ -34,7 +34,7 @@ type Board =
 
     /// Domino placement order doesn't matter for equality.
     member this.Equals(other : Board) = 
-        (set this.Dominoes) = (set other.Dominoes)
+        (set this.DominoPlaces) = (set other.DominoPlaces)
 
     interface IEquatable<Board> with
 
@@ -52,7 +52,7 @@ module Board =
     /// Creates an empty board of the given size.
     let create numRows numColumns =
         {
-            Dominoes = List.empty
+            DominoPlaces = List.empty
             Cells = Array2D.create numRows numColumns emptyCell
         }
 
@@ -76,6 +76,6 @@ module Board =
 
         {
             Cells = cells
-            Dominoes =
-                (domino, edge) :: board.Dominoes
+            DominoPlaces =
+                (domino, edge) :: board.DominoPlaces
         }

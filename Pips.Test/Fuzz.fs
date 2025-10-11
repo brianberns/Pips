@@ -46,7 +46,7 @@ module SolvedPuzzle =
                                 && not (Edge.contains cellB edge))
                 let! flag = Gen.elements [ true; false ]
                 let edge =
-                    if flag then edge
+                    if domino.Left = domino.Right || flag then edge
                     else Edge.reverse edge
                 let puzzle =
                     Puzzle.place domino edge puzzle
@@ -65,7 +65,7 @@ module SolvedPuzzle =
                 }
             let! solution = place allEmptyEdges puzzle
             let cells =
-                solution.Board.Dominoes
+                solution.Board.DominoPlaces
                     |> Seq.collect (fun (_, (cellA, cellB)) ->
                         [ cellA; cellB ])
                     |> Seq.toArray

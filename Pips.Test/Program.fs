@@ -20,7 +20,7 @@ module Program =
                 |> Array.max
 
         let dominoMap =
-            puzzle.Board.Dominoes
+            puzzle.Board.DominoPlaces
                 |> Seq.collect (fun (_, (c1, c2)) ->
                     let d = min c1 c2, max c1 c2
                     [ c1, d; c2, d ])
