@@ -100,51 +100,76 @@ module SolvedPuzzle =
 
         visit cell Set.empty
 
+    let getRegionPipValues (cells : _[]) (board : Board) =
+        let pipCounts =
+            Array.map board.Item cells
+                |> Array.distinct
+        assert(
+            Array.forall (fun pipCount ->
+                pipCount <> Board.emptyCell) pipCounts)
+        pipCounts
+
     let tryCreateUnconstrainedRegion (cells : _[]) _board =
-        if cells.Length = 1 then
-            Some {
-                Cells = cells
-                Type = RegionType.Any
-            }
-        else None
-
-    let tryCreateEqualRegion (cells : _[]) (board : Board) =
-        if cells.Length > 1 then
-            let pipCounts =
-                Array.map board.Item cells
-                    |> Array.distinct
-            assert(
-                Array.forall (fun pipCount ->
-                    pipCount <> Board.emptyCell) pipCounts)
-            if pipCounts.Length = 1 then
-                Some {
+        gen {
+            if cells.Length = 1 then
+                return Some {
                     Cells = cells
-                    Type = RegionType.Equal
+                    Type = RegionType.Any
                 }
-            else None
-        else None
+            else return None
+        }
 
-    let tryCreateUnequalRegion (cells : _[]) (board : Board) =
-        if cells.Length > 1 then
+    let tryCreateEqualRegion (cells : _[]) board =
+        gen {
+            if cells.Length > 1 then
+                let pipCounts =
+                    getRegionPipValues cells board
+                        |> Array.distinct
+                if pipCounts.Length = 1 then
+                    return Some {
+                        Cells = cells
+                        Type = RegionType.Equal
+                    }
+                else return None
+            else return None
+        }
+
+    let tryCreateUnequalRegion (cells : _[]) board =
+        gen {
+            if cells.Length > 1 then
+                let pipCounts =
+                    getRegionPipValues cells board
+                        |> Array.distinct
+                if pipCounts.Length = cells.Length then
+                    return Some {
+                        Cells = cells
+                        Type = RegionType.Unequal
+                    }
+                else return None
+            else return None
+        }
+
+    let tryCreateSumLessRegion cells board =
+        gen {
             let pipCounts =
-                Array.map board.Item cells
-                    |> Array.distinct
-            assert(
-                Array.forall (fun pipCount ->
-                    pipCount <> Board.emptyCell) pipCounts)
-            if pipCounts.Length = cells.Length then
-                Some {
+                getRegionPipValues cells board
+            let sum = Array.sum pipCounts
+            let max = pipCounts.Length * PipCount.maxValue
+            if sum < max then
+                let! target = Gen.choose (sum + 1, max)
+                return Some {
                     Cells = cells
-                    Type = RegionType.Equal
+                    Type = RegionType.SumLess target
                 }
-            else None
-        else None
+            else return None
+        }
 
     let regionFactories =
         [|
             tryCreateUnconstrainedRegion
             tryCreateEqualRegion
             tryCreateUnequalRegion
+            tryCreateSumLessRegion
         |]
 
     let createRegion cells board =
@@ -153,10 +178,12 @@ module SolvedPuzzle =
             let! contiguous =
                 getContigousCells cell cells board
                     |> Gen.truncate 6
-            let regions =
+            let! regions =
                 regionFactories
-                    |> Array.choose (fun factory ->
+                    |> Array.map (fun factory ->
                         factory contiguous board)
+                    |> Gen.sequenceToArray
+                    |> Gen.map (Array.choose id)
             if Array.isEmpty regions then
                 failwith "No matching factory"
             let! region = Gen.elements regions
