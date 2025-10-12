@@ -191,7 +191,7 @@ module Program =
             printBoard solved.Solution
             printfn ""
             let solutions = Puzzle.solve solved.Puzzle
-            printfn $"Found {solutions.Length} solution(s)"
+            printfn $"Found {solutions.Length} solution(s):"
             printfn ""
             printfn $"{printBoard solutions[0]}"
 

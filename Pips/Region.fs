@@ -81,7 +81,6 @@ module Region =
         let nEmpty = region.Cells.Length - pipCounts.Length
         (Array.sum pipCounts) + (PipCount.maxValue * nEmpty) > n
 
-
     /// Validates a Sum region.
     let private validateSum n board region =
         assert(region.Type.IsSum)

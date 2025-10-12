@@ -13,6 +13,16 @@ type SolvedPuzzle =
 
 module SolvedPuzzle =
 
+    module Gen =
+
+        /// Selects the given number of items from the given
+        /// sequence arbitrarily.
+        let truncate n xs =
+            gen {
+                let! shuffled = Gen.shuffle xs
+                return Array.truncate n shuffled
+            }
+
     /// All dominoes from 0-0 to 6-6.
     let allDominoes =
         let range = [| PipCount.minValue .. PipCount.maxValue |]
@@ -20,7 +30,7 @@ module SolvedPuzzle =
             |> Array.map (uncurry Domino.create)
 
     /// Board we'll create puzzles on.
-    let emptyBoard = Board.create 8 8
+    let emptyBoard = Board.create 7 7
 
     /// All normalized edges in the empty board.
     let allEmptyEdges : Edge[] =
@@ -93,14 +103,15 @@ module SolvedPuzzle =
     let createRegion cells board =
         gen {
             let! cell = Gen.elements cells
-            let contiguous =
+            let! contiguous =
                 getContigousCells cell cells board
+                    |> Gen.truncate 6
             let region =
                 {
-                    Cells = Seq.toArray contiguous
+                    Cells = contiguous
                     Type = RegionType.Any
                 }
-            return region, cells - contiguous
+            return region, cells - set contiguous
         }
 
     let createRegions cells board =
@@ -124,8 +135,7 @@ module SolvedPuzzle =
             let! dominoes =
                 gen {
                     let! n = Gen.choose(0, min 12 allDominoes.Length)   // keep to a reasonable number of dominoes
-                    let! shuffled = Gen.shuffle allDominoes
-                    return Seq.truncate n shuffled
+                    return! Gen.truncate n allDominoes
                 }
 
                 // place the dominoes on an empty puzzle to create a solution
@@ -170,6 +180,6 @@ module Generators =
 module Fuzz =
 
     [<Property>]
-    let ``Solvable`` solved =
+    let ``Can find solution to solvable puzzle`` solved =
         let solutions = Puzzle.solve solved.Puzzle
         Seq.contains solved.Solution solutions
