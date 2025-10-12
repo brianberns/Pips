@@ -77,7 +77,7 @@ module SolvedPuzzle =
                         // pick an arbitrary edge to place it on
                     if Array.isEmpty emptyEdges then
                         failwith "Board too small"
-                    let! edge : Edge = Gen.elements emptyEdges
+                    let! (edge : Edge) = Gen.elements emptyEdges
 
                         // pick an arbitrary orientation for the domino
                     let! flag = Gen.elements [ true; false ]
