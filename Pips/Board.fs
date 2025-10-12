@@ -80,10 +80,12 @@ module Board =
                 (domino, edge) :: board.DominoPlaces
         }
 
-    /// Determines whether the given board contains the given
-    /// cell.
-    let contains cell board =
-        cell.Row >= 0
-            && cell.Column >= 0
-            && cell.Row < board.Cells.GetLength(0)
-            && cell.Column < board.Cells.GetLength(1)
+    /// Gets all possible cells adjacent to the given cell on
+    /// the given board.
+    let getAdjacent cell board =
+        Cell.getAdjacent cell
+            |> Seq.where (fun adj ->
+                adj.Row >= 0
+                    && adj.Column >= 0
+                    && adj.Row < board.Cells.GetLength(0)
+                    && adj.Column < board.Cells.GetLength(1))

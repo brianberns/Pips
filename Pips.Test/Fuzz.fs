@@ -75,7 +75,7 @@ module SolvedPuzzle =
 
         loop allEmptyEdges puzzle
 
-    let getContigousCells cell board =
+    let getContigousCells cell (cells : Set<_>) board =
 
         let rec visit cell (visited : Set<_>) =
             if visited.Contains(cell) then
@@ -83,17 +83,18 @@ module SolvedPuzzle =
             else
                 let visited = visited.Add(cell)
                 let neighbors =
-                    Cell.getAdjacent cell
-                        |> Seq.where (flip Board.contains board)
+                    Board.getAdjacent cell board
+                        |> Seq.where cells.Contains
                 (neighbors, visited)
                     ||> Seq.foldBack visit
 
         visit cell Set.empty
 
-    let createRegion (cells : Set<Cell>) board =
+    let createRegion cells board =
         gen {
             let! cell = Gen.elements cells
-            let contiguous = getContigousCells cell board
+            let contiguous =
+                getContigousCells cell cells board
             let region =
                 {
                     Cells = Seq.toArray contiguous
@@ -147,7 +148,7 @@ module SolvedPuzzle =
             let puzzle =
                 { puzzle with Regions = regions }
             let solution =
-                { puzzle with Regions = regions }
+                { solution with Regions = regions }
             return {
                 Puzzle = puzzle
                 Solution = solution
