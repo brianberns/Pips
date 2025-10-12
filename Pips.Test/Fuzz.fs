@@ -103,7 +103,6 @@ module SolvedPuzzle =
     let getRegionPipValues (cells : _[]) (board : Board) =
         let pipCounts =
             Array.map board.Item cells
-                |> Array.distinct
         assert(
             Array.forall (fun pipCount ->
                 pipCount <> Board.emptyCell) pipCounts)
