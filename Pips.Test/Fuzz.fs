@@ -29,8 +29,14 @@ module SolvedPuzzle =
         Array.allPairs range range
             |> Array.map (uncurry Domino.create)
 
+    /// Height and width of board.
+    let boardSize = 7
+
+    /// Maximum number of dominoes to place.
+    let maxNumDominoes = 6
+
     /// Board we'll create puzzles on.
-    let emptyBoard = Board.create 7 7
+    let emptyBoard = Board.create boardSize boardSize
 
     /// All normalized edges in the empty board.
     let allEmptyEdges : Edge[] =
@@ -148,19 +154,49 @@ module SolvedPuzzle =
             else return None
         }
 
-    let tryCreateSumLessRegion cells board =
+    let tryCreateSumLessRegion (cells : _[]) board =
+        gen {
+            if cells.Length <= 2 then
+                let pipCounts =
+                    getRegionPipValues cells board
+                let sum = Array.sum pipCounts
+                let max = pipCounts.Length * PipCount.maxValue
+                if sum < max then
+                    let! target = Gen.choose (sum + 1, max)
+                    return Some {
+                        Cells = cells
+                        Type = RegionType.SumLess target
+                    }
+                else return None
+            else return None
+        }
+
+    let tryCreateSumGreaterRegion (cells : _[]) board =
+        assert(PipCount.minValue = 0)
+        gen {
+            if cells.Length <= 2 then
+                let pipCounts =
+                    getRegionPipValues cells board
+                let sum = Array.sum pipCounts
+                if sum > 0 then
+                    let! target = Gen.choose (0, sum - 1)
+                    return Some {
+                        Cells = cells
+                        Type = RegionType.SumGreater target
+                    }
+                else return None
+            else return None
+        }
+
+    let tryCreateSumRegion cells board =
         gen {
             let pipCounts =
                 getRegionPipValues cells board
             let sum = Array.sum pipCounts
-            let max = pipCounts.Length * PipCount.maxValue
-            if sum < max then
-                let! target = Gen.choose (sum + 1, max)
-                return Some {
-                    Cells = cells
-                    Type = RegionType.SumLess target
-                }
-            else return None
+            return Some {
+                Cells = cells
+                Type = RegionType.Sum sum
+            }
         }
 
     let regionFactories =
@@ -169,6 +205,8 @@ module SolvedPuzzle =
             tryCreateEqualRegion
             tryCreateUnequalRegion
             tryCreateSumLessRegion
+            tryCreateSumGreaterRegion
+            tryCreateSumRegion
         |]
 
     let createRegion cells board =
@@ -209,7 +247,10 @@ module SolvedPuzzle =
                 // pick an arbitrary subset of dominoes (w/ no duplicates)
             let! dominoes =
                 gen {
-                    let! n = Gen.choose(0, min 12 allDominoes.Length)   // keep to a reasonable number of dominoes
+                    let! n =
+                        Gen.choose(
+                            0,
+                            min maxNumDominoes allDominoes.Length)
                     return! Gen.truncate n allDominoes
                 }
 
