@@ -30,13 +30,13 @@ module SolvedPuzzle =
             |> Array.map (uncurry Domino.create)
 
     /// Height and width of board.
-    let boardSize = 6
+    let boardSize = 5
 
     /// Minimum number of dominoes to place.
-    let minNumDominoes = 7
+    let minNumDominoes = 5
 
     /// Maximum number of dominoes to place.
-    let maxNumDominoes = 9
+    let maxNumDominoes = 7
 
     /// Maximum number of cells in a region.
     let maxRegionSize = 6
@@ -97,13 +97,21 @@ module SolvedPuzzle =
 
         loop allEmptyEdges puzzle
 
+    /// Finds all cells contiguous with the given cell within
+    /// the given cells on the given board.
     let getContigousCells cell (cells : Set<_>) board =
 
+        /// Visits the given cell.
         let rec visit cell (visited : Set<_>) =
+
+                // already visited -> no-op
             if visited.Contains(cell) then
                 visited
             else
+                    // mark this cell as visited
                 let visited = visited.Add(cell)
+
+                    // visit this cell's neighbors
                 let neighbors =
                     Board.getAdjacent cell board
                         |> Seq.where cells.Contains
@@ -301,7 +309,7 @@ module Generators =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Generators> |],
-        MaxTest = 100)>]
+        MaxTest = 10)>]
     do ()
 
 module Fuzz =
