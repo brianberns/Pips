@@ -5,9 +5,14 @@ open FsCheck.Xunit
 
 open Pips
 
+/// A solved puzzle is a puzzle generated from a specific
+/// solution, but may have other solutions as well.
 type SolvedPuzzle =
     {
+        /// Generated puzzle.
         Puzzle : Puzzle
+
+        /// Solution from which the puzzle was generated.
         Solution : Puzzle
     }
 
@@ -120,14 +125,17 @@ module SolvedPuzzle =
 
         visit cell Set.empty
 
+    /// Gets the pip values for a potential region containing
+    /// the given cells on the given board.
     let getRegionPipValues (cells : _[]) (board : Board) =
         let pipCounts =
             Array.map board.Item cells
         assert(
-            Array.forall (fun pipCount ->
-                pipCount <> Board.emptyCell) pipCounts)
+            Array.forall ((<>) Board.emptyCell) pipCounts)
         pipCounts
 
+    /// Tries to create an Any region from the given cells on
+    /// the given board.
     let tryCreateUnconstrainedRegion (cells : _[]) _board =
         gen {
             if cells.Length = 1 then
@@ -138,6 +146,8 @@ module SolvedPuzzle =
             else return None
         }
 
+    /// Tries to create an Equal region from the given cells on
+    /// the given board.
     let tryCreateEqualRegion (cells : _[]) board =
         gen {
             if cells.Length > 1 then
@@ -153,6 +163,8 @@ module SolvedPuzzle =
             else return None
         }
 
+    /// Tries to create an Unequal region from the given cells on
+    /// the given board.
     let tryCreateUnequalRegion (cells : _[]) board =
         gen {
             if cells.Length > 1 then
@@ -168,6 +180,8 @@ module SolvedPuzzle =
             else return None
         }
 
+    /// Tries to create a SumLess region from the given cells on
+    /// the given board.
     let tryCreateSumLessRegion (cells : _[]) board =
         gen {
             if cells.Length <= 2 then
@@ -185,6 +199,8 @@ module SolvedPuzzle =
             else return None
         }
 
+    /// Tries to create a SumGreater region from the given cells on
+    /// the given board.
     let tryCreateSumGreaterRegion (cells : _[]) board =
         assert(PipCount.minValue = 0)
         gen {
@@ -202,6 +218,8 @@ module SolvedPuzzle =
             else return None
         }
 
+    /// Tries to create a Sum region from the given cells on the
+    /// given board.
     let tryCreateSumRegion (cells : _[]) board =
         gen {
             if cells.Length <= 2 then
@@ -215,7 +233,12 @@ module SolvedPuzzle =
             else return None
         }
 
-    let regionFactories =
+    /// A function that can create a region.
+    type RegionFactory =
+        Cell[] -> Board -> FsCheck.Gen<Option<Region>>
+
+    /// Functions that create regions.
+    let regionFactories : RegionFactory[] =
         [|
             tryCreateEqualRegion
             tryCreateUnequalRegion
@@ -225,6 +248,8 @@ module SolvedPuzzle =
             tryCreateSumRegion
         |]
 
+    /// Creates an arbitrary region from the given cells on
+    /// the given board.
     let rec createRegion cells board =
         gen {
             let! cell = Gen.elements cells
@@ -246,13 +271,17 @@ module SolvedPuzzle =
                     return! createRegion cells board
         }
 
+    /// Creates arbitrary regions from the given cells on
+    /// the given board.
     let createRegions cells board =
 
         let rec loop (cells : Set<_>) regions =
             gen {
+                    // stop when all cells have been assigned to a region
                 if cells.IsEmpty then
                     return regions
                 else
+                        // create and accumulate regions
                     let! region, cells =
                         createRegion cells board
                     return! loop cells (region :: regions)
@@ -261,6 +290,7 @@ module SolvedPuzzle =
         loop (set cells) List.empty
             |> Gen.map Seq.toArray
 
+    /// Solved puzzle generator.
     let gen =
         gen {
                 // pick an arbitrary subset of dominoes (w/ no duplicates)
@@ -299,7 +329,8 @@ module SolvedPuzzle =
                 Solution = solution
             }
         }
-        
+
+    /// Solved puzzle arbitrary.
     let arb = Arb.fromGen gen
 
 type Generators =
