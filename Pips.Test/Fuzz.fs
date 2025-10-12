@@ -38,6 +38,9 @@ module SolvedPuzzle =
     /// Maximum number of dominoes to place.
     let maxNumDominoes = 9
 
+    /// Maximum number of cells in a region.
+    let maxRegionSize = 6
+
     /// Board we'll create puzzles on.
     let emptyBoard = Board.create boardSize boardSize
 
@@ -191,43 +194,48 @@ module SolvedPuzzle =
             else return None
         }
 
-    let tryCreateSumRegion cells board =
+    let tryCreateSumRegion (cells : _[]) board =
         gen {
-            let pipCounts =
-                getRegionPipValues cells board
-            let sum = Array.sum pipCounts
-            return Some {
-                Cells = cells
-                Type = RegionType.Sum sum
-            }
+            if cells.Length <= 2 then
+                let pipCounts =
+                    getRegionPipValues cells board
+                let sum = Array.sum pipCounts
+                return Some {
+                    Cells = cells
+                    Type = RegionType.Sum sum
+                }
+            else return None
         }
 
     let regionFactories =
         [|
-            tryCreateUnconstrainedRegion
             tryCreateEqualRegion
             tryCreateUnequalRegion
             tryCreateSumLessRegion
             tryCreateSumGreaterRegion
+            tryCreateUnconstrainedRegion
             tryCreateSumRegion
         |]
 
-    let createRegion cells board =
+    let rec createRegion cells board =
         gen {
             let! cell = Gen.elements cells
+            let! nCellsMax = Gen.choose (2, maxRegionSize)
             let! contiguous =
                 getContigousCells cell cells board
-                    |> Gen.truncate 6
-            let! regions =
+                    |> Gen.truncate nCellsMax
+            let! regionOpt =
                 regionFactories
                     |> Array.map (fun factory ->
                         factory contiguous board)
                     |> Gen.sequenceToArray
-                    |> Gen.map (Array.choose id)
-            if Array.isEmpty regions then
-                failwith "No matching factory"
-            let! region = Gen.elements regions
-            return region, cells - set contiguous
+                    |> Gen.map (fun regionOpts ->
+                        Array.tryPick id regionOpts)
+            match regionOpt with
+                | Some region ->
+                    return region, cells - set contiguous
+                | None ->
+                    return! createRegion cells board
         }
 
     let createRegions cells board =
