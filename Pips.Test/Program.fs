@@ -181,8 +181,10 @@ module Program =
             printfn $"{printBoard solution}"
 
     let generate () =
+
         let samples =
             Gen.sample 1000 SolvedPuzzle.gen
+
         for solved in samples do
             printfn "----------------------------------------------------------------------"
             printfn ""
@@ -190,6 +192,11 @@ module Program =
             printfn ""
             printBoard solved.Solution
             printfn ""
+
+            for region in solved.Solution.Regions do
+                printfn $"{region.Type}: {region.Cells.Length} cells"
+            printfn ""
+
             let solutions = Puzzle.solve solved.Puzzle
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
