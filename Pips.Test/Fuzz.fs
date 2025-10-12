@@ -113,6 +113,9 @@ module SolvedPuzzle =
             let pipCounts =
                 Array.map board.Item cells
                     |> Array.distinct
+            assert(
+                Array.forall (fun pipCount ->
+                    pipCount <> Board.emptyCell) pipCounts)
             if pipCounts.Length = 1 then
                 Some {
                     Cells = cells
@@ -126,6 +129,9 @@ module SolvedPuzzle =
             let pipCounts =
                 Array.map board.Item cells
                     |> Array.distinct
+            assert(
+                Array.forall (fun pipCount ->
+                    pipCount <> Board.emptyCell) pipCounts)
             if pipCounts.Length = cells.Length then
                 Some {
                     Cells = cells
@@ -197,7 +203,7 @@ module SolvedPuzzle =
                         [ cellA; cellB ])
                     |> Seq.toArray
 
-            let! regions = createRegions cells puzzle.Board
+            let! regions = createRegions cells solution.Board
             let puzzle =
                 { puzzle with Regions = regions }
             let solution =
