@@ -30,10 +30,13 @@ module SolvedPuzzle =
             |> Array.map (uncurry Domino.create)
 
     /// Height and width of board.
-    let boardSize = 7
+    let boardSize = 6
+
+    /// Minimum number of dominoes to place.
+    let minNumDominoes = 7
 
     /// Maximum number of dominoes to place.
-    let maxNumDominoes = 6
+    let maxNumDominoes = 9
 
     /// Board we'll create puzzles on.
     let emptyBoard = Board.create boardSize boardSize
@@ -249,7 +252,7 @@ module SolvedPuzzle =
                 gen {
                     let! n =
                         Gen.choose(
-                            0,
+                            minNumDominoes,
                             min maxNumDominoes allDominoes.Length)
                     return! Gen.truncate n allDominoes
                 }
@@ -290,7 +293,7 @@ module Generators =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Generators> |],
-        MaxTest = 10)>]
+        MaxTest = 100)>]
     do ()
 
 module Fuzz =
