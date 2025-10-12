@@ -100,17 +100,50 @@ module SolvedPuzzle =
 
         visit cell Set.empty
 
+    let tryCreateUnconstrainedRegion (cells : _[]) =
+        if cells.Length = 1 then
+            Some {
+                Cells = cells
+                Type = RegionType.Any
+            }
+        else None
+
+    let tryCreateEqualRegion cells =
+        if (Array.distinct cells).Length = 1 then
+            Some {
+                Cells = cells
+                Type = RegionType.Equal
+            }
+        else None
+
+    let tryCreateUnequalRegion cells =
+        if (Array.distinct cells).Length = cells.Length then
+            Some {
+                Cells = cells
+                Type = RegionType.Unequal
+            }
+        else None
+
+    let regionFactories =
+        [|
+            tryCreateUnconstrainedRegion
+            tryCreateEqualRegion
+            tryCreateUnequalRegion
+        |]
+
     let createRegion cells board =
         gen {
             let! cell = Gen.elements cells
             let! contiguous =
                 getContigousCells cell cells board
                     |> Gen.truncate 6
-            let region =
-                {
-                    Cells = contiguous
-                    Type = RegionType.Any
-                }
+            let regions =
+                regionFactories
+                    |> Array.choose (fun factory ->
+                        factory contiguous)
+            if Array.isEmpty regions then
+                failwith "No matching factory"
+            let! region = Gen.elements regions
             return region, cells - set contiguous
         }
 
