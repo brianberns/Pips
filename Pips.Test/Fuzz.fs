@@ -339,7 +339,7 @@ module Generators =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Generators> |],
-        MaxTest = 10)>]
+        MaxTest = 100)>]
     do ()
 
 module Fuzz =
