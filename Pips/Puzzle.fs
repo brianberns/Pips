@@ -107,8 +107,12 @@ module Puzzle =
             |> set
             |> Tiling.getAll
 
-    /// Finds all solutions for the given puzzle.
-    let solve puzzle =
+    let private infer tilings puzzle =
+        puzzle
+
+    /// Finds all solutions for the given puzzle by back-
+    /// tracking. This can take a while!
+    let private backtrack tilings puzzle =
 
         /// Finds all solutions to the given puzzle, guided
         /// by the given possible tilings.
@@ -143,12 +147,12 @@ module Puzzle =
                 |> tile tilings
 
             // solve the puzzle using possible tilings
-        let tilings = getAllTilings puzzle
         tile tilings puzzle
 
-    /// Finds a arbitrary solution for the given puzzle,
-    /// if at least one exists.
-    let trySolve puzzle =
+    /// Finds a arbitrary solution for the given puzzle by
+    /// backtracking, if at least one exists. This can take a
+    /// while!
+    let private tryBacktrack tilings puzzle =
 
         /// Finds all solutions to the given puzzle, guided
         /// by the given possible tilings.
@@ -183,5 +187,19 @@ module Puzzle =
                 |> tile tilings
 
             // solve the puzzle using possible tilings
-        let tilings = getAllTilings puzzle
         tile tilings puzzle
+
+    /// Finds all solutions for the given puzzle.
+    let solve puzzle =
+        let tilings = getAllTilings puzzle
+        puzzle
+            |> infer tilings
+            |> backtrack tilings
+
+    /// Finds a arbitrary solution for the given puzzle,
+    /// if at least one exists.
+    let trySolve puzzle =
+        let tilings = getAllTilings puzzle
+        puzzle
+            |> infer tilings
+            |> tryBacktrack tilings
