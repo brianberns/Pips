@@ -257,18 +257,17 @@ module SolvedPuzzle =
             let! contiguous =
                 getContigousCells cell cells board
                     |> Gen.truncate nCellsMax
-            let! regionOpt =
+            let! regions =
                 regionFactories
                     |> Array.map (fun factory ->
                         factory contiguous board)
                     |> Gen.sequenceToArray
-                    |> Gen.map (fun regionOpts ->
-                        Array.tryPick id regionOpts)
-            match regionOpt with
-                | Some region ->
-                    return region, cells - set contiguous
-                | None ->
-                    return! createRegion cells board
+                    |> Gen.map (Array.choose id)
+            if Array.isEmpty regions then
+                return! createRegion cells board
+            else
+                let! region = Gen.elements regions
+                return region, cells - set contiguous
         }
 
     /// Creates arbitrary regions from the given cells on
