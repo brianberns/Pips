@@ -79,7 +79,30 @@ module Puzzle =
             |> set
             |> Tiling.getAll
 
+    let private splitRegion target region =
+        [| region |]
+
+    let private inferRegion region =
+        let minSum =
+            PipCount.minValue * region.Cells.Length
+        let maxSum =
+            PipCount.maxValue * region.Cells.Length
+        match region.Type with
+            | RegionType.Sum n when n = minSum ->
+                splitRegion PipCount.minValue region
+            | RegionType.Sum n when n = maxSum ->
+                splitRegion PipCount.maxValue region
+            | _ -> [| region |]
+
     let private infer tilings puzzle =
+
+            // infer regions
+        let puzzle =
+            let regions =
+                puzzle.Regions
+                    |> Array.collect inferRegion
+            { puzzle with Regions = regions }
+
         puzzle
 
     /// Finds all solutions for the given puzzle by back-
