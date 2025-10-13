@@ -7,7 +7,150 @@ open FsCheck.FSharp
 
 module Program =
 
-    let printBoard puzzle =
+    let printPuzzle puzzle =
+
+        let cells =
+            puzzle.Regions
+                |> Array.collect _.Cells
+
+        let maxRow =
+            if Array.isEmpty cells then 0
+            else
+                cells
+                    |> Array.map _.Row
+                    |> Array.max
+
+        let maxCol =
+            if Array.isEmpty cells then 0
+            else
+                cells
+                    |> Array.map _.Column
+                    |> Array.max
+
+        let regionMap =
+            puzzle.Regions
+                |> Seq.collect (fun region ->
+                    region.Cells
+                        |> Seq.map (fun cell ->
+                            cell, region))
+                |> Map
+
+        let inSameRegion c1 c2 =
+            Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
+
+        let cellSet =
+            puzzle.Regions
+                |> Array.collect _.Cells
+                |> set
+
+        let isCellEmpty cell =
+            not (cellSet.Contains(cell))
+
+        let hasHorizontalRegionBorder row col =
+            let cell = Cell.create row col
+            let topCell = Cell.create (row - 1) cell.Column
+            (not (isCellEmpty cell) || not (isCellEmpty topCell))
+                && not (inSameRegion cell topCell)
+
+        let hasVerticalRegionBorder row col =
+            let cell = Cell.create row col
+            let leftCell = Cell.create cell.Row (col - 1)
+            (not (isCellEmpty cell) || not (isCellEmpty leftCell))
+                && not (inSameRegion cell leftCell)
+
+        let getRegionCornerChar row col =
+            let right = hasHorizontalRegionBorder row col
+            let left = hasHorizontalRegionBorder row (col - 1)
+            let down = hasVerticalRegionBorder row col
+            let up = hasVerticalRegionBorder (row - 1) col
+
+            match up, down, left, right with
+                | false, false, true, true -> "─"
+                | true, true, false, false -> "│"
+                | false, true, false, true -> "┌"
+                | false, true, true, false -> "┐"
+                | true, false, false, true -> "└"
+                | true, false, true, false -> "┘"
+                | false, true, true, true -> "┬"
+                | true, false, true, true -> "┴"
+                | true, true, false, true -> "├"
+                | true, true, true, false -> "┤"
+                | true, true, true, true -> "┼"
+                | true, false, false, false -> "│"
+                | false, true, false, false -> "│"
+                | false, false, true, false -> "─"
+                | false, false, false, true -> "─"
+                | _ -> " "
+
+        let getRegionDisplay (region : Region) =
+            match region.Type with
+                | RegionType.Any -> ""
+                | RegionType.Equal -> "="
+                | RegionType.Unequal -> "≠"
+                | RegionType.SumLess n -> sprintf "<%d" n
+                | RegionType.SumGreater n -> sprintf ">%d" n
+                | RegionType.Sum n -> sprintf "%d" n
+
+        let regionDisplayMap =
+            puzzle.Regions
+                |> Array.map (fun region ->
+                    let centerRow =
+                        region.Cells
+                            |> Array.map (_.Row >> float)
+                            |> Array.average
+                            |> int
+                    let centerCol =
+                        region.Cells
+                            |> Array.map (_.Column >> float)
+                            |> Array.average
+                            |> int
+                    let centerCell = Cell.create centerRow centerCol
+                    let display = getRegionDisplay region
+                    centerCell, display)
+                |> Map
+
+        for row in 0 .. maxRow do
+
+                // print top border line
+            for col in 0 .. maxCol do
+                printf "%s" (getRegionCornerChar row col)
+                if hasHorizontalRegionBorder row col then
+                    printf "───"
+                else
+                    printf "   "
+            printfn "%s" (getRegionCornerChar row (maxCol + 1))
+
+                // print cell content and vertical borders
+            for col in 0 .. maxCol do
+                if hasVerticalRegionBorder row col then
+                    printf "│"
+                else
+                    printf " "
+                
+                let cell = Cell.create row col
+                match Map.tryFind cell regionDisplayMap with
+                | Some display ->
+                    let padding = max 0 (3 - display.Length)
+                    let leftPadding = padding / 2
+                    let rightPadding = padding - leftPadding
+                    printf "%s%s%s" (String(' ', leftPadding)) display (String(' ', rightPadding))
+                | None -> printf "   "
+            
+            if hasVerticalRegionBorder row (maxCol + 1) then
+                printfn "│"
+            else
+                printfn ""
+
+        // print bottom border for the last row
+        for col in 0 .. maxCol do
+            printf "%s" (getRegionCornerChar (maxRow + 1) col)
+            if hasHorizontalRegionBorder (maxRow + 1) col then
+                printf "───"
+            else
+                printf "   "
+        printfn "%s" (getRegionCornerChar (maxRow + 1) (maxCol + 1))
+
+    let printSolution puzzle =
 
         let cells =
             puzzle.Regions
@@ -34,6 +177,8 @@ module Program =
                     [ c1, d; c2, d ])
                 |> Map
 
+
+
         let inSameDomino c1 c2 =
             Map.tryFind c1 dominoMap = Map.tryFind c2 dominoMap
         
@@ -45,23 +190,23 @@ module Program =
             else
                 puzzle.Board[cell] = Board.emptyCell
 
-        let hasHorizontalBorder row col =
+        let hasHorizontalDominoBorder row col =
             let cell = Cell.create row col
             let topCell = Cell.create (row - 1) cell.Column
             (not (isCellEmpty cell) || not (isCellEmpty topCell))
                 && not (inSameDomino cell topCell)
 
-        let hasVerticalBorder row col =
+        let hasVerticalDominoBorder row col =
             let cell = Cell.create row col
             let leftCell = Cell.create cell.Row (col - 1)
             (not (isCellEmpty cell) || not (isCellEmpty leftCell))
                 && not (inSameDomino cell leftCell)
 
-        let getCornerChar row col =
-            let right = hasHorizontalBorder row col
-            let left = hasHorizontalBorder row (col - 1)
-            let down = hasVerticalBorder row col
-            let up = hasVerticalBorder (row - 1) col
+        let getDominoCornerChar row col =
+            let right = hasHorizontalDominoBorder row col
+            let left = hasHorizontalDominoBorder row (col - 1)
+            let down = hasVerticalDominoBorder row col
+            let up = hasVerticalDominoBorder (row - 1) col
 
             match up, down, left, right with
                 | false, false, true, true -> "─"
@@ -85,16 +230,16 @@ module Program =
 
                 // print top border line
             for col in 0 .. maxCol do
-                printf "%s" (getCornerChar row col)
-                if hasHorizontalBorder row col then
+                printf "%s" (getDominoCornerChar row col)
+                if hasHorizontalDominoBorder row col then
                     printf "───"
                 else
                     printf "   "
-            printfn "%s" (getCornerChar row (maxCol + 1))
+            printfn "%s" (getDominoCornerChar row (maxCol + 1))
 
                 // print cell content and vertical borders
             for col in 0 .. maxCol do
-                if hasVerticalBorder row col then
+                if hasVerticalDominoBorder row col then
                     printf "│"
                 else
                     printf " "
@@ -104,19 +249,19 @@ module Program =
                     | Board.emptyCell -> printf "   "
                     | v -> printf " %d " v
             
-            if hasVerticalBorder row (maxCol + 1) then
+            if hasVerticalDominoBorder row (maxCol + 1) then
                 printfn "│"
             else
                 printfn ""
 
-            // print bottom border for the last row
+        // print bottom border for the last row
         for col in 0 .. maxCol do
-            printf "%s" (getCornerChar (maxRow + 1) col)
-            if hasHorizontalBorder (maxRow + 1) col then
+            printf "%s" (getDominoCornerChar (maxRow + 1) col)
+            if hasHorizontalDominoBorder (maxRow + 1) col then
                 printf "───"
             else
                 printf "   "
-        printfn "%s" (getCornerChar (maxRow + 1) (maxCol + 1))
+        printfn "%s" (getDominoCornerChar (maxRow + 1) (maxCol + 1))
 
     let solveMany () =
 
@@ -148,7 +293,7 @@ module Program =
             | Some (time : float, puzzle) ->
                 printfn $"{date}: {time} seconds"
                 printfn ""
-                printfn $"{printBoard puzzle}"
+                printfn $"{printSolution puzzle}"
             | None ->
                 printfn $"{date}: timeout"
                 printfn ""
@@ -172,13 +317,22 @@ module Program =
                     printfn $"{date}, timeout"
 
     let solveOne () =
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
+
+            // download and print puzzle
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-05.json"
+        let puzzle = puzzleMap["hard"]
+        printfn "Puzzle:"
+        printfn ""
+        printPuzzle puzzle
+        printfn ""
+
+            // solve puzzle and print solutions
         let stopwatch = Stopwatch.StartNew()
-        let solutions = Puzzle.solve puzzleMap["hard"]
+        let solutions = Puzzle.solve puzzle
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
         printfn ""
         for solution in solutions do
-            printfn $"{printBoard solution}"
+            printfn $"{printSolution solution}"
 
     let generate () =
 
@@ -190,7 +344,7 @@ module Program =
             printfn ""
             printfn "Puzzle:"
             printfn ""
-            printBoard solved.Solution
+            printSolution solved.Solution
             printfn ""
 
             for region in solved.Solution.Regions do
@@ -200,6 +354,6 @@ module Program =
             let solutions = Puzzle.solve solved.Puzzle
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
-            printfn $"{printBoard solutions[0]}"
+            printfn $"{printSolution solutions[0]}"
 
-    generate ()
+    solveOne ()
