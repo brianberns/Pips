@@ -94,19 +94,9 @@ module Program =
         let regionDisplayMap =
             puzzle.Regions
                 |> Array.map (fun region ->
-                    let centerRow =
-                        region.Cells
-                            |> Array.map (_.Row >> float)
-                            |> Array.average
-                            |> int
-                    let centerCol =
-                        region.Cells
-                            |> Array.map (_.Column >> float)
-                            |> Array.average
-                            |> int
-                    let centerCell = Cell.create centerRow centerCol
+                    let cell = Seq.max region.Cells
                     let display = getRegionDisplay region
-                    centerCell, display)
+                    cell, display)
                 |> Map
 
         for row in 0 .. maxRow do
@@ -324,7 +314,7 @@ module Program =
     let solveOne () =
 
             // download and print puzzle
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-05.json"
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
         let puzzle = puzzleMap["hard"]
         printfn "Puzzle:"
         printfn ""
