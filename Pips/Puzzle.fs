@@ -103,7 +103,39 @@ module Puzzle =
                     |> Array.collect inferRegion
             { puzzle with Regions = regions }
 
-        puzzle
+            // get map of forced values (single-cell sum regions)
+        let valueMap =
+            puzzle.Regions
+                |> Seq.choose (fun region ->
+                    tryPick {
+                        let! cell = Seq.tryExactlyOne region.Cells
+                        match region.Type with
+                            | RegionType.Sum n ->
+                                return cell, n
+                            | _ -> ()
+                    })
+                |> Map
+
+        Tiling.getForced tilings
+
+                // match each forced edge to a domino
+            |> Seq.choose (fun ((cellA, cellB) as edge) ->
+                let valueOptA = Map.tryFind cellA valueMap
+                let valueOptB = Map.tryFind cellB valueMap
+                match valueOptA, valueOptB with
+                    | Some valueA, Some valueB ->
+                        let domino = Domino.create valueA valueB
+                        if puzzle.UnplacedDominoes.Contains(domino) then
+                            Some (domino, edge)
+                        else
+                            let domino = Domino.create valueB valueA
+                            assert(puzzle.UnplacedDominoes.Contains(domino))
+                            Some (domino, edge)
+                    | _ -> None)
+
+                // place each forced domino
+            |> Seq.fold (fun puzzle (domino, edge) ->
+                place domino edge puzzle) puzzle
 
     /// Finds all solutions for the given puzzle by back-
     /// tracking. This can take a while!

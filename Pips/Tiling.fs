@@ -40,3 +40,18 @@ module Tiling =
 
         loop cells
             |> Option.defaultValue Array.empty
+
+    type private Path = List<Edge>
+
+    let rec private getAllPaths (Node (edge, children)) =
+        [
+            for child in children do
+                for path in getAllPaths child do
+                    yield (edge :: path : Path)
+        ]
+
+    let getForced tilings =
+        tilings
+            |> Seq.collect getAllPaths
+            |> Seq.map set
+            |> Set.intersectMany
