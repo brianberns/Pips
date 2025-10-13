@@ -141,7 +141,7 @@ module Program =
             else
                 printfn ""
 
-        // print bottom border for the last row
+            // print bottom border for the last row
         for col in 0 .. maxCol do
             printf "%s" (getRegionCornerChar (maxRow + 1) col)
             if hasHorizontalRegionBorder (maxRow + 1) col then
@@ -149,6 +149,13 @@ module Program =
             else
                 printf "   "
         printfn "%s" (getRegionCornerChar (maxRow + 1) (maxCol + 1))
+
+            // print dominoes
+        printfn ""
+        for chunk in Seq.chunkBySize 3 puzzle.UnplacedDominoes do
+            for domino in chunk do
+                printf "%d-%d   " domino.Left domino.Right
+            printfn ""
 
     let printSolution puzzle =
 
@@ -252,7 +259,7 @@ module Program =
             else
                 printfn ""
 
-        // print bottom border for the last row
+            // print bottom border for the last row
         for col in 0 .. maxCol do
             printf "%s" (getDominoCornerChar (maxRow + 1) col)
             if hasHorizontalDominoBorder (maxRow + 1) col then
