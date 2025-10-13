@@ -137,7 +137,7 @@ module Puzzle =
                             else
                                 let domino = Domino.create valueB valueA
                                 assert(puzzle.UnplacedDominoes.Contains(domino))
-                                Some (domino, edge)
+                                Some (domino, Edge.reverse edge)
                         | _ -> None)
                 |> Seq.toArray
 
