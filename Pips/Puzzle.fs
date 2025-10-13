@@ -80,7 +80,13 @@ module Puzzle =
             |> Tiling.getAll
 
     let private splitRegion target region =
-        [| region |]
+        [|
+            for cell in region.Cells do
+                {
+                    Cells = [| cell |]
+                    Type = RegionType.Sum target
+                }
+        |]
 
     let private inferRegion region =
         let minSum =
