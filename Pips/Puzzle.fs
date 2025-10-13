@@ -234,11 +234,15 @@ module Puzzle =
 
     /// Finds all solutions for the given puzzle.
     let solve puzzle =
-        let puzzle, tilings = infer puzzle
-        backtrack tilings puzzle
+        let puzzle', tilings = infer puzzle
+        backtrack tilings puzzle'
+            |> List.map (fun solution ->
+                { solution with Regions = puzzle.Regions })
 
     /// Finds a arbitrary solution for the given puzzle,
     /// if at least one exists.
     let trySolve puzzle =
-        let puzzle, tilings = infer puzzle
-        tryBacktrack tilings puzzle
+        let puzzle', tilings = infer puzzle
+        tryBacktrack tilings puzzle'
+            |> Option.map (fun solution ->
+                { solution with Regions = puzzle.Regions })
