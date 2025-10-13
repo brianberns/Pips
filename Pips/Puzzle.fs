@@ -100,7 +100,7 @@ module Puzzle =
                 splitRegion PipCount.maxValue region
             | _ -> [| region |]
 
-    let private infer tilings puzzle =
+    let private infer puzzle =
 
             // infer regions
         let puzzle =
@@ -122,26 +122,36 @@ module Puzzle =
                     })
                 |> Map
 
-        Tiling.getForced tilings
+            // match each forced edge to a domino
+        let tilings = getAllTilings puzzle
+        let pairs =
+            Tiling.getForced tilings
+                |> Seq.choose (fun ((cellA, cellB) as edge) ->
+                    let valueOptA = Map.tryFind cellA valueMap
+                    let valueOptB = Map.tryFind cellB valueMap
+                    match valueOptA, valueOptB with
+                        | Some valueA, Some valueB ->
+                            let domino = Domino.create valueA valueB
+                            if puzzle.UnplacedDominoes.Contains(domino) then
+                                Some (domino, edge)
+                            else
+                                let domino = Domino.create valueB valueA
+                                assert(puzzle.UnplacedDominoes.Contains(domino))
+                                Some (domino, edge)
+                        | _ -> None)
+                |> Seq.toArray
 
-                // match each forced edge to a domino
-            |> Seq.choose (fun ((cellA, cellB) as edge) ->
-                let valueOptA = Map.tryFind cellA valueMap
-                let valueOptB = Map.tryFind cellB valueMap
-                match valueOptA, valueOptB with
-                    | Some valueA, Some valueB ->
-                        let domino = Domino.create valueA valueB
-                        if puzzle.UnplacedDominoes.Contains(domino) then
-                            Some (domino, edge)
-                        else
-                            let domino = Domino.create valueB valueA
-                            assert(puzzle.UnplacedDominoes.Contains(domino))
-                            Some (domino, edge)
-                    | _ -> None)
+            // place each forced domino
+        let puzzle =
+            Seq.fold (fun puzzle (domino, edge) ->
+                place domino edge puzzle) puzzle pairs
 
-                // place each forced domino
-            |> Seq.fold (fun puzzle (domino, edge) ->
-                place domino edge puzzle) puzzle
+            // recompute tilings (to-do: can this be done faster?)
+        let tilings =
+            if pairs.Length = 0 then tilings
+            else getAllTilings puzzle
+
+        puzzle, tilings
 
     /// Finds all solutions for the given puzzle by back-
     /// tracking. This can take a while!
@@ -224,15 +234,11 @@ module Puzzle =
 
     /// Finds all solutions for the given puzzle.
     let solve puzzle =
-        let tilings = getAllTilings puzzle
-        puzzle
-            |> infer tilings
-            |> backtrack tilings
+        let puzzle, tilings = infer puzzle
+        backtrack tilings puzzle
 
     /// Finds a arbitrary solution for the given puzzle,
     /// if at least one exists.
     let trySolve puzzle =
-        let tilings = getAllTilings puzzle
-        puzzle
-            |> infer tilings
-            |> tryBacktrack tilings
+        let puzzle, tilings = infer puzzle
+        tryBacktrack tilings puzzle
