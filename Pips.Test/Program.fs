@@ -84,7 +84,7 @@ module Program =
 
         let getRegionDisplay (region : Region) =
             match region.Type with
-                | RegionType.Any -> ""
+                | RegionType.Any -> "*"
                 | RegionType.Equal -> "="
                 | RegionType.Unequal -> "≠"
                 | RegionType.SumLess n -> sprintf "<%d" n
@@ -129,12 +129,12 @@ module Program =
                 
                 let cell = Cell.create row col
                 match Map.tryFind cell regionDisplayMap with
-                | Some display ->
-                    let padding = max 0 (3 - display.Length)
-                    let leftPadding = padding / 2
-                    let rightPadding = padding - leftPadding
-                    printf "%s%s%s" (String(' ', leftPadding)) display (String(' ', rightPadding))
-                | None -> printf "   "
+                    | Some display ->
+                        let padding = max 0 (3 - display.Length)
+                        let leftPadding = padding / 2
+                        let rightPadding = padding - leftPadding
+                        printf "%s%s%s" (String(' ', leftPadding)) display (String(' ', rightPadding))
+                    | None -> printf "   "
             
             if hasVerticalRegionBorder row (maxCol + 1) then
                 printfn "│"
@@ -176,8 +176,6 @@ module Program =
                     let d = min c1 c2, max c1 c2
                     [ c1, d; c2, d ])
                 |> Map
-
-
 
         let inSameDomino c1 c2 =
             Map.tryFind c1 dominoMap = Map.tryFind c2 dominoMap
