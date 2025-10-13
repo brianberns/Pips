@@ -45,9 +45,12 @@ module Tiling =
 
     let rec private getAllPaths (Node (edge, children)) =
         [
-            for child in children do
-                for path in getAllPaths child do
-                    yield (edge :: path : Path)
+            if children.Length = 0 then
+                [ edge ]
+            else
+                for child in children do
+                    for path in getAllPaths child do
+                        edge :: path : Path
         ]
 
     let getForced tilings =
