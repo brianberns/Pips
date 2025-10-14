@@ -299,7 +299,7 @@ module Program =
                 |> Seq.map (fun offset ->
                     let date = startDate.AddDays(offset)
                     let resultOpt =
-                        run 15000 (fun () -> solve date)
+                        run 150000 (fun () -> solve date)
                     print date resultOpt
                     Threading.Thread.Sleep(500)
                     date, resultOpt)

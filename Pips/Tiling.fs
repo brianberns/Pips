@@ -41,8 +41,10 @@ module Tiling =
         loop cells
             |> Option.defaultValue Array.empty
 
+    /// A path of edges through a tiling.
     type private Path = List<Edge>
 
+    /// Gets all paths in the given tiling.
     let rec private getAllPaths (Node (edge, children)) =
         [
             if children.Length = 0 then
@@ -53,6 +55,8 @@ module Tiling =
                         edge :: path : Path
         ]
 
+    /// Gets edges that are forced to appear in all of the
+    /// given tilings.
     let getForced tilings =
         tilings
             |> Seq.collect getAllPaths
