@@ -42,7 +42,7 @@ module TilingTree =
         loop cells
             |> Option.defaultValue Array.empty
 
-    /// One tiling in the form of a set of edges.
+    /// A tiling is a set of edges.
     type private Tiling = Set<Edge>
 
     /// Gets all tilings in the given tiling tree.
