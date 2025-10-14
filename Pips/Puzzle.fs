@@ -79,6 +79,8 @@ module Puzzle =
             |> set
             |> Tiling.getAll
 
+    /// Splits the given region into single-cell regions
+    /// that all have the given target.
     let private splitRegion target region =
         [|
             for cell in region.Cells do
@@ -88,6 +90,8 @@ module Puzzle =
                 }
         |]
 
+    /// Infers smaller, more specific regions from the given
+    /// region, if possible.
     let private inferRegion region =
         let minSum =
             PipCount.minValue * region.Cells.Length
@@ -100,6 +104,8 @@ module Puzzle =
                 splitRegion PipCount.maxValue region
             | _ -> [| region |]
 
+    /// Infers domino placements in the given puzzle, if
+    /// possible.
     let private infer puzzle =
 
             // infer regions
