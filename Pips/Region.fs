@@ -24,7 +24,7 @@ type RegionType =
 
     /// Sum of cell values in the region must be equal to
     /// a certain amount.
-    | Sum of int
+    | SumExact of int
 
 /// A region of cells on a board.
 type Region =
@@ -112,7 +112,7 @@ module Region =
                 validateSumLess n board region
             | RegionType.SumGreater n ->
                 validateSumGreater n board region
-            | RegionType.Sum n ->
+            | RegionType.SumExact n ->
                 validateSum n board region
 
     /// Determines whether the given region on the given board has
@@ -130,6 +130,6 @@ module Region =
                     Array.sum pipCounts < n
                 | RegionType.SumGreater n ->
                     Array.sum pipCounts > n
-                | RegionType.Sum n ->
+                | RegionType.SumExact n ->
                     Array.sum pipCounts = n
         else false

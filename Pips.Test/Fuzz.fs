@@ -228,7 +228,7 @@ module SolvedPuzzle =
                 let sum = Array.sum pipCounts
                 return Some {
                     Cells = cells
-                    Type = RegionType.Sum sum
+                    Type = RegionType.SumExact sum
                 }
             else return None
         }

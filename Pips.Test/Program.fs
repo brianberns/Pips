@@ -89,7 +89,7 @@ module Program =
                 | RegionType.Unequal -> "≠"
                 | RegionType.SumLess n -> sprintf "<%d" n
                 | RegionType.SumGreater n -> sprintf ">%d" n
-                | RegionType.Sum n -> sprintf "%d" n
+                | RegionType.SumExact n -> sprintf "%d" n
 
         let regionDisplayMap =
             puzzle.Regions

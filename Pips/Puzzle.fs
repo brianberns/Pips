@@ -86,7 +86,7 @@ module Puzzle =
             for cell in region.Cells do
                 {
                     Cells = [| cell |]
-                    Type = RegionType.Sum target
+                    Type = RegionType.SumExact target
                 }
         |]
 
@@ -98,9 +98,9 @@ module Puzzle =
         let maxSum =
             PipCount.maxValue * region.Cells.Length
         match region.Type with
-            | RegionType.Sum n when n = minSum ->
+            | RegionType.SumExact n when n = minSum ->
                 splitRegion PipCount.minValue region
-            | RegionType.Sum n when n = maxSum ->
+            | RegionType.SumExact n when n = maxSum ->
                 splitRegion PipCount.maxValue region
             | _ -> [| region |]
 
@@ -122,7 +122,7 @@ module Puzzle =
                     tryPick {
                         let! cell = Seq.tryExactlyOne region.Cells
                         match region.Type with
-                            | RegionType.Sum n ->
+                            | RegionType.SumExact n ->
                                 return cell, n
                             | _ -> ()
                     })

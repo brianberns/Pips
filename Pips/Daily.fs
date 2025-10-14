@@ -29,7 +29,7 @@ module DailyRegion =
                 | "equals"  -> RegionType.Equal
                 | "greater" -> RegionType.SumGreater region.target
                 | "less"    -> RegionType.SumLess region.target
-                | "sum"     -> RegionType.Sum region.target
+                | "sum"     -> RegionType.SumExact region.target
                 | "unequal" -> RegionType.Unequal
                 | typ -> failwith $"Unexpected region type: {typ}"
         {
