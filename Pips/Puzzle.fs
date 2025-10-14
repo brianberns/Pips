@@ -71,13 +71,13 @@ module Puzzle =
                     Board.place domino edge puzzle.Board
         }
 
-    /// Gets all possible tilings for the given puzzle.
-    let private getAllTilings puzzle =
+    /// Gets all possible tiling trees for the given puzzle.
+    let private getAllTilingTrees puzzle =
         puzzle.Regions
             |> Seq.collect _.Cells
             |> Seq.where (flip isEmpty puzzle)
             |> set
-            |> Tiling.getAll
+            |> TilingTree.getAll
 
     /// Splits the given region into single-cell regions
     /// that all have the given target.
@@ -129,9 +129,9 @@ module Puzzle =
                 |> Map
 
             // match each forced edge to a domino
-        let tilings = getAllTilings puzzle
+        let tilingTrees = getAllTilingTrees puzzle
         let pairs =
-            Tiling.getForced tilings
+            TilingTree.getForcedEdges tilingTrees
                 |> Seq.choose (fun ((cellA, cellB) as edge) ->
                     let valueOptA = Map.tryFind cellA valueMap
                     let valueOptB = Map.tryFind cellB valueMap
@@ -153,19 +153,19 @@ module Puzzle =
                 place domino edge puzzle) puzzle pairs
 
             // recompute tilings (to-do: can this be done faster?)
-        let tilings =
-            if pairs.Length = 0 then tilings
-            else getAllTilings puzzle
+        let tilingTrees =
+            if pairs.Length = 0 then tilingTrees
+            else getAllTilingTrees puzzle
 
-        puzzle, tilings
+        puzzle, tilingTrees
 
     /// Finds all solutions for the given puzzle by back-
     /// tracking. This can take a while!
-    let private backtrack tilings puzzle =
+    let private backtrack tilingTrees puzzle =
 
         /// Finds all solutions to the given puzzle, guided
-        /// by the given possible tilings.
-        let rec tile tilings puzzle =
+        /// by the given possible tiling trees.
+        let rec tile tilingTrees puzzle =
             [
                 if isValid puzzle then
 
@@ -175,37 +175,37 @@ module Puzzle =
                         puzzle
                     else
                             // try each possible tiling
-                        for tiling in tilings do
+                        for tilingTree in tilingTrees do
 
                                 // get edge to cover in this tiling
-                            let (Node (edge, tilings)) = tiling
+                            let (Node (edge, childTrees)) = tilingTree
 
                                 // try each domino on that edge
                             for domino in puzzle.UnplacedDominoes do
-                                yield! loop tilings domino edge puzzle
+                                yield! loop childTrees domino edge puzzle
                                 if domino.Left <> domino.Right then
                                     let edge = Edge.reverse edge
-                                    yield! loop tilings domino edge puzzle
+                                    yield! loop childTrees domino edge puzzle
             ]
 
         /// Places the given domino in the given location and
         /// then continues to look for solutions using the given
-        /// child tilings.
-        and loop tilings domino edge puzzle =
+        /// child tiling trees.
+        and loop tilingTrees domino edge puzzle =
             place domino edge puzzle
-                |> tile tilings
+                |> tile tilingTrees
 
             // solve the puzzle using possible tilings
-        tile tilings puzzle
+        tile tilingTrees puzzle
 
     /// Finds a arbitrary solution for the given puzzle by
     /// backtracking, if at least one exists. This can take a
     /// while!
-    let private tryBacktrack tilings puzzle =
+    let private tryBacktrack tilingTrees puzzle =
 
         /// Finds all solutions to the given puzzle, guided
         /// by the given possible tilings.
-        let rec tile tilings puzzle =
+        let rec tile tilingTrees puzzle =
             tryPick {
                 if isValid puzzle then
 
@@ -215,17 +215,17 @@ module Puzzle =
                         puzzle
                     else
                             // try each possible tiling
-                        for tiling in tilings do
+                        for tilingTree in tilingTrees do
 
                                 // get edge to cover in this tiling
-                            let (Node (edge, tilings)) = tiling
+                            let (Node (edge, childTrees)) = tilingTree
 
                                 // try each domino on that edge
                             for domino in puzzle.UnplacedDominoes do
-                                yield! loop tilings domino edge puzzle
+                                yield! loop childTrees domino edge puzzle
                                 if domino.Left <> domino.Right then
                                     let edge = Edge.reverse edge
-                                    yield! loop tilings domino edge puzzle
+                                    yield! loop childTrees domino edge puzzle
             }
 
         /// Places the given domino in the given location and
@@ -236,19 +236,19 @@ module Puzzle =
                 |> tile tilings
 
             // solve the puzzle using possible tilings
-        tile tilings puzzle
+        tile tilingTrees puzzle
 
     /// Finds all solutions for the given puzzle.
     let solve puzzle =
-        let puzzle', tilings = infer puzzle
-        backtrack tilings puzzle'
+        let puzzle', tilingTrees = infer puzzle
+        backtrack tilingTrees puzzle'
             |> List.map (fun solution ->
                 { solution with Regions = puzzle.Regions })
 
     /// Finds a arbitrary solution for the given puzzle,
     /// if at least one exists.
     let trySolve puzzle =
-        let puzzle', tilings = infer puzzle
-        tryBacktrack tilings puzzle'
+        let puzzle', tilingTrees = infer puzzle
+        tryBacktrack tilingTrees puzzle'
             |> Option.map (fun solution ->
                 { solution with Regions = puzzle.Regions })

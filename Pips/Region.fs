@@ -83,7 +83,7 @@ module Region =
 
     /// Validates a Sum region.
     let private validateSum n board region =
-        assert(region.Type.IsSum)
+        assert(region.Type.IsSumExact)
         let pipCounts = getPipCounts board region
         let sum = Array.sum pipCounts
 

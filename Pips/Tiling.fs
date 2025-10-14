@@ -1,17 +1,17 @@
 ﻿namespace Pips
 
-/// A tiling in the form of a tree. Each node represents a
-/// single edge with child tilings that cover the remaining
-/// edges.
-type Tiling = Node of Edge * Tiling[]
+/// Multiple tilings in the form of a tree. Each node
+/// represents a single edge with child nodes that cover
+/// the remaining edges.
+type TilingTree = Node of Edge * TilingTree[]
 
-module Tiling =
+module TilingTree =
     
-    /// Gets all tilings (i.e. "perfect matchings") for a
-    /// set of cells.
+    /// Gets all tiling trees (i.e. "perfect matchings")
+    /// for a set of cells.
     let getAll cells =
 
-        let rec loop (cells : Set<_>) : Option<_[]> =
+        let rec loop (cells : Set<_>) =
             if cells.IsEmpty then
                 Some Array.empty   // all done: perfect matching found
             else
@@ -19,46 +19,48 @@ module Tiling =
                 let cell = Seq.head cells
             
                     // try all edges that include this cell
-                let tilings =
+                let trees =
                     Cell.getAdjacent cell
                         |> Array.choose (fun adj ->
                             if cells.Contains(adj) && cell < adj then   // normalize edges to avoid redundancy
 
                                     // remove this edge from further consideration
-                                let cells = cells.Remove(cell).Remove(adj)
+                                let cells =
+                                    cells.Remove(cell).Remove(adj)
 
-                                    // get child tilings
+                                    // get child nodes
                                 loop cells
-                                    |> Option.map (fun tilings ->
-                                        Node ((cell, adj), tilings))
+                                    |> Option.map (fun trees ->
+                                        Node ((cell, adj), trees))
 
                             else None)
 
                     // tiled this cell successfully?
-                if tilings.Length = 0 then None
-                else Some tilings
+                if trees.Length = 0 then None
+                else Some trees
 
         loop cells
             |> Option.defaultValue Array.empty
 
-    /// A path of edges through a tiling.
-    type private Path = List<Edge>
+    /// One tiling in the form of a list of edges.
+    type private Tiling = List<Edge>
 
-    /// Gets all paths in the given tiling.
-    let rec private getAllPaths (Node (edge, children)) =
+    /// Gets all tilings in the given tiling tree.
+    let rec private getAllTilings
+        (Node (edge, children)) : List<Tiling> =
         [
             if children.Length = 0 then
                 [ edge ]
             else
                 for child in children do
-                    for path in getAllPaths child do
-                        edge :: path : Path
+                    for path in getAllTilings child do
+                        edge :: path
         ]
 
     /// Gets edges that are forced to appear in all of the
-    /// given tilings.
-    let getForced tilings =
-        tilings
-            |> Seq.collect getAllPaths
+    /// given tiling trees.
+    let getForcedEdges tilingTrees =
+        tilingTrees
+            |> Seq.collect getAllTilings
             |> Seq.map set
             |> Set.intersectMany
