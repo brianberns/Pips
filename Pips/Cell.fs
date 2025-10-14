@@ -10,6 +10,10 @@ type Cell =
         Column : int
     }
 
+    /// Display string.
+    override cell.ToString() =
+        $"({cell.Row}, {cell.Column})"
+
 module Cell =
 
     /// Creates a cell.

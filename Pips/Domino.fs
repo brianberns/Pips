@@ -29,6 +29,10 @@ type Domino =
         Right : PipCount
     }
 
+    /// Display string.
+    override domino.ToString() =
+        $"({domino.Left}-{domino.Right})"
+
 module Domino =
 
     /// Creates a domino.
