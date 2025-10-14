@@ -42,25 +42,24 @@ module TilingTree =
         loop cells
             |> Option.defaultValue Array.empty
 
-    /// One tiling in the form of a list of edges.
-    type private Tiling = List<Edge>
+    /// One tiling in the form of a set of edges.
+    type private Tiling = Set<Edge>
 
     /// Gets all tilings in the given tiling tree.
     let rec private getAllTilings
-        (Node (edge, children)) : List<Tiling> =
-        [
-            if children.Length = 0 then
-                [ edge ]
+        (Node (edge, childTrees)) : seq<Tiling> =
+        seq {
+            if childTrees.Length = 0 then
+                Set.singleton edge
             else
-                for child in children do
-                    for path in getAllTilings child do
-                        edge :: path
-        ]
+                for childTree in childTrees do
+                    for tiling in getAllTilings childTree do
+                        tiling.Add(edge)
+        }
 
     /// Gets edges that are forced to appear in all of the
     /// given tiling trees.
     let getForcedEdges tilingTrees =
         tilingTrees
             |> Seq.collect getAllTilings
-            |> Seq.map set
             |> Set.intersectMany
