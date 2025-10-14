@@ -198,7 +198,7 @@ module Puzzle =
             // solve the puzzle using possible tilings
         tile tilingTrees puzzle
 
-    /// Finds a arbitrary solution for the given puzzle by
+    /// Finds an arbitrary solution for the given puzzle by
     /// backtracking, if at least one exists. This can take a
     /// while!
     let private tryBacktrack tilingTrees puzzle =
@@ -245,7 +245,7 @@ module Puzzle =
             |> List.map (fun solution ->
                 { solution with Regions = puzzle.Regions })
 
-    /// Finds a arbitrary solution for the given puzzle,
+    /// Finds an arbitrary solution for the given puzzle,
     /// if at least one exists.
     let trySolve puzzle =
         let puzzle', tilingTrees = infer puzzle
