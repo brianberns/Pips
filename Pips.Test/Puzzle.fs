@@ -37,3 +37,32 @@ module Puzzle =
 
         let actual = Puzzle.trySolve puzzle
         Assert.Equal(Some solution, actual)
+
+    [<Fact>]
+    let Small () =
+        let puzzle =
+            Puzzle.create
+                [
+                    Domino.create 1 3
+                    Domino.create 5 5
+                ]
+                [|
+                    {
+                        Cells =
+                            [|
+                                Cell.create 0 0
+                                Cell.create 0 1
+                            |]
+                        Type = RegionType.SumGreater 7
+                    }
+                    {
+                        Cells =
+                            [|
+                                Cell.create 1 0
+                                Cell.create 1 1
+                            |]
+                        Type = RegionType.SumExact 6
+                    }
+                |]
+        let actual = Puzzle.solve puzzle
+        Assert.Equal(2, actual.Length)

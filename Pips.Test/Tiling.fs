@@ -2,7 +2,7 @@
 
 open Xunit
 
-module TilingTree =
+module Tiling =
 
     let private createCells pairs =
         pairs
@@ -10,18 +10,15 @@ module TilingTree =
                 Cell.create row col)
             |> set
 
-    let private count tilingTrees =
-        let rec loop (Node (_, children)) =
-            if children.Length = 0 then 1
-            else Array.sumBy loop children
-        Array.sumBy loop tilingTrees
+    let private createEdge ((rowA, colA), (rowB, colB)) : Edge =
+        Cell.create rowA colA, Cell.create rowB colB
 
     [<Fact>]
     let ``1x1 grid`` () =
         let cells =
             createCells [(0, 0)]
-        let tilingTrees = TilingTree.getAll cells
-        Assert.Equal(0, count tilingTrees)
+        let tilings = Tiling.getAll cells
+        Assert.Equal(0, tilings.Length)
 
     [<Fact>]
     let ``1x4 grid`` () =
@@ -29,8 +26,8 @@ module TilingTree =
             createCells [
                 (0, 0); (0, 1); (0, 2); (0, 3)
             ]
-        let tilingTrees = TilingTree.getAll cells
-        Assert.Equal(1, count tilingTrees)
+        let tilings = Tiling.getAll cells
+        Assert.Equal(1, tilings.Length)
 
     [<Fact>]
     let ``2x2 grid`` () =
@@ -39,8 +36,8 @@ module TilingTree =
                 (0, 0); (0, 1)
                 (1, 0); (1, 1)
             ]
-        let tilingTrees = TilingTree.getAll cells
-        Assert.Equal(2, count tilingTrees)
+        let tilings = Tiling.getAll cells
+        Assert.Equal(2, tilings.Length)
 
     [<Fact>]
     let ``2x3 grid`` () =
@@ -49,8 +46,8 @@ module TilingTree =
                 (0, 0); (0, 1); (0, 2)
                 (1, 0); (1, 1); (1, 2)
             ]
-        let tilingTrees = TilingTree.getAll cells
-        Assert.Equal(3, count tilingTrees)
+        let tilings = Tiling.getAll cells
+        Assert.Equal(3, tilings.Length)
 
     [<Fact>]
     let ``L-shape horizontal`` () =
@@ -59,8 +56,8 @@ module TilingTree =
                 (0, 0); (0, 1); (0, 2)
                 (1, 0)
             ]
-        let tilingTrees = TilingTree.getAll cells
-        Assert.Equal(1, count tilingTrees)
+        let tilings = Tiling.getAll cells
+        Assert.Equal(1, tilings.Length)
 
     [<Fact>]
     let ``L-shape vertical`` () =
@@ -70,8 +67,13 @@ module TilingTree =
                 (1, 0)
                 (2, 0)
             ]
-        let tilingTrees = TilingTree.getAll cells
-        Assert.Equal(1, count tilingTrees)
+        let tilings = Tiling.getAll cells
+        let expected =
+            set [
+                createEdge ((0, 0), (0, 1))
+                createEdge ((1, 0), (2, 0))
+            ]
+        Assert.Equal<Tiling>([expected], tilings)
 
     [<Fact>]
     let Snake () =
@@ -83,5 +85,5 @@ module TilingTree =
                         (3, 1);
                 (4, 0); (4, 1)
             ]
-        let tilingTrees = TilingTree.getAll cells
-        Assert.Equal(1, count tilingTrees)
+        let tilings = Tiling.getAll cells
+        Assert.Equal(1, tilings.Length)
