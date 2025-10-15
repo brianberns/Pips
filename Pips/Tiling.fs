@@ -15,8 +15,9 @@ module TilingTree =
             if cells.IsEmpty then
                 Some Array.empty   // all done: perfect matching found
             else
-                    // pick an arbitrary cell
+                    // cover an arbitrary cell
                 let cell = Seq.head cells
+                let cells = cells.Remove(cell)
             
                     // try all edges that include this cell
                 let trees =
@@ -24,9 +25,8 @@ module TilingTree =
                         |> Array.choose (fun adj ->
                             if cells.Contains(adj) && cell < adj then   // normalize edges to avoid redundancy
 
-                                    // remove this edge from further consideration
-                                let cells =
-                                    cells.Remove(cell).Remove(adj)
+                                    // cover adjacent cell
+                                let cells = cells.Remove(adj)
 
                                     // get child nodes
                                 loop cells
