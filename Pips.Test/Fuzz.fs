@@ -35,13 +35,13 @@ module SolvedPuzzle =
             |> Array.map (uncurry Domino.create)
 
     /// Height and width of board.
-    let boardSize = 3
+    let boardSize = 5
 
     /// Minimum number of dominoes to place.
-    let minNumDominoes = 2
+    let minNumDominoes = 5
 
     /// Maximum number of dominoes to place.
-    let maxNumDominoes = 2
+    let maxNumDominoes = 7
 
     /// Maximum number of cells in a region.
     let maxRegionSize = 6

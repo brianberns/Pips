@@ -15,10 +15,9 @@ module Puzzle =
              Cell.create rightRow rightCol)
             board
 
-    let private puzzleMap = Daily.loadFile "2025-09-30.json"
-
     [<Fact>]
-    let ``2025-09-30-Easy`` () =
+    let ``Easy puzzle from 2025-09-30`` () =
+        let puzzleMap = Daily.loadFile "2025-09-30.json"
         let puzzle = puzzleMap["easy"]
         let solution =
             {
@@ -39,7 +38,7 @@ module Puzzle =
         Assert.Equal(Some solution, actual)
 
     [<Fact>]
-    let Small () =
+    let ``Small puzzle with few solutions`` () =
         let puzzle =
             Puzzle.create
                 [
@@ -68,7 +67,7 @@ module Puzzle =
         Assert.Equal(2, actual.Length)
 
     [<Fact>]
-    let Many () =
+    let ``Small puzzle with many solutions`` () =
         let puzzle =
             Puzzle.create
                 [
