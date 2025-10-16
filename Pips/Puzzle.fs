@@ -71,94 +71,14 @@ module Puzzle =
                     Board.place domino edge puzzle.Board
         }
 
-    /// Gets all possible tilings for the given puzzle.
-    let private getAllTilings puzzle =
+    /// Gets all possible tiling trees for the given puzzle.
+    let private getAllTilingTrees puzzle =
         puzzle.Regions
             |> Seq.collect _.Cells
             |> Seq.where (flip isEmpty puzzle)
             |> set
             |> Tiling.getAll
-
-    /// Splits the given region into single-cell regions
-    /// that all have the given target.
-    let private splitRegion target region =
-        [|
-            for cell in region.Cells do
-                {
-                    Cells = [| cell |]
-                    Type = RegionType.SumExact target
-                }
-        |]
-
-    /// Infers smaller, more specific regions from the given
-    /// region, if possible.
-    let private inferRegion region =
-        let minSum =
-            PipCount.minValue * region.Cells.Length
-        let maxSum =
-            PipCount.maxValue * region.Cells.Length
-        match region.Type with
-            | RegionType.SumExact n when n = minSum ->
-                splitRegion PipCount.minValue region
-            | RegionType.SumExact n when n = maxSum ->
-                splitRegion PipCount.maxValue region
-            | _ -> [| region |]
-
-    /// Infers domino placements in the given puzzle, if
-    /// possible.
-    let private infer puzzle =
-
-            // infer regions
-        let puzzle =
-            let regions =
-                puzzle.Regions
-                    |> Array.collect inferRegion
-            { puzzle with Regions = regions }
-
-            // get map of forced values (single-cell sum regions)
-        let valueMap =
-            puzzle.Regions
-                |> Seq.choose (fun region ->
-                    tryPick {
-                        let! cell = Seq.tryExactlyOne region.Cells
-                        match region.Type with
-                            | RegionType.SumExact n ->
-                                return cell, n
-                            | _ -> ()
-                    })
-                |> Map
-
-            // match each forced edge to a domino
-        let tilings = getAllTilings puzzle
-        let pairs =
-            tilings
-                |> Set.intersectMany
-                |> Seq.choose (fun ((cellA, cellB) as edge) ->
-                    let valueOptA = Map.tryFind cellA valueMap
-                    let valueOptB = Map.tryFind cellB valueMap
-                    match valueOptA, valueOptB with
-                        | Some valueA, Some valueB ->
-                            let domino = Domino.create valueA valueB
-                            if puzzle.UnplacedDominoes.Contains(domino) then
-                                Some (domino, edge)
-                            else
-                                let domino = Domino.create valueB valueA
-                                assert(puzzle.UnplacedDominoes.Contains(domino))
-                                Some (domino, Edge.reverse edge)
-                        | _ -> None)
-                |> Seq.toArray
-
-            // place each forced domino
-        let puzzle =
-            Seq.fold (fun puzzle (domino, edge) ->
-                place domino edge puzzle) puzzle pairs
-
-            // recompute tilings (to-do: can this be done faster?)
-        let tilings =
-            if pairs.Length = 0 then tilings
-            else getAllTilings puzzle
-
-        puzzle, tilings
+            |> TilingTree.ofTilings
 
     /// Finds all solutions for the given puzzle by back-
     /// tracking. This can take a while!
@@ -244,17 +164,11 @@ module Puzzle =
 
     /// Finds all solutions for the given puzzle.
     let solve puzzle =
-        let puzzle', tilings = infer puzzle
-        let tilingTrees = TilingTree.ofTilings tilings
-        backtrack tilingTrees puzzle'
-            |> Array.map (fun solution ->
-                { solution with Regions = puzzle.Regions })
+        let tilingTrees = getAllTilingTrees puzzle
+        backtrack tilingTrees puzzle
 
     /// Finds an arbitrary solution for the given puzzle,
     /// if at least one exists.
     let trySolve puzzle =
-        let puzzle', tilings = infer puzzle
-        let tilingTrees = TilingTree.ofTilings tilings
-        tryBacktrack tilingTrees puzzle'
-            |> Option.map (fun solution ->
-                { solution with Regions = puzzle.Regions })
+        let tilingTrees = getAllTilingTrees puzzle
+        tryBacktrack tilingTrees puzzle

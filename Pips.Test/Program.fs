@@ -314,8 +314,8 @@ module Program =
     let solveOne () =
 
             // download and print puzzle
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
-        let puzzle = puzzleMap["hard"]
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
+        let puzzle = puzzleMap["easy"]
         printfn "Puzzle:"
         printfn ""
         printPuzzle puzzle
