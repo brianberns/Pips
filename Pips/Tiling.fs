@@ -60,7 +60,7 @@ module TilingTree =
                     tilings
                         |> Array.partition _.Contains(edge)
 
-                    // remove edge from tilings
+                    // remove edge from tilings that contain it
                 let removed =
                     [|
                         for tiling in present do
@@ -68,6 +68,9 @@ module TilingTree =
                             if not tiling.IsEmpty then
                                 tiling
                     |]
+                assert(
+                    removed.Length = present.Length
+                        || removed.Length = 0)
 
                 [|
                         // node for this edge
