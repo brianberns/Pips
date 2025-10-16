@@ -31,7 +31,7 @@ type Domino =
 
     /// Display string.
     override domino.ToString() =
-        $"({domino.Left}-{domino.Right})"
+        $"[{domino.Left}-{domino.Right}]"
 
 module Domino =
 
