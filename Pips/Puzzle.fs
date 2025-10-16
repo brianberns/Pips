@@ -160,30 +160,14 @@ module Puzzle =
 
         puzzle, tilings
 
-    /// Maps cells to edges that contain them.
-    let private createEdgeMap edges =
-        seq {
-            for ((cellA, cellB) as edge) : Edge in edges do
-                yield cellA, edge
-                yield cellB, edge
-        }
-            |> Seq.groupBy fst
-            |> Seq.map (fun (cell, group) ->
-                let edges =
-                    group
-                        |> Seq.map snd
-                        |> set
-                cell, edges)
-            |> Map
-
-    /// Finds all solutions for the given puzzle by backtracking.
-    /// This can take a while!
-    let private backtrack edges puzzle =
+    /// Finds all solutions for the given puzzle by back-
+    /// tracking. This can take a while!
+    let private backtrack tilingTrees puzzle =
 
         /// Finds all solutions to the given puzzle, guided
-        /// by the given possible edges.
-        let rec tile (edges : Set<_>) (edgeMap : Map<_, _>) puzzle =
-            [
+        /// by the given possible tiling trees.
+        let rec tile tilingTrees puzzle =
+            [|
                 if isValid puzzle then
 
                         // all dominoes have been placed successfully?
@@ -191,41 +175,42 @@ module Puzzle =
                         assert(isSolved puzzle)
                         puzzle
                     else
-                            // get edge to cover in this tiling
-                        let (cellA, cellB) as edge = Seq.head edges
-                        let edges = edges - edgeMap[cellA] - edgeMap[cellB]
-                        let edgeMap = edgeMap.Remove(cellA).Remove(cellB)
+                            // try each possible tiling
+                        for tilingTree in tilingTrees do
 
-                            // try each domino on that edge
-                        for domino in puzzle.UnplacedDominoes do
-                            yield! loop domino edge edges edgeMap puzzle
-                            if domino.Left <> domino.Right then
-                                let edge = Edge.reverse edge
-                                yield! loop domino edge edges edgeMap puzzle
-            ]
+                                // get edge to cover in this tiling
+                            let (Node (edge, childTrees)) = tilingTree
+
+                                // try each domino on that edge
+                            for domino in puzzle.UnplacedDominoes do
+                                yield! loop childTrees domino edge puzzle
+                                if domino.Left <> domino.Right then
+                                    let edge = Edge.reverse edge
+                                    yield! loop childTrees domino edge puzzle
+            |]
 
         /// Places the given domino in the given location and
         /// then continues to look for solutions using the given
-        /// edges.
-        and loop domino edge edges edgeMap puzzle =
+        /// child tiling trees.
+        and loop tilingTrees domino edge puzzle =
             place domino edge puzzle
-                |> tile edges edgeMap
-                    
-        let edgeMap = createEdgeMap edges
-        tile edges edgeMap puzzle
+                |> tile tilingTrees
+
+            // solve the puzzle using possible tilings
+        let solutions = tile tilingTrees puzzle
+        assert(
+            (Array.distinct solutions).Length = solutions.Length)
+        solutions
 
     /// Finds an arbitrary solution for the given puzzle by
     /// backtracking, if at least one exists. This can take a
     /// while!
-    let private tryBacktrack edges puzzle =
-
-            // map cells to edges that contain them
-        let edgeMap = createEdgeMap edges
+    let private tryBacktrack tilingTrees puzzle =
 
         /// Tries to find a solution to the given puzzle, guided
-        /// by the given possible edges.
-        let rec tile (edges : Set<_>) (edgeMap : Map<_, _>) puzzle =
-            tryPick{
+        /// by the given possible tilings.
+        let rec tile tilingTrees puzzle =
+            tryPick {
                 if isValid puzzle then
 
                         // all dominoes have been placed successfully?
@@ -233,42 +218,43 @@ module Puzzle =
                         assert(isSolved puzzle)
                         puzzle
                     else
-                            // get edge to cover in this tiling
-                        let (cellA, cellB) as edge = Seq.head edges
-                        let edges = edges - edgeMap[cellA] - edgeMap[cellB]
-                        let edgeMap = edgeMap.Remove(cellA).Remove(cellB)
+                            // try each possible tiling
+                        for tilingTree in tilingTrees do
 
-                            // try each domino on that edge
-                        for domino in puzzle.UnplacedDominoes do
-                            yield! loop domino edge edges edgeMap puzzle
-                            if domino.Left <> domino.Right then
-                                let edge = Edge.reverse edge
-                                yield! loop domino edge edges edgeMap puzzle
+                                // get edge to cover in this tiling
+                            let (Node (edge, childTrees)) = tilingTree
+
+                                // try each domino on that edge
+                            for domino in puzzle.UnplacedDominoes do
+                                yield! loop childTrees domino edge puzzle
+                                if domino.Left <> domino.Right then
+                                    let edge = Edge.reverse edge
+                                    yield! loop childTrees domino edge puzzle
             }
 
         /// Places the given domino in the given location and
         /// then continues to look for solutions using the given
-        /// edges.
-        and loop domino edge edges edgeMap puzzle =
+        /// child tilings.
+        and loop tilings domino edge puzzle =
             place domino edge puzzle
-                |> tile edges edgeMap
-                    
-        let edgeMap = createEdgeMap edges
-        tile edges edgeMap puzzle
+                |> tile tilings
+
+            // solve the puzzle using possible tilings
+        tile tilingTrees puzzle
 
     /// Finds all solutions for the given puzzle.
     let solve puzzle =
         let puzzle', tilings = infer puzzle
-        let edges = Set.unionMany tilings
-        backtrack edges puzzle'
-            |> List.map (fun solution ->
+        let tilingTrees = TilingTree.ofTilings tilings
+        backtrack tilingTrees puzzle'
+            |> Array.map (fun solution ->
                 { solution with Regions = puzzle.Regions })
 
     /// Finds an arbitrary solution for the given puzzle,
     /// if at least one exists.
     let trySolve puzzle =
         let puzzle', tilings = infer puzzle
-        let edges = Set.unionMany tilings
-        tryBacktrack edges puzzle'
+        let tilingTrees = TilingTree.ofTilings tilings
+        tryBacktrack tilingTrees puzzle'
             |> Option.map (fun solution ->
                 { solution with Regions = puzzle.Regions })

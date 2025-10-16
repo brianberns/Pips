@@ -32,15 +32,23 @@ type Board =
     member board.Item(cell) =
         board.Cells[cell.Row, cell.Column]
 
+    /// Equality override.
+    override board.Equals(other) =
+        board.Equals(other :?> Board)
+
+    /// Hash code override.
+    override board.GetHashCode() =
+        (set board.DominoPlaces).GetHashCode()
+
     /// Domino placement order doesn't matter for equality.
-    member this.Equals(other : Board) = 
-        (set this.DominoPlaces) = (set other.DominoPlaces)
+    member board.Equals(other : Board) = 
+        (set board.DominoPlaces) = (set other.DominoPlaces)
 
     interface IEquatable<Board> with
 
         /// Domino placement order doesn't matter for equality.
-        member this.Equals(other : Board) = 
-            this.Equals(other)
+        member board.Equals(other : Board) = 
+            board.Equals(other)
 
 module Board =
 

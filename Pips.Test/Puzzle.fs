@@ -33,7 +33,7 @@ module Puzzle =
             }
 
         let actual = Puzzle.solve puzzle
-        Assert.Equal<List<_>>([solution], actual)
+        Assert.Equal([solution], actual)
 
         let actual = Puzzle.trySolve puzzle
         Assert.Equal(Some solution, actual)
@@ -66,3 +66,26 @@ module Puzzle =
                 |]
         let actual = Puzzle.solve puzzle
         Assert.Equal(2, actual.Length)
+
+    [<Fact>]
+    let Many () =
+        let puzzle =
+            Puzzle.create
+                [
+                    Domino.create 0 2
+                    Domino.create 4 3
+                ]
+                [|
+                    {
+                        Cells =
+                            [|
+                                Cell.create 1 1
+                                Cell.create 0 1
+                                Cell.create 1 2
+                                Cell.create 0 2
+                            |]
+                        Type = RegionType.Unequal
+                    }
+                |]
+        let actual = Puzzle.solve puzzle
+        Assert.Equal(16, actual.Length)

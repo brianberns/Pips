@@ -14,8 +14,7 @@ module Tiling =
             { cell with Column = cell.Column + 1 }
         |]
     
-    /// Gets all tilings (i.e. "perfect matchings") for the given
-    /// set of cells.
+    /// Gets all tilings for the given set of cells.
     let getAll cells =
         
         let rec loop (unvisited : Set<_>) (tiling : Tiling) =
@@ -35,3 +34,35 @@ module Tiling =
         assert(
             (Array.distinct tilings).Length = tilings.Length)
         tilings
+
+/// Multiple tilings in the form of a tree. Each node
+/// represents a single edge with child nodes that cover
+/// the remaining edges.
+type TilingTree = Node of Edge * TilingTree[]
+
+module TilingTree =
+    
+    /// Builds a forest from the given tilings.
+    let ofTilings tilings =
+
+        let rec loop (tilings : Tiling[]) : TilingTree[] =
+            if tilings.Length = 0 then
+                Array.empty
+            else
+                let edge = Seq.head tilings[0]
+                let present, absent =
+                    tilings
+                        |> Array.partition _.Contains(edge)
+                let removed =
+                    [|
+                        for tiling in present do
+                            let tiling = tiling.Remove(edge)
+                            if not tiling.IsEmpty then
+                                tiling
+                    |]
+                [|
+                    Node (edge, loop removed)
+                    yield! loop absent
+                |]
+
+        loop tilings
