@@ -22,6 +22,8 @@ module Edge =
 type Board =
     {
         /// Location of each domino placed on the board.
+        /// (Semantically, this is a set, but is stored as a list
+        /// for speed.)
         DominoPlaces : List<Domino * Edge>
 
         /// Value in each cell, if any.
@@ -32,17 +34,21 @@ type Board =
     member board.Item(cell) =
         board.Cells[cell.Row, cell.Column]
 
+    /// Equality key.
+    member private board.DominoPlacesSet =
+        lazy set board.DominoPlaces
+
     /// Equality override.
     override board.Equals(other) =
         board.Equals(other :?> Board)
 
     /// Hash code override.
     override board.GetHashCode() =
-        (set board.DominoPlaces).GetHashCode()
+        board.DominoPlacesSet.Value.GetHashCode()
 
     /// Domino placement order doesn't matter for equality.
     member board.Equals(other : Board) = 
-        (set board.DominoPlaces) = (set other.DominoPlaces)
+        board.DominoPlacesSet.Value = other.DominoPlacesSet.Value
 
     interface IEquatable<Board> with
 
