@@ -15,7 +15,7 @@ type Operator =
             | GreaterThan -> ">"
             | GreaterThanOrEqualTo -> "≥"
 
-type Fact =
+type CellFact =
     {
         Cell : Cell
         Operator : Operator
@@ -25,9 +25,11 @@ type Fact =
     override fact.ToString () =
         $"{fact.Cell} {fact.Operator} {fact.Target}"
 
+type EdgeFact = CellFact * CellFact
+
 module Fact =
 
-    let private create cell region =
+    let private createCellFact cell region =
         match region.Type with
             | RegionType.SumExact target ->
                 let op =
@@ -42,16 +44,17 @@ module Fact =
                 }
             | _ -> failwith "Unexpected"
 
-    let private createRegionFacts (tiling : Tiling) region =
+    let createEdgeFacts (tiling : Tiling) puzzle =
+        let regionMap =
+            Map [
+                for region in puzzle.Regions do
+                    for cell in region.Cells do
+                        cell, region
+            ]
         seq {
-            for edge in tiling do
-                for cell in region.Cells do
-                    if Edge.contains cell edge then
-                        create cell region
-        }
-
-    let createPuzzleFacts tiling puzzle =
-        seq {
-            for region in puzzle.Regions do
-                yield! createRegionFacts tiling region
+            for (cellA, cellB) in tiling do
+                let regionA = regionMap[cellA]
+                let regionB = regionMap[cellB]
+                (createCellFact cellA regionA,
+                 createCellFact cellB regionB) : EdgeFact
         }

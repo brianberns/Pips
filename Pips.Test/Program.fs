@@ -333,7 +333,7 @@ module Program =
         let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
         let puzzle = puzzleMap["easy"]
         let tiling = Seq.exactlyOne (Puzzle.getAllTilings puzzle)
-        for fact in Fact.createPuzzleFacts tiling puzzle do
+        for fact in Fact.createEdgeFacts tiling puzzle do
             printfn $"{fact}"
 
     let generate () =
