@@ -31,10 +31,10 @@ module Puzzle =
                             |> place (2, 2) (1, 2) (1, 3)
             }
 
-        let actual = Puzzle.solve puzzle
+        let actual = Backtrack.solve puzzle
         Assert.Equal([solution], actual)
 
-        let actual = Puzzle.trySolve puzzle
+        let actual = Backtrack.trySolve puzzle
         Assert.Equal(Some solution, actual)
 
     [<Fact>]
@@ -63,7 +63,7 @@ module Puzzle =
                         Type = RegionType.SumExact 6
                     }
                 |]
-        let actual = Puzzle.solve puzzle
+        let actual = Backtrack.solve puzzle
         Assert.Equal(2, actual.Length)
 
     [<Fact>]
@@ -86,5 +86,5 @@ module Puzzle =
                         Type = RegionType.Unequal
                     }
                 |]
-        let actual = Puzzle.solve puzzle
+        let actual = Backtrack.solve puzzle
         Assert.Equal(16, actual.Length)

@@ -346,5 +346,5 @@ module Fuzz =
 
     [<Property>]
     let ``Can find solution to solvable puzzle`` solved =
-        let solutions = Puzzle.solve solved.Puzzle
+        let solutions = Backtrack.solve solved.Puzzle
         Seq.contains solved.Solution solutions

@@ -9,7 +9,7 @@ module Puzzle =
         Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
 
     let solveOne () =
-        Puzzle.solve puzzleMap["hard"]
+        Backtrack.solve puzzleMap["hard"]
             |> ignore
 
 [<MemoryDiagnoser>]

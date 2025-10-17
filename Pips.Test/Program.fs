@@ -265,7 +265,7 @@ module Program =
                 let dateStr = date.ToString("yyyy-MM-dd")
                 Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
             let stopwatch = Stopwatch.StartNew()
-            match Puzzle.trySolve puzzleMap["hard"] with
+            match Backtrack.trySolve puzzleMap["hard"] with
                 | Some solution ->
                     stopwatch.Elapsed.TotalSeconds, solution
                 | None -> failwith "No solution"
@@ -323,7 +323,7 @@ module Program =
 
             // solve puzzle and print solutions
         let stopwatch = Stopwatch.StartNew()
-        let solutions = Puzzle.solve puzzle
+        let solutions = Backtrack.solve puzzle
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
         printfn ""
         for solution in solutions do
@@ -346,7 +346,7 @@ module Program =
                 printfn $"{region.Type}: {region.Cells.Length} cells"
             printfn ""
 
-            let solutions = Puzzle.solve solved.Puzzle
+            let solutions = Backtrack.solve solved.Puzzle
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
             printfn $"{printSolution solutions[0]}"
