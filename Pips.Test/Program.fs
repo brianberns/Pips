@@ -314,8 +314,8 @@ module Program =
     let solveOne () =
 
             // download and print puzzle
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
-        let puzzle = puzzleMap["easy"]
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
+        let puzzle = puzzleMap["hard"]
         printfn "Puzzle:"
         printfn ""
         printPuzzle puzzle
@@ -328,6 +328,13 @@ module Program =
         printfn ""
         for solution in solutions do
             printfn $"{printSolution solution}"
+
+    let createFacts () =
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
+        let puzzle = puzzleMap["easy"]
+        let tiling = Seq.exactlyOne (Puzzle.getAllTilings puzzle)
+        for fact in Fact.createPuzzleFacts tiling puzzle do
+            printfn $"{fact}"
 
     let generate () =
 
@@ -352,4 +359,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveOne ()
+    createFacts ()

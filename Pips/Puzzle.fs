@@ -60,6 +60,14 @@ module Puzzle =
     let isEmpty cell puzzle =
         Board.isEmpty puzzle.Board cell
 
+    /// Gets all tilings for the given puzzle.
+    let getAllTilings puzzle =
+        puzzle.Regions
+            |> Seq.collect _.Cells
+            |> Seq.where (flip isEmpty puzzle)
+            |> set
+            |> Tiling.getAll
+
     /// Places the given domino in the given location in
     /// the given puzzle.
     let place domino edge puzzle =

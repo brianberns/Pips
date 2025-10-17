@@ -3,13 +3,8 @@
 module Backtrack =
 
     /// Gets all possible tiling trees for the given puzzle.
-    let private getAllTilingTrees puzzle =
-        puzzle.Regions
-            |> Seq.collect _.Cells
-            |> Seq.where (flip Puzzle.isEmpty puzzle)
-            |> set
-            |> Tiling.getAll
-            |> TilingTree.ofTilings
+    let private getAllTilingTrees =
+        Puzzle.getAllTilings >> TilingTree.ofTilings
 
     /// Finds all solutions for the given puzzle by back-
     /// tracking. This can take a while!

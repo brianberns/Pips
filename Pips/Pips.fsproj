@@ -15,6 +15,7 @@
     <Compile Include="Puzzle.fs" />
     <Compile Include="Daily.fs" />
     <Compile Include="Backtrack.fs" />
+    <Compile Include="Fact.fs" />
   </ItemGroup>
 
   <ItemGroup>
