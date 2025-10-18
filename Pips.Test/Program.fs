@@ -333,8 +333,10 @@ module Program =
         let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
         let puzzle = puzzleMap["easy"]
         let tiling = Seq.exactlyOne (Puzzle.getAllTilings puzzle)
-        for fact in Fact.createEdgeFacts tiling puzzle do
-            printfn $"{fact}"
+        let facts = EdgeFact.createEdgeFacts tiling puzzle
+        let pairs = EdgeFact.apply facts puzzle.UnplacedDominoes
+        for (domino, edge) in pairs do
+            printfn $"Domino {domino}: Edge {edge}"
 
     let generate () =
 

@@ -42,7 +42,7 @@ module CellFact =
                 }
             | _ -> failwith "Unexpected"
 
-    let getStringency fact =
+    let getSlack fact =
         min
             (fact.Target - PipCount.minValue)
             (PipCount.maxValue - fact.Target)
@@ -74,10 +74,10 @@ module EdgeFact =
                  CellFact.create cellB regionB) : EdgeFact
         |]
 
-    let getStringency ((factA, factB) : EdgeFact) =
-        CellFact.getStringency factA + CellFact.getStringency factB
+    let getSlack ((factA, factB) : EdgeFact) =
+        CellFact.getSlack factA + CellFact.getSlack factB
 
-    let tryApply domino ((factA, factB) : EdgeFact) =
+    let tryApply domino ((factA, factB) : EdgeFact) : Option<Edge> =
         if CellFact.apply domino.Left factA
             && CellFact.apply domino.Right factB then
             Some (factA.Cell, factB.Cell)
@@ -86,15 +86,27 @@ module EdgeFact =
             Some (factB.Cell, factA.Cell)
         else None
 
-    let private applyEdgeFact edgeFact (dominoes : Set<Domino>) =
-        
-
     let rec apply (edgeFacts : seq<EdgeFact>) (dominoes : Set<Domino>) =
         let edgeFacts =
             edgeFacts
-                |> Seq.sortBy getStringency
+                |> Seq.sortBy getSlack
                 |> Seq.toList
         match edgeFacts with
-            | [] -> []
+            | [] -> Array.empty
             | edgeFact :: rest ->
-                
+                let pairs =
+                    dominoes
+                        |> Seq.choose (fun domino ->
+                            tryApply domino edgeFact
+                                |> Option.map (fun edge ->
+                                    domino, edge))
+                        |> Seq.toArray
+                assert(pairs.Length > 0)
+                match Seq.tryExactlyOne pairs with
+                    | Some (domino, edge) ->
+                        [|
+                            yield domino, edge
+                            yield! apply rest (dominoes.Remove(domino))
+                        |]
+                    | None ->
+                        apply rest dominoes
