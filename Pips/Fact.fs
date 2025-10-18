@@ -86,27 +86,31 @@ module EdgeFact =
             Some (factB.Cell, factA.Cell)
         else None
 
-    let rec apply (edgeFacts : seq<EdgeFact>) (dominoes : Set<Domino>) =
+    let apply edgeFacts dominoes =
+
+        let rec loop edgeFacts (dominoes : Set<Domino>) =
+            match edgeFacts with
+                | [] -> Array.empty
+                | edgeFact :: rest ->
+                    let pairs =
+                        dominoes
+                            |> Seq.choose (fun domino ->
+                                tryApply domino edgeFact
+                                    |> Option.map (fun edge ->
+                                        domino, edge))
+                            |> Seq.toArray
+                    assert(pairs.Length > 0)
+                    match Seq.tryExactlyOne pairs with
+                        | Some (domino, edge) ->
+                            [|
+                                yield domino, edge
+                                yield! loop rest (dominoes.Remove(domino))
+                            |]
+                        | None ->
+                            loop rest dominoes
+
         let edgeFacts =
             edgeFacts
                 |> Seq.sortBy getSlack
                 |> Seq.toList
-        match edgeFacts with
-            | [] -> Array.empty
-            | edgeFact :: rest ->
-                let pairs =
-                    dominoes
-                        |> Seq.choose (fun domino ->
-                            tryApply domino edgeFact
-                                |> Option.map (fun edge ->
-                                    domino, edge))
-                        |> Seq.toArray
-                assert(pairs.Length > 0)
-                match Seq.tryExactlyOne pairs with
-                    | Some (domino, edge) ->
-                        [|
-                            yield domino, edge
-                            yield! apply rest (dominoes.Remove(domino))
-                        |]
-                    | None ->
-                        apply rest dominoes
+        loop edgeFacts dominoes
