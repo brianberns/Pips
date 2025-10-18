@@ -59,21 +59,6 @@ type EdgeFact = CellFact * CellFact
 
 module EdgeFact =
 
-    let createEdgeFacts (tiling : Tiling) puzzle =
-        let regionMap =
-            Map [
-                for region in puzzle.Regions do
-                    for cell in region.Cells do
-                        cell, region
-            ]
-        [|
-            for (cellA, cellB) in tiling do
-                let regionA = regionMap[cellA]
-                let regionB = regionMap[cellB]
-                (CellFact.create cellA regionA,
-                 CellFact.create cellB regionB) : EdgeFact
-        |]
-
     let getSlack ((factA, factB) : EdgeFact) =
         CellFact.getSlack factA + CellFact.getSlack factB
 
@@ -86,7 +71,7 @@ module EdgeFact =
             Some (factB.Cell, factA.Cell)
         else None
 
-    let apply edgeFacts dominoes =
+    let solve puzzle =
 
         let rec loop edgeFacts (dominoes : Set<Domino>) =
             match edgeFacts with
@@ -109,8 +94,23 @@ module EdgeFact =
                         | None ->
                             loop rest dominoes
 
+        let tiling =
+            Puzzle.getAllTilings puzzle
+                |> Seq.exactlyOne   // to-do: fix
+
+        let regionMap =
+            Map [
+                for region in puzzle.Regions do
+                    for cell in region.Cells do
+                        cell, region
+            ]
+
         let edgeFacts =
-            edgeFacts
-                |> Seq.sortBy getSlack
-                |> Seq.toList
-        loop edgeFacts dominoes
+            List.sortBy getSlack [
+                for (cellA, cellB) in tiling do
+                    let regionA = regionMap[cellA]
+                    let regionB = regionMap[cellB]
+                    (CellFact.create cellA regionA,
+                        CellFact.create cellB regionB) : EdgeFact
+            ]
+        loop edgeFacts puzzle.UnplacedDominoes
