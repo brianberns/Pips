@@ -330,10 +330,36 @@ module Program =
             printfn $"{printSolution solution}"
 
     let createFacts () =
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
-        let pairs = EdgeFact.solve puzzleMap["easy"]
+        let puzzle =
+            Puzzle.create
+                [
+                    Domino.create 1 2
+                    Domino.create 3 4
+                ]
+                [|
+                    {
+                        Cells =
+                            [|
+                                Cell.create 0 0
+                                Cell.create 0 1
+                                Cell.create 0 2
+                            |]
+                        Type = RegionType.SumExact 6
+                    }
+                    {
+                        Cells =
+                            [|
+                                Cell.create 0 3
+                            |]
+                        Type = RegionType.Any
+                    }
+                |]
+        printPuzzle puzzle
+        (*
+        let pairs = EdgeFact.solve puzzle
         for (domino, edge) in pairs do
             printfn $"Domino {domino}: Edge {edge}"
+        *)
 
     let generate () =
 
