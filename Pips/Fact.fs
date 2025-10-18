@@ -117,7 +117,7 @@ module EdgeFact =
                     if CellFact.apply domino.Left factA
                         && CellFact.apply domino.Right factB then
                         factA.Cell, factB.Cell
-                    elif domino.Left <> domino.Right
+                    if domino.Left <> domino.Right
                         && CellFact.apply domino.Left factB
                         && CellFact.apply domino.Right factA then
                         factB.Cell, factA.Cell
