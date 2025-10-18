@@ -333,7 +333,7 @@ module Program =
         let puzzle =
             Puzzle.create
                 [
-                    Domino.create 1 2
+                    Domino.create 1 1
                     Domino.create 4 3
                 ]
                 [|
@@ -344,7 +344,7 @@ module Program =
                                 Cell.create 0 1
                                 Cell.create 0 2
                             |]
-                        Type = RegionType.SumExact 6
+                        Type = RegionType.SumExact 5
                     }
                     {
                         Cells =

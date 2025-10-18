@@ -104,21 +104,24 @@ module EdgeFact =
                     InterRegion (factA, factB)
         ]
 
-    let tryApply domino edgeFact : Option<Edge> =
-        match edgeFact with
-            | IntraRegionSum irs ->
-                let sum = domino.Left + domino.Right
-                if Operator.apply sum irs.Operator irs.Target then
-                    Some (irs.CellA, irs.CellB)
-                else None
-            | InterRegion (factA, factB) ->
-                if CellFact.apply domino.Left factA
-                    && CellFact.apply domino.Right factB then
-                    Some (factA.Cell, factB.Cell)
-                elif CellFact.apply domino.Left factB
-                    && CellFact.apply domino.Right factA then
-                    Some (factB.Cell, factA.Cell)
-                else None
+    let apply domino edgeFact : seq<Edge> =
+        seq {
+            match edgeFact with
+                | IntraRegionSum irs ->
+                    let sum = domino.Left + domino.Right
+                    if Operator.apply sum irs.Operator irs.Target then
+                        irs.CellA, irs.CellB
+                        if domino.Left <> domino.Right then
+                            irs.CellB, irs.CellA
+                | InterRegion (factA, factB) ->
+                    if CellFact.apply domino.Left factA
+                        && CellFact.apply domino.Right factB then
+                        factA.Cell, factB.Cell
+                    elif domino.Left <> domino.Right
+                        && CellFact.apply domino.Left factB
+                        && CellFact.apply domino.Right factA then
+                        factB.Cell, factA.Cell
+        }
 
     let rec solveImpl edgeFacts (dominoes : Set<Domino>) =
         match edgeFacts with
@@ -126,9 +129,9 @@ module EdgeFact =
             | edgeFact :: rest ->
                 let pairs =
                     dominoes
-                        |> Seq.choose (fun domino ->
-                            tryApply domino edgeFact
-                                |> Option.map (fun edge ->
+                        |> Seq.collect (fun domino ->
+                            apply domino edgeFact
+                                |> Seq.map (fun edge ->
                                     domino, edge))
                         |> Seq.toArray
                 assert(pairs.Length > 0)
