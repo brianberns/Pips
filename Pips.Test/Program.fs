@@ -334,7 +334,7 @@ module Program =
             Puzzle.create
                 [
                     Domino.create 1 2
-                    Domino.create 3 4
+                    Domino.create 4 3
                 ]
                 [|
                     {
@@ -351,15 +351,14 @@ module Program =
                             [|
                                 Cell.create 0 3
                             |]
-                        Type = RegionType.Any
+                        Type = RegionType.SumLess 5
                     }
                 |]
         printPuzzle puzzle
-        (*
         let pairs = EdgeFact.solve puzzle
+        printfn ""
         for (domino, edge) in pairs do
             printfn $"Domino {domino}: Edge {edge}"
-        *)
 
     let generate () =
 

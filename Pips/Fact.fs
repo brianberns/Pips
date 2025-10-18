@@ -15,6 +15,16 @@ type Operator =
             | GreaterThan -> ">"
             | GreaterThanOrEqualTo -> "≥"
 
+module Operator =
+
+    let apply pipValue op target =
+        match op with
+            | LessThan -> pipValue < target
+            | LessThanOrEqualTo -> pipValue <= target
+            | EqualTo -> pipValue = target
+            | GreaterThan -> pipValue > target
+            | GreaterThanOrEqualTo -> pipValue >= target
+
 type CellFact =
     {
         Cell : Cell
@@ -29,6 +39,13 @@ module CellFact =
 
     let create cell region =
         match region.Type with
+            | RegionType.SumLess target ->
+                let op = LessThan
+                {
+                    Cell = cell
+                    Operator = op
+                    Target = target
+                }
             | RegionType.SumExact target ->
                 let op =
                     if region.Cells.Length = 1 then
@@ -42,25 +59,20 @@ module CellFact =
                 }
             | _ -> failwith "Unexpected"
 
-    let getSlack fact =
-        min
-            (fact.Target - PipCount.minValue)
-            (PipCount.maxValue - fact.Target)
-
     let apply pipValue fact =
-        match fact.Operator with
-            | LessThan -> pipValue < fact.Target
-            | LessThanOrEqualTo -> pipValue <= fact.Target
-            | EqualTo -> pipValue = fact.Target
-            | GreaterThan -> pipValue > fact.Target
-            | GreaterThanOrEqualTo -> pipValue >= fact.Target
+        Operator.apply pipValue fact.Operator fact.Target
 
-type EdgeFact = CellFact * CellFact
+type EdgeFact =
+    | IntraRegionSum of
+        {|
+            CellA : Cell
+            CellB : Cell
+            Operator : Operator
+            Target : int
+        |}
+    | InterRegion of CellFact * CellFact
 
 module EdgeFact =
-
-    let getSlack ((factA, factB) : EdgeFact) =
-        CellFact.getSlack factA + CellFact.getSlack factB
 
     let getEdgeFacts tiling puzzle =
 
@@ -68,25 +80,45 @@ module EdgeFact =
             Map [
                 for region in puzzle.Regions do
                     for cell in region.Cells do
-                        cell, region
+                        if Puzzle.isEmpty cell puzzle then
+                            cell, region
             ]
 
-        List.sortBy getSlack [
+        [   // to-do: sort by "slack"
             for (cellA, cellB) in tiling do
                 let regionA = regionMap[cellA]
                 let regionB = regionMap[cellB]
-                CellFact.create cellA regionA,
-                    CellFact.create cellB regionB
+                if regionA = regionB then   // to-do: region ID
+                    match regionA.Type with
+                        | RegionType.SumExact target ->
+                            IntraRegionSum {|
+                                CellA = cellA
+                                CellB = cellB
+                                Operator = LessThanOrEqualTo
+                                Target = target
+                            |}
+                        | _ -> failwith "Unexpected"
+                else
+                    let factA = CellFact.create cellA regionA
+                    let factB = CellFact.create cellB regionB
+                    InterRegion (factA, factB)
         ]
 
-    let tryApply domino ((factA, factB) : EdgeFact) : Option<Edge> =
-        if CellFact.apply domino.Left factA
-            && CellFact.apply domino.Right factB then
-            Some (factA.Cell, factB.Cell)
-        elif CellFact.apply domino.Left factB
-            && CellFact.apply domino.Right factA then
-            Some (factB.Cell, factA.Cell)
-        else None
+    let tryApply domino edgeFact : Option<Edge> =
+        match edgeFact with
+            | IntraRegionSum irs ->
+                let sum = domino.Left + domino.Right
+                if Operator.apply sum irs.Operator irs.Target then
+                    Some (irs.CellA, irs.CellB)
+                else None
+            | InterRegion (factA, factB) ->
+                if CellFact.apply domino.Left factA
+                    && CellFact.apply domino.Right factB then
+                    Some (factA.Cell, factB.Cell)
+                elif CellFact.apply domino.Left factB
+                    && CellFact.apply domino.Right factA then
+                    Some (factB.Cell, factA.Cell)
+                else None
 
     let rec solveImpl edgeFacts (dominoes : Set<Domino>) =
         match edgeFacts with
