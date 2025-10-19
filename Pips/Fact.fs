@@ -191,6 +191,7 @@ module EdgeFact =
     let solveImpl tiling puzzle =
 
         let rec loop tiling puzzle =
+
             let edgeFacts = getEdgeFacts tiling puzzle
 
             if edgeFacts.Length = 0 then
@@ -208,7 +209,6 @@ module EdgeFact =
                                             |> Seq.map (fun edge ->
                                                 domino, edge))
                                     |> Seq.toArray
-                            assert(pairs.Length > 0)
 
                             if pairs.Length = 1 then
                                 let domino, edge = pairs[0]
