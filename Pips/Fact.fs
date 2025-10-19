@@ -1,6 +1,6 @@
 ﻿namespace Pips
 
-type Operator =
+type ComparisonOperator =
     | LessThan
     | LessThanOrEqualTo
     | EqualTo
@@ -28,7 +28,7 @@ module Operator =
 type CellFact =
     {
         Cell : Cell
-        Operator : Operator
+        Operator : ComparisonOperator
         Target : int
     }
 
@@ -67,7 +67,7 @@ type EdgeFact =
         {|
             CellA : Cell
             CellB : Cell
-            Operator : Operator
+            Operator : ComparisonOperator
             Target : int
         |}
     | InterRegion of CellFact * CellFact
@@ -75,30 +75,44 @@ type EdgeFact =
 module EdgeFact =
 
     let shrink region puzzle =
+
         let uncovered, covered =
             Array.partition
                 (flip Puzzle.isEmpty puzzle)
                 region.Cells
+        let values = Array.map puzzle.Board.Item covered
+
         match region.Type with
+
+            | RegionType.Equal when covered.Length > 0 ->
+                let target =
+                    Seq.distinct values |> Seq.exactlyOne
+                uncovered
+                    |> Array.map (fun cell ->
+                        {
+                            Cells = [| cell |]
+                            Type = RegionType.SumExact target
+                        })
+
             | RegionType.SumLess target ->
-                let sum =
-                    Array.sumBy puzzle.Board.Item covered
+                let sum = Array.sum values
                 let target = target - sum
                 assert(target >= PipCount.minValue * uncovered.Length)
                 Array.singleton {
                     Cells = uncovered
                     Type = RegionType.SumLess target
                 }
+
             | RegionType.SumExact target ->
-                let sum =
-                    Array.sumBy puzzle.Board.Item covered
+                let sum = Array.sum values
                 let target = target - sum
                 assert(target >= PipCount.minValue * uncovered.Length)
                 Array.singleton {
                     Cells = uncovered
                     Type = RegionType.SumExact target
                 }
-            | _ -> failwith "Unexpected"
+
+            | _ -> Array.singleton region
 
     let getEdgeFacts (tiling : Tiling) puzzle =
 

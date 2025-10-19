@@ -348,6 +348,7 @@ module Program =
         for (date, puzzle) in pairs do
             printfn ""
             printfn $"Puzzle {date}:"
+            printfn ""
             printPuzzle puzzle
             let solutions = EdgeFact.solve puzzle
             printfn ""
