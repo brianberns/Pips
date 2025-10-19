@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Compile Include="TryPickBuilder.fs" />
+    <Compile Include="TilingTree.fs" />
     <Compile Include="Backtrack.fs" />
   </ItemGroup>
 
