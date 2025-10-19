@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <IsTestProject>true</IsTestProject>
@@ -12,6 +11,7 @@
     <Content Include="2025-09-30.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Compile Include="Daily.fs" />
     <Compile Include="Tiling.fs" />
     <Compile Include="Puzzle.fs" />
     <Compile Include="Fuzz.fs" />
@@ -30,9 +30,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Pips.Backtrack\Pips.Backtrack.fsproj" />
+    <ProjectReference Include="..\Pips.Inference\Pips.Inference.fsproj" />
     <ProjectReference Include="..\Pips\Pips.fsproj" />
   </ItemGroup>
 
