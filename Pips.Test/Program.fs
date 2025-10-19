@@ -353,6 +353,7 @@ module Program =
             let solutions = EdgeFact.solve puzzle
             printfn ""
             printfn $"Found {solutions.Length} solution(s):"
+            printfn ""
             for solution in solutions do
                 printSolution solution
             assert(
