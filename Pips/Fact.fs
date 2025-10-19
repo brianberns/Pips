@@ -224,6 +224,7 @@ module EdgeFact =
                 | IntraRegionInequality iri ->
                     if domino.Left <> domino.Right then
                         iri.CellA, iri.CellB
+                        iri.CellB, iri.CellA
 
                 | IntraRegionSum irs ->
                     let sum = domino.Left + domino.Right
