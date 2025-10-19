@@ -218,8 +218,9 @@ module EdgeFact =
             let edgeFacts = getEdgeFacts tiling puzzle
 
             if edgeFacts.Length = 0 then
-                assert(Puzzle.isSolved puzzle)
-                [| puzzle |]
+                if Puzzle.isSolved puzzle then
+                    [| puzzle |]
+                else Array.empty
             else
                 let puzzleOpts =
                     edgeFacts
