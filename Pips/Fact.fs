@@ -87,7 +87,7 @@ module EdgeFact =
                 assert(target >= PipCount.minValue * uncovered.Length)
                 Array.singleton {
                     Cells = uncovered
-                    Type = RegionType.SumExact target
+                    Type = RegionType.SumLess target
                 }
             | RegionType.SumExact target ->
                 let sum =
@@ -96,7 +96,7 @@ module EdgeFact =
                 assert(target >= PipCount.minValue * uncovered.Length)
                 Array.singleton {
                     Cells = uncovered
-                    Type = RegionType.SumLess target
+                    Type = RegionType.SumExact target
                 }
             | _ -> failwith "Unexpected"
 
@@ -175,7 +175,13 @@ module EdgeFact =
                         | Some (domino, edge) ->
                             let puzzle =
                                 Puzzle.place domino edge puzzle
-                            let tiling = tiling.Remove(edge)
+                            assert(
+                                tiling.Contains(edge)
+                                    || tiling.Contains(Edge.reverse edge))
+                            let tiling =
+                                tiling
+                                    .Remove(edge)
+                                    .Remove(Edge.reverse edge)
                             let edgeFacts = getEdgeFacts tiling puzzle
                             loop edgeFacts tiling puzzle
                         | None ->
