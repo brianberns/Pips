@@ -340,24 +340,33 @@ module Program =
                     System.Threading.Thread.Sleep(500)
                     let puzzle =
                         Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                            |> Map.find "easy"
+                            |> Map.find "medium"
                     date, puzzle)
                 |> Seq.where (fun (_, puzzle) ->
                     Puzzle.getAllTilings(puzzle).Length = 1)
 
         for (date, puzzle) in pairs do
+
             printfn ""
             printfn $"Puzzle {date}:"
             printfn ""
             printPuzzle puzzle
+
             let solutions = EdgeFact.solve puzzle
             printfn ""
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
             for solution in solutions do
                 printSolution solution
-            assert(
-                set solutions = set (Backtrack.solve puzzle))
+
+            let backtracks = set (Backtrack.solve puzzle)
+            if set solutions <> backtracks then
+                printfn ""
+                printfn $"But backtracking found {backtracks.Count} solution(s):"
+                printfn ""
+                for solution in backtracks do
+                    printSolution solution
+                assert(false)
 
     let generate () =
 
