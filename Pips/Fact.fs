@@ -243,7 +243,7 @@ module EdgeFact =
                         factB.Cell, factA.Cell
         }
 
-    let solveImpl tiling puzzle =
+    let solve puzzle =
 
         let rec loop tiling puzzle =
 
@@ -301,10 +301,7 @@ module EdgeFact =
                                 yield! loop tiling puzzle
                         |]
 
-        loop tiling puzzle
-
-    let solve puzzle =
         let tiling =
             Puzzle.getAllTilings puzzle
                 |> Seq.exactlyOne   // to-do: fix
-        solveImpl tiling puzzle
+        loop tiling puzzle
