@@ -18,7 +18,7 @@ module Edge =
 /// A 2D lattice with dominoes on it. This is stored in a redundant
 /// data structure for speed. We have the location of each domino,
 /// and also a way to look up the value at any cell on the board.
-[<CustomEquality; NoComparison>]
+[<CustomEquality; CustomComparison>]
 type Board =
     {
         /// Location of each domino placed on the board.
@@ -55,6 +55,24 @@ type Board =
         /// Domino placement order doesn't matter for equality.
         member board.Equals(other : Board) = 
             board.Equals(other)
+
+    /// Domino placement order doesn't matter for comparison.
+    member board.CompareTo(other : Board) =
+        compare
+            board.DominoPlacesSet.Value
+            other.DominoPlacesSet.Value
+
+    interface IComparable with
+
+        /// Domino placement order doesn't matter for comparison.
+        member board.CompareTo(other) =
+            board.CompareTo(other :?> Board)
+
+    interface IComparable<Board> with
+
+        /// Domino placement order doesn't matter for comparison.
+        member board.CompareTo(other) =
+            board.CompareTo(other)
 
 module Board =
 

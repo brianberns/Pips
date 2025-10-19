@@ -111,7 +111,7 @@ module EdgeFact =
                             cell, region
             ]
 
-        [   // to-do: sort by "slack"
+        [|   // to-do: sort by "slack"
             for (cellA, cellB) in tiling do
                 let regionA = regionMap[cellA]
                 let regionB = regionMap[cellB]
@@ -136,7 +136,7 @@ module EdgeFact =
                     let factA = CellFact.create cellA regionA
                     let factB = CellFact.create cellB regionB
                     InterRegion (factA, factB)
-        ]
+        |]
 
     let apply domino edgeFact : seq<Edge> =
         seq {
@@ -159,36 +159,62 @@ module EdgeFact =
 
     let solveImpl tiling puzzle =
 
-        let rec loop edgeFacts (tiling : Tiling) puzzle =
-            match edgeFacts with
-                | [] -> puzzle
-                | edgeFact :: rest ->
-                    let pairs =
-                        puzzle.UnplacedDominoes
-                            |> Seq.collect (fun domino ->
-                                apply domino edgeFact
-                                    |> Seq.map (fun edge ->
-                                        domino, edge))
-                            |> Seq.toArray
-                    assert(pairs.Length > 0)
-                    match Seq.tryExactlyOne pairs with
-                        | Some (domino, edge) ->
-                            let puzzle =
-                                Puzzle.place domino edge puzzle
-                            assert(
-                                tiling.Contains(edge)
-                                    || tiling.Contains(Edge.reverse edge))
-                            let tiling =
-                                tiling
-                                    .Remove(edge)
-                                    .Remove(Edge.reverse edge)
-                            let edgeFacts = getEdgeFacts tiling puzzle
-                            loop edgeFacts tiling puzzle
-                        | None ->
-                            loop rest tiling puzzle
+        let rec loop tiling puzzle =
+            let edgeFacts = getEdgeFacts tiling puzzle
 
-        let edgeFacts = getEdgeFacts tiling puzzle
-        loop edgeFacts tiling puzzle
+            if edgeFacts.Length = 0 then
+                assert(Puzzle.isSolved puzzle)
+                [| puzzle |]
+            else
+                let puzzleOpts =
+                    edgeFacts
+                        |> Seq.tryPick (fun edgeFact ->
+
+                            let pairs =
+                                puzzle.UnplacedDominoes
+                                    |> Seq.collect (fun domino ->
+                                        apply domino edgeFact
+                                            |> Seq.map (fun edge ->
+                                                domino, edge))
+                                    |> Seq.toArray
+                            assert(pairs.Length > 0)
+
+                            if pairs.Length = 1 then
+                                let domino, edge = pairs[0]
+                                let puzzle =
+                                    Puzzle.place domino edge puzzle
+                                assert(
+                                    tiling.Contains(edge)
+                                        || tiling.Contains(Edge.reverse edge))
+                                let tiling =
+                                    tiling
+                                        .Remove(edge)
+                                        .Remove(Edge.reverse edge)
+                                Some (loop tiling puzzle)
+                            else None)
+
+                match puzzleOpts with
+                    | Some puzzles -> puzzles
+                    | None ->
+                        let domino = Seq.head puzzle.UnplacedDominoes
+                        let edges =
+                            edgeFacts
+                                |> Seq.collect (fun edgeFact ->
+                                    apply domino edgeFact)
+                        [|
+                            for edge in edges do
+                                let puzzle = Puzzle.place domino edge puzzle
+                                assert(
+                                    tiling.Contains(edge)
+                                        || tiling.Contains(Edge.reverse edge))
+                                let tiling =
+                                    tiling
+                                        .Remove(edge)
+                                        .Remove(Edge.reverse edge)
+                                yield! loop tiling puzzle
+                        |]
+
+        loop tiling puzzle
 
     let solve puzzle =
         let tiling =

@@ -327,37 +327,30 @@ module Program =
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
         printfn ""
         for solution in solutions do
-            printfn $"{printSolution solution}"
+            printSolution solution
 
     let createFacts () =
         let puzzle =
-            Puzzle.create
-                [
-                    Domino.create 1 1
-                    Domino.create 4 3
-                ]
-                [|
-                    {
-                        Cells =
-                            [|
-                                Cell.create 0 0
-                                Cell.create 0 1
-                                Cell.create 0 2
-                            |]
-                        Type = RegionType.SumExact 5
-                    }
-                    {
-                        Cells =
-                            [|
-                                Cell.create 0 3
-                            |]
-                        Type = RegionType.SumLess 5
-                    }
-                |]
+            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
+                |> Map.find "easy"
+        printfn "Puzzle:"
         printPuzzle puzzle
-        let solution = EdgeFact.solve puzzle
+        let solutions = EdgeFact.solve puzzle
         printfn ""
-        printSolution solution
+        printfn $"Found {solutions.Length} solution(s):"
+        for solution in solutions do
+            printSolution solution
+        assert(
+            let backtrackSet =
+                puzzle
+                    |> Backtrack.solve
+                    |> Seq.map _.Board
+                    |> set
+            let factSet =
+                solutions
+                    |> Seq.map _.Board
+                    |> set
+            factSet = backtrackSet)
 
     let generate () =
 
