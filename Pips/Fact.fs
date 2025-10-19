@@ -80,6 +80,13 @@ module CellFact =
             Operator.apply pipValue comp.Operator comp.Target
 
 type EdgeFact =
+
+    | IntraRegionEquality of
+        {|
+            CellA : Cell
+            CellB : Cell
+        |}
+
     | IntraRegionSum of
         {|
             CellA : Cell
@@ -87,6 +94,7 @@ type EdgeFact =
             Operator : ComparisonOperator
             Target : int
         |}
+
     | InterRegion of CellFact * CellFact
 
 module EdgeFact =
@@ -148,6 +156,13 @@ module EdgeFact =
                 let regionB = regionMap[cellB]
                 if regionA = regionB then   // to-do: region ID
                     match regionA.Type with
+
+                        | RegionType.Equal ->
+                            IntraRegionEquality {|
+                                CellA = cellA
+                                CellB = cellB
+                            |}
+
                         | RegionType.SumLess target ->
                             IntraRegionSum {|
                                 CellA = cellA
@@ -155,6 +170,7 @@ module EdgeFact =
                                 Operator = LessThan
                                 Target = target
                             |}
+
                         | RegionType.SumExact target ->
                             IntraRegionSum {|
                                 CellA = cellA
@@ -162,6 +178,7 @@ module EdgeFact =
                                 Operator = LessThanOrEqualTo
                                 Target = target
                             |}
+
                         | _ -> failwith "Unexpected"
                 else
                     let factA = CellFact.create cellA regionA
@@ -172,12 +189,18 @@ module EdgeFact =
     let apply domino edgeFact : seq<Edge> =
         seq {
             match edgeFact with
+
+                | IntraRegionEquality ire ->
+                    if domino.Left = domino.Right then
+                        ire.CellA, ire.CellB
+
                 | IntraRegionSum irs ->
                     let sum = domino.Left + domino.Right
                     if Operator.apply sum irs.Operator irs.Target then
                         irs.CellA, irs.CellB
                         if domino.Left <> domino.Right then
                             irs.CellB, irs.CellA
+
                 | InterRegion (factA, factB) ->
                     if CellFact.apply domino.Left factA
                         && CellFact.apply domino.Right factB then
