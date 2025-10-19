@@ -261,11 +261,12 @@ module Program =
     let solveMany () =
 
         let solve (date : DateOnly) =
-            let puzzleMap =
+            let puzzle =
                 let dateStr = date.ToString("yyyy-MM-dd")
                 Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+                    |> Map.find "hard"
             let stopwatch = Stopwatch.StartNew()
-            match Backtrack.trySolve puzzleMap["hard"] with
+            match Backtrack.trySolve puzzle with
                 | Some solution ->
                     stopwatch.Elapsed.TotalSeconds, solution
                 | None -> failwith "No solution"
@@ -329,28 +330,32 @@ module Program =
         for solution in solutions do
             printSolution solution
 
-    let createFacts () =
-        let puzzle =
-            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-07.json"
-                |> Map.find "easy"
-        printfn "Puzzle:"
-        printPuzzle puzzle
-        let solutions = EdgeFact.solve puzzle
-        printfn ""
-        printfn $"Found {solutions.Length} solution(s):"
-        for solution in solutions do
-            printSolution solution
-        assert(
-            let backtrackSet =
-                puzzle
-                    |> Backtrack.solve
-                    |> Seq.map _.Board
-                    |> set
-            let factSet =
-                solutions
-                    |> Seq.map _.Board
-                    |> set
-            factSet = backtrackSet)
+    let solveFact () =
+        let startDate = DateOnly.Parse("8/18/2025")
+        let pairs =
+            [ 0 .. 81 ]
+                |> Seq.map (fun offset ->
+                    let date = startDate.AddDays(offset)
+                    let dateStr = date.ToString("yyyy-MM-dd")
+                    System.Threading.Thread.Sleep(500)
+                    let puzzle =
+                        Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+                            |> Map.find "easy"
+                    date, puzzle)
+                |> Seq.where (fun (_, puzzle) ->
+                    Puzzle.getAllTilings(puzzle).Length = 1)
+
+        for (date, puzzle) in pairs do
+            printfn ""
+            printfn $"Puzzle {date}:"
+            printPuzzle puzzle
+            let solutions = EdgeFact.solve puzzle
+            printfn ""
+            printfn $"Found {solutions.Length} solution(s):"
+            for solution in solutions do
+                printSolution solution
+            assert(
+                set solutions = set (Backtrack.solve puzzle))
 
     let generate () =
 
@@ -375,4 +380,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    createFacts ()
+    solveFact ()
