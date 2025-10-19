@@ -340,7 +340,7 @@ module Program =
                     System.Threading.Thread.Sleep(500)
                     let puzzle =
                         Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                            |> Map.find "medium"
+                            |> Map.find "hard"
                     date, puzzle)
                 |> Seq.where (fun (_, puzzle) ->
                     Puzzle.getAllTilings(puzzle).Length = 1)
@@ -352,12 +352,12 @@ module Program =
             printfn ""
             printPuzzle puzzle
 
+            let stopwatch = Stopwatch.StartNew()
             let solutions = EdgeFact.solve puzzle
             printfn ""
-            printfn $"Found {solutions.Length} solution(s):"
+            printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
             printfn ""
-            for solution in solutions do
-                printSolution solution
+            printSolution solutions[0]
 
             let backtracks = set (Backtrack.solve puzzle)
             if set solutions <> backtracks then
