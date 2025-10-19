@@ -81,6 +81,12 @@ module CellFact =
 
 type EdgeFact =
 
+    | IntraRegionUnconstrained of
+        {|
+            CellA : Cell
+            CellB : Cell
+        |}
+
     | IntraRegionEquality of
         {|
             CellA : Cell
@@ -157,6 +163,12 @@ module EdgeFact =
                 if regionA = regionB then   // to-do: region ID
                     match regionA.Type with
 
+                        | RegionType.Any ->
+                            IntraRegionUnconstrained {|
+                                CellA = cellA
+                                CellB = cellB
+                            |}
+
                         | RegionType.Equal ->
                             IntraRegionEquality {|
                                 CellA = cellA
@@ -189,6 +201,9 @@ module EdgeFact =
     let apply domino edgeFact : seq<Edge> =
         seq {
             match edgeFact with
+
+                | IntraRegionUnconstrained iru ->
+                    iru.CellA, iru.CellB
 
                 | IntraRegionEquality ire ->
                     if domino.Left = domino.Right then
