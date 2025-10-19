@@ -93,6 +93,12 @@ type EdgeFact =
             CellB : Cell
         |}
 
+    | IntraRegionInequality of
+        {|
+            CellA : Cell
+            CellB : Cell
+        |}
+
     | IntraRegionSum of
         {|
             CellA : Cell
@@ -175,6 +181,12 @@ module EdgeFact =
                                 CellB = cellB
                             |}
 
+                        | RegionType.Unequal ->
+                            IntraRegionInequality {|
+                                CellA = cellA
+                                CellB = cellB
+                            |}
+
                         | RegionType.SumLess target ->
                             IntraRegionSum {|
                                 CellA = cellA
@@ -208,6 +220,10 @@ module EdgeFact =
                 | IntraRegionEquality ire ->
                     if domino.Left = domino.Right then
                         ire.CellA, ire.CellB
+
+                | IntraRegionInequality iri ->
+                    if domino.Left <> domino.Right then
+                        iri.CellA, iri.CellB
 
                 | IntraRegionSum irs ->
                     let sum = domino.Left + domino.Right
