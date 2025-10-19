@@ -12,7 +12,6 @@
     <Compile Include="Region.fs" />
     <Compile Include="Tiling.fs" />
     <Compile Include="Puzzle.fs" />
-    <Compile Include="Fact.fs" />
   </ItemGroup>
 
 </Project>
