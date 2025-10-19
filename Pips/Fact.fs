@@ -74,13 +74,40 @@ type EdgeFact =
 
 module EdgeFact =
 
-    let getEdgeFacts tiling puzzle =
+    let shrink region puzzle =
+        let uncovered, covered =
+            Array.partition
+                (flip Puzzle.isEmpty puzzle)
+                region.Cells
+        match region.Type with
+            | RegionType.SumLess target ->
+                let sum =
+                    Array.sumBy puzzle.Board.Item covered
+                let target = target - sum
+                assert(target >= PipCount.minValue * uncovered.Length)
+                Array.singleton {
+                    Cells = uncovered
+                    Type = RegionType.SumExact target
+                }
+            | RegionType.SumExact target ->
+                let sum =
+                    Array.sumBy puzzle.Board.Item covered
+                let target = target - sum
+                assert(target >= PipCount.minValue * uncovered.Length)
+                Array.singleton {
+                    Cells = uncovered
+                    Type = RegionType.SumLess target
+                }
+            | _ -> failwith "Unexpected"
+
+    let getEdgeFacts (tiling : Tiling) puzzle =
 
         let regionMap =
             Map [
                 for region in puzzle.Regions do
-                    for cell in region.Cells do
-                        if Puzzle.isEmpty cell puzzle then
+                    let regions = shrink region puzzle
+                    for region in regions do
+                        for cell in region.Cells do
                             cell, region
             ]
 
@@ -90,6 +117,13 @@ module EdgeFact =
                 let regionB = regionMap[cellB]
                 if regionA = regionB then   // to-do: region ID
                     match regionA.Type with
+                        | RegionType.SumLess target ->
+                            IntraRegionSum {|
+                                CellA = cellA
+                                CellB = cellB
+                                Operator = LessThan
+                                Target = target
+                            |}
                         | RegionType.SumExact target ->
                             IntraRegionSum {|
                                 CellA = cellA
@@ -123,30 +157,35 @@ module EdgeFact =
                         factB.Cell, factA.Cell
         }
 
-    let rec solveImpl edgeFacts (dominoes : Set<Domino>) =
-        match edgeFacts with
-            | [] -> Array.empty
-            | edgeFact :: rest ->
-                let pairs =
-                    dominoes
-                        |> Seq.collect (fun domino ->
-                            apply domino edgeFact
-                                |> Seq.map (fun edge ->
-                                    domino, edge))
-                        |> Seq.toArray
-                assert(pairs.Length > 0)
-                match Seq.tryExactlyOne pairs with
-                    | Some (domino, edge) ->
-                        [|
-                            yield domino, edge
-                            yield! solveImpl rest (dominoes.Remove(domino))
-                        |]
-                    | None ->
-                        solveImpl rest dominoes
+    let solveImpl tiling puzzle =
+
+        let rec loop edgeFacts (tiling : Tiling) puzzle =
+            match edgeFacts with
+                | [] -> puzzle
+                | edgeFact :: rest ->
+                    let pairs =
+                        puzzle.UnplacedDominoes
+                            |> Seq.collect (fun domino ->
+                                apply domino edgeFact
+                                    |> Seq.map (fun edge ->
+                                        domino, edge))
+                            |> Seq.toArray
+                    assert(pairs.Length > 0)
+                    match Seq.tryExactlyOne pairs with
+                        | Some (domino, edge) ->
+                            let puzzle =
+                                Puzzle.place domino edge puzzle
+                            let tiling = tiling.Remove(edge)
+                            let edgeFacts = getEdgeFacts tiling puzzle
+                            loop edgeFacts tiling puzzle
+                        | None ->
+                            loop rest tiling puzzle
+
+        let edgeFacts = getEdgeFacts tiling puzzle
+        loop edgeFacts tiling puzzle
 
     let solve puzzle =
         let tiling =
             Puzzle.getAllTilings puzzle
                 |> Seq.exactlyOne   // to-do: fix
-        let edgeFacts = getEdgeFacts tiling puzzle
-        solveImpl edgeFacts puzzle.UnplacedDominoes
+        solveImpl tiling puzzle

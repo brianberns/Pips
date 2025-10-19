@@ -355,10 +355,9 @@ module Program =
                     }
                 |]
         printPuzzle puzzle
-        let pairs = EdgeFact.solve puzzle
+        let solution = EdgeFact.solve puzzle
         printfn ""
-        for (domino, edge) in pairs do
-            printfn $"Domino {domino}: Edge {edge}"
+        printSolution solution
 
     let generate () =
 
