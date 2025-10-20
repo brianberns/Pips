@@ -9,7 +9,7 @@ type EdgeFact =
     | SameRegionEqual of Edge
 
     /// Edge values must be unequal.
-    | SameRegionUnequal of Edge
+    | SameRegionUnequal of Edge   // to-do: and also unequal to other cells in the region
 
     /// Edge values are unconstrained.
     | SameRegionUnconstrained of Edge
@@ -136,17 +136,26 @@ module EdgeFact =
                     if domino.Left <> domino.Right then
                         Edge.reverse edge
 
+                    // sum of domino values matches?
                 | SameRegionSum case ->
                     let sum = domino.Left + domino.Right
-                    if ComparisonOperator.compare sum case.Operator case.Target then
+                    let isValid =
+                        ComparisonOperator.compare
+                            sum
+                            case.Operator
+                            case.Target
+                    if isValid then
                         case.Edge
                         if domino.Left <> domino.Right then
                             Edge.reverse case.Edge
 
+                    // independent cell constraints both match?
                 | CrossRegion (factA, factB) ->
+
                     if CellFact.isValid domino.Left factA
                         && CellFact.isValid domino.Right factB then
                         factA.Cell, factB.Cell
+
                     if domino.Left <> domino.Right
                         && CellFact.isValid domino.Left factB
                         && CellFact.isValid domino.Right factA then
