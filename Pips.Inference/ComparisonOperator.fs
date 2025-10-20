@@ -17,7 +17,7 @@ type ComparisonOperator =
 
 module Operator =
 
-    let apply pipValue op target =
+    let compare pipValue op target =
         match op with
             | LessThan -> pipValue < target
             | LessThanOrEqualTo -> pipValue <= target

@@ -149,17 +149,17 @@ module EdgeFact =
 
                 | IntraRegionSum irs ->
                     let sum = domino.Left + domino.Right
-                    if Operator.apply sum irs.Operator irs.Target then
+                    if Operator.compare sum irs.Operator irs.Target then
                         irs.CellA, irs.CellB
                         if domino.Left <> domino.Right then
                             irs.CellB, irs.CellA
 
                 | InterRegion (factA, factB) ->
-                    if CellFact.apply domino.Left factA
-                        && CellFact.apply domino.Right factB then
+                    if CellFact.compare domino.Left factA
+                        && CellFact.compare domino.Right factB then
                         factA.Cell, factB.Cell
                     if domino.Left <> domino.Right
-                        && CellFact.apply domino.Left factB
-                        && CellFact.apply domino.Right factA then
+                        && CellFact.compare domino.Left factB
+                        && CellFact.compare domino.Right factA then
                         factB.Cell, factA.Cell
         }
