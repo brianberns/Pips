@@ -330,7 +330,7 @@ module Program =
         for solution in solutions do
             printSolution solution
 
-    let solveFact () =
+    let infer () =
         let startDate = DateOnly.Parse("8/18/2025")
         let pairs =
             [ 0 .. 81 ]
@@ -353,7 +353,7 @@ module Program =
             printPuzzle puzzle
 
             let stopwatch = Stopwatch.StartNew()
-            let solutions = EdgeFact.solve puzzle
+            let solutions = Inference.solve puzzle
             printfn ""
             printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
             printfn ""
@@ -391,4 +391,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveFact ()
+    infer ()

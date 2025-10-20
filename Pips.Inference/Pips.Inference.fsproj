@@ -6,7 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Fact.fs" />
+    <Compile Include="ComparisonOperator.fs" />
+    <Compile Include="CellFact.fs" />
+    <Compile Include="EdgeFact.fs" />
+    <Compile Include="Inference.fs" />
   </ItemGroup>
 
   <ItemGroup>
