@@ -14,7 +14,7 @@ type EdgeFact =
     /// Edge values are unconstrained.
     | SameRegionUnconstrained of Edge
 
-    /// Edge value sum comparison.
+    /// Sum of edge values is constrained.
     | SameRegionSum of
         {|
             Edge : Edge
@@ -40,33 +40,52 @@ module EdgeFact =
 
     /// Gets constraints for the given edges in the given puzzle.
     let getAll puzzle edges =
+        assert(
+            Seq.forall (fun (cellA, cellB) ->
+                Puzzle.isEmpty cellA puzzle
+                    && Puzzle.isEmpty cellB puzzle)
+                edges)
 
+            // allow regions to be indexed
+        let regions =
+            [|
+                for region in puzzle.Regions do
+                    yield! Region.tighten puzzle.Board region
+            |]
+
+            // map cells to their containing regions
         let regionMap =
             Map [
-                for region in puzzle.Regions do
-                    let regions =
-                        Region.tighten puzzle.Board region
-                    for region in regions do
-                        for cell in region.Cells do
-                            cell, region
+                for iRegion = 0 to regions.Length - 1 do
+                    for cell in regions[iRegion].Cells do
+                        cell, iRegion
             ]
 
-        [|   // to-do: sort by "slack"
+            // create a fact for each edge
+        [|
             for (cellA, cellB) in edges do
-                let regionA = regionMap[cellA]
-                let regionB = regionMap[cellB]
-                if regionA = regionB then   // to-do: region ID
-                    match regionA.Type with
 
-                        | RegionType.Any ->
-                            SameRegionUnconstrained (cellA, cellB)
+                let regionIdA = regionMap[cellA]
+                let regionIdB = regionMap[cellB]
 
+                    // cells are in the same region?
+                if regionIdA = regionIdB then
+                    match regions[regionIdA].Type with
+
+                            // edge values must be equal to each other
                         | RegionType.Equal ->
                             SameRegionEqual (cellA, cellB)
 
+                            // edge values must not be equal to each other
                         | RegionType.Unequal ->
                             SameRegionUnequal (cellA, cellB)
 
+                            // edge values are unconstrained
+                        | RegionType.Any ->
+                            SameRegionUnconstrained (cellA, cellB)
+
+                            // sum of edge values must be less than overall
+                            // region target
                         | RegionType.SumLess target ->
                             SameRegionSum {|
                                 Edge = cellA, cellB
@@ -74,6 +93,8 @@ module EdgeFact =
                                 Target = target
                             |}
 
+                            // sum of edge values must be less than or equal
+                            // to the overall region target
                         | RegionType.SumExact target ->
                             SameRegionSum {|
                                 Edge = cellA, cellB
@@ -82,11 +103,16 @@ module EdgeFact =
                             |}
 
                         | _ -> failwith "Unexpected"
+
+                    // cells straddle two different regions
                 else
-                    let factA = CellFact.create cellA regionA
-                    let factB = CellFact.create cellB regionB
+                    let factA =
+                        CellFact.create cellA regions[regionIdA]
+                    let factB =
+                        CellFact.create cellB regions[regionIdB]
                     CrossRegion (factA, factB)
-        |]
+
+        |]   // to-do: sort these from most to least promising
 
     let apply domino edgeFact : seq<Edge> =
         seq {
