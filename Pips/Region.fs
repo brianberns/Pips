@@ -46,38 +46,60 @@ module Region =
             |> Array.where ((<>) Board.emptyCell)
 
     /// Validates an Equal region.
-    let private validateEqual board region =
+    let private validateEqual board dominoes region =
         assert(region.Type.IsEqual)
+
         let pipCounts = getPipCounts board region
-        if pipCounts.Length < 2 then true
-        else
+
+            // are all values equal so far?
+        let equal =
+            if pipCounts.Length < 2 then true
+            else
+                let value = pipCounts[0]
+                Array.forall ((=) value) pipCounts[1..]   // fail early if a second value is found
+
+            // are there enough matching values available?
+        if equal && pipCounts.Length > 0 then
             let value = pipCounts[0]
-            Array.forall ((=) value) pipCounts[1..]   // fail early if a second value is found
+            let nNeeded =
+                region.Cells.Length - pipCounts.Length
+            let nAvailable =
+                dominoes
+                    |> Seq.sumBy (fun domino ->
+                        if domino.Left = value then
+                            if domino.Right = value then 2
+                            else 1
+                        elif domino.Right = value then 1
+                        else 0)
+            nAvailable >= nNeeded
+
+        else equal
 
     /// Validates an Unequal region.
-    let private validateUnequal board region =
+    let private validateUnequal board dominoes region =
         assert(region.Type.IsUnequal)
         let pipCounts = getPipCounts board region
         (Array.distinct pipCounts).Length = pipCounts.Length
 
     /// Validates a SumLess region.
-    let private validateSumLess n board region =
+    let private validateSumLess board dominoes n region =
         assert(region.Type.IsSumLess)
         let pipCounts = getPipCounts board region
-        assert(PipCount.minValue = 0)
         Array.sum pipCounts < n
 
     /// Validates a SumGreater region.
-    let private validateSumGreater n board region =
+    let private validateSumGreater board dominoes n region =
         assert(region.Type.IsSumGreater)
         let pipCounts = getPipCounts board region
+        let sum = Array.sum pipCounts
 
-            // are there still enough uncovered cells to exceed the target?
-        let nEmpty = region.Cells.Length - pipCounts.Length
-        (Array.sum pipCounts) + (PipCount.maxValue * nEmpty) > n
+            // all cells covered?
+        if pipCounts.Length = region.Cells.Length then
+            sum > n
+        else true
 
     /// Validates a Sum region.
-    let private validateSum n board region =
+    let private validateSum board dominoes n region =
         assert(region.Type.IsSumExact)
         let pipCounts = getPipCounts board region
         let sum = Array.sum pipCounts
@@ -86,29 +108,23 @@ module Region =
         if pipCounts.Length = region.Cells.Length then
             sum = n
         else
-            assert(PipCount.minValue = 0)
+            sum <= n
 
-                // are there still enough uncovered cells to reach the target?
-            if sum <= n then
-                let nEmpty = region.Cells.Length - pipCounts.Length
-                sum + (PipCount.maxValue * nEmpty) >= n
-            else false
-
-    /// Validates the given region on the given board. The region
-    /// may still have uncovered cells.
-    let isValid board region =
+    /// Validates the given region on the given board with the
+    /// given unplaced dominoes.
+    let isValid board dominoes region =
         match region.Type with
             | RegionType.Any -> true
             | RegionType.Equal ->
-                validateEqual board region
+                validateEqual board dominoes region
             | RegionType.Unequal ->
-                validateUnequal board region
+                validateUnequal board dominoes region
             | RegionType.SumLess n ->
-                validateSumLess n board region
+                validateSumLess board dominoes n region
             | RegionType.SumGreater n ->
-                validateSumGreater n board region
+                validateSumGreater board dominoes n region
             | RegionType.SumExact n ->
-                validateSum n board region
+                validateSum board dominoes n region
 
     /// Determines whether the given region on the given board has
     /// been solved (with no uncovered cells).

@@ -5,6 +5,14 @@ open FsCheck.Xunit
 
 open Pips
 
+module PipCount =
+
+    /// Smallest pip count.
+    let minValue = 0
+
+    /// Largest pip count.
+    let maxValue = 6
+
 /// A solved puzzle is a puzzle generated from a specific
 /// solution, but may have other solutions as well.
 type SolvedPuzzle =
@@ -307,7 +315,6 @@ module SolvedPuzzle =
                 {
                     UnplacedDominoes = set dominoes
                     Regions = Array.empty
-                    RegionMap = Map.empty
                     Board = emptyBoard
                 }
             let! solution = place puzzle
@@ -320,15 +327,10 @@ module SolvedPuzzle =
                     |> Seq.toArray
 
             let! regions = createRegions cells solution.Board
-            let regionMap = Puzzle.getRegionMap regions
             let puzzle =
-                { puzzle with
-                    Regions = regions
-                    RegionMap = regionMap }
+                { puzzle with Regions = regions }
             let solution =
-                { solution with
-                    Regions = regions
-                    RegionMap = regionMap }
+                { solution with Regions = regions }
             return {
                 Puzzle = puzzle
                 Solution = solution
@@ -353,4 +355,5 @@ module Fuzz =
     [<Property>]
     let ``Can find solution to solvable puzzle`` solved =
         let solutions = Backtrack.solve solved.Puzzle
+        Xunit.Assert.True(solutions.Length > 0)
         Seq.contains solved.Solution solutions
