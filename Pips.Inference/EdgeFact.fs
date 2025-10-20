@@ -1,6 +1,6 @@
 ﻿namespace Pips
 
-/// A cell fact constrains the values of adjacent cells.
+/// An edge fact constrains the values of adjacent cells.
 /// The cells may be in the same region, or in two different
 /// regions.
 type EdgeFact =
