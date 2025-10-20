@@ -296,15 +296,14 @@ module Program =
 
         let startDate = DateOnly.Parse("8/18/2025")
         let pairs =
-            [ 0 .. 81 ]
-                |> Seq.map (fun offset ->
+            [| 0 .. 81 |]
+                |> Array.map (fun offset ->
                     let date = startDate.AddDays(offset)
                     let resultOpt =
                         run 150000 (fun () -> solve date)
                     print date resultOpt
                     Threading.Thread.Sleep(500)
                     date, resultOpt)
-                |> Seq.sortBy (snd >> Option.map fst)
         for (date, resultOpt) in pairs do
             match resultOpt with
                 | Some (time, _) ->
@@ -391,4 +390,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    infer ()
+    solveMany ()
