@@ -62,7 +62,8 @@ module EdgeFact =
                 let regionIdA = regionMap[cellA]
                 let regionIdB = regionMap[cellB]
                 if regionIdA = regionIdB then
-                    match regions[regionIdA].Type with
+                    let region = regions[regionIdA]
+                    match region.Type with
 
                             // edge values must be equal to each other
                         | RegionType.Equal ->
@@ -85,12 +86,18 @@ module EdgeFact =
                                 Target = target
                             |}
 
-                            // sum of edge values must be less than or equal
-                            // to the overall region target
+                            // if these are the only cells in the region, their
+                            // sum must match the target; otherwise, it may be
+                            // less than the target
                         | RegionType.SumExact target ->
+                            let op =
+                                assert(region.Cells.Length >= 2)
+                                if region.Cells.Length = 2 then
+                                    EqualTo
+                                else LessThanOrEqualTo
                             SameRegionSum {|
                                 Edge = edge
-                                Operator = LessThanOrEqualTo
+                                Operator = op
                                 Target = target
                             |}
 

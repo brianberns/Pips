@@ -62,8 +62,7 @@ module CellFact =
                 let op =
                     if region.Cells.Length = 1 then
                         EqualTo
-                    else
-                        LessThanOrEqualTo
+                    else LessThanOrEqualTo
                 Comparison {|
                     Cell = cell
                     Operator = op
