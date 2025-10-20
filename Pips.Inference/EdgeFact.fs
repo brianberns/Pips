@@ -5,33 +5,36 @@
 /// regions.
 type EdgeFact =
 
-    | SameRegionUnconstrained of
-        {|
-            CellA : Cell
-            CellB : Cell
-        |}
+    /// Edge values must be equal.
+    | SameRegionEquality of Edge
 
-    | SameRegionEquality of
-        {|
-            CellA : Cell
-            CellB : Cell
-        |}
+    /// Edge values must be unequal.
+    | SameRegionInequality of Edge
 
-    | SameRegionInequality of
-        {|
-            CellA : Cell
-            CellB : Cell
-        |}
+    /// Edge values are unconstrained.
+    | SameRegionUnconstrained of Edge
 
+    /// Edge value sum comparison.
     | SameRegionSum of
         {|
-            CellA : Cell
-            CellB : Cell
+            Edge : Edge
             Operator : ComparisonOperator
             Target : int
         |}
 
+    /// Edge straddles two regions, so it's constrained by
+    /// two independent cell constraints.
     | CrossRegion of CellFact * CellFact
+
+    /// Edge constrained by this fact.
+    member fact.Edge =
+        match fact with
+            | SameRegionEquality edge
+            | SameRegionInequality edge
+            | SameRegionUnconstrained edge -> edge
+            | SameRegionSum case -> case.Edge
+            | CrossRegion (factA, factB) ->
+                factA.Cell, factB.Cell
 
 module EdgeFact =
 
@@ -94,35 +97,24 @@ module EdgeFact =
                     match regionA.Type with
 
                         | RegionType.Any ->
-                            SameRegionUnconstrained {|
-                                CellA = cellA
-                                CellB = cellB
-                            |}
+                            SameRegionUnconstrained (cellA, cellB)
 
                         | RegionType.Equal ->
-                            SameRegionEquality {|
-                                CellA = cellA
-                                CellB = cellB
-                            |}
+                            SameRegionEquality (cellA, cellB)
 
                         | RegionType.Unequal ->
-                            SameRegionInequality {|
-                                CellA = cellA
-                                CellB = cellB
-                            |}
+                            SameRegionInequality (cellA, cellB)
 
                         | RegionType.SumLess target ->
                             SameRegionSum {|
-                                CellA = cellA
-                                CellB = cellB
+                                Edge = cellA, cellB
                                 Operator = LessThan
                                 Target = target
                             |}
 
                         | RegionType.SumExact target ->
                             SameRegionSum {|
-                                CellA = cellA
-                                CellB = cellB
+                                Edge = cellA, cellB
                                 Operator = LessThanOrEqualTo
                                 Target = target
                             |}
@@ -138,24 +130,26 @@ module EdgeFact =
         seq {
             match edgeFact with
 
-                | SameRegionUnconstrained case ->
-                    case.CellA, case.CellB
-
-                | SameRegionEquality case ->
+                | SameRegionEquality edge ->
                     if domino.Left = domino.Right then
-                        case.CellA, case.CellB
+                        edge
 
-                | SameRegionInequality case ->
+                | SameRegionInequality edge ->
                     if domino.Left <> domino.Right then
-                        case.CellA, case.CellB
-                        case.CellB, case.CellA
+                        edge
+                        Edge.reverse edge
+
+                | SameRegionUnconstrained edge ->
+                    edge
+                    if domino.Left <> domino.Right then
+                        Edge.reverse edge
 
                 | SameRegionSum case ->
                     let sum = domino.Left + domino.Right
                     if ComparisonOperator.compare sum case.Operator case.Target then
-                        case.CellA, case.CellB
+                        case.Edge
                         if domino.Left <> domino.Right then
-                            case.CellB, case.CellA
+                            Edge.reverse case.Edge
 
                 | CrossRegion (factA, factB) ->
                     if CellFact.isValid domino.Left factA
