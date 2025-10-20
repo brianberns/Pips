@@ -1,4 +1,4 @@
-namespace Pips
+﻿namespace Pips
 
 module Region =
 

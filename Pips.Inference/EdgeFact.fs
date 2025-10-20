@@ -113,19 +113,24 @@ module EdgeFact =
 
         |]   // to-do: sort these from most to least promising
 
-    let apply domino edgeFact : seq<Edge> =
+    /// Generates possible edge orientations for the given domino
+    /// as constrained by the given fact.
+    let apply domino fact =
         seq {
-            match edgeFact with
+            match fact with
 
+                    // only a "double" domino matches
                 | SameRegionEqual edge ->
                     if domino.Left = domino.Right then
                         edge
 
+                    // only a "double" domino does not match
                 | SameRegionUnequal edge ->
                     if domino.Left <> domino.Right then
                         edge
                         Edge.reverse edge
 
+                    // any domino matches
                 | SameRegionUnconstrained edge ->
                     edge
                     if domino.Left <> domino.Right then
