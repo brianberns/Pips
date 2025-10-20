@@ -15,7 +15,7 @@ type ComparisonOperator =
             | GreaterThan -> ">"
             | GreaterThanOrEqualTo -> "≥"
 
-module Operator =
+module ComparisonOperator =
 
     let compare pipValue op target =
         match op with

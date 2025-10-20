@@ -1,26 +1,29 @@
 ﻿namespace Pips
 
+/// A cell fact constrains the values of adjacent cells.
+/// The cells may be in the same region, or in two different
+/// regions.
 type EdgeFact =
 
-    | IntraRegionUnconstrained of
+    | SameRegionUnconstrained of
         {|
             CellA : Cell
             CellB : Cell
         |}
 
-    | IntraRegionEquality of
+    | SameRegionEquality of
         {|
             CellA : Cell
             CellB : Cell
         |}
 
-    | IntraRegionInequality of
+    | SameRegionInequality of
         {|
             CellA : Cell
             CellB : Cell
         |}
 
-    | IntraRegionSum of
+    | SameRegionSum of
         {|
             CellA : Cell
             CellB : Cell
@@ -28,7 +31,7 @@ type EdgeFact =
             Target : int
         |}
 
-    | InterRegion of CellFact * CellFact
+    | CrossRegion of CellFact * CellFact
 
 module EdgeFact =
 
@@ -91,25 +94,25 @@ module EdgeFact =
                     match regionA.Type with
 
                         | RegionType.Any ->
-                            IntraRegionUnconstrained {|
+                            SameRegionUnconstrained {|
                                 CellA = cellA
                                 CellB = cellB
                             |}
 
                         | RegionType.Equal ->
-                            IntraRegionEquality {|
+                            SameRegionEquality {|
                                 CellA = cellA
                                 CellB = cellB
                             |}
 
                         | RegionType.Unequal ->
-                            IntraRegionInequality {|
+                            SameRegionInequality {|
                                 CellA = cellA
                                 CellB = cellB
                             |}
 
                         | RegionType.SumLess target ->
-                            IntraRegionSum {|
+                            SameRegionSum {|
                                 CellA = cellA
                                 CellB = cellB
                                 Operator = LessThan
@@ -117,7 +120,7 @@ module EdgeFact =
                             |}
 
                         | RegionType.SumExact target ->
-                            IntraRegionSum {|
+                            SameRegionSum {|
                                 CellA = cellA
                                 CellB = cellB
                                 Operator = LessThanOrEqualTo
@@ -128,38 +131,38 @@ module EdgeFact =
                 else
                     let factA = CellFact.create cellA regionA
                     let factB = CellFact.create cellB regionB
-                    InterRegion (factA, factB)
+                    CrossRegion (factA, factB)
         |]
 
     let apply domino edgeFact : seq<Edge> =
         seq {
             match edgeFact with
 
-                | IntraRegionUnconstrained iru ->
-                    iru.CellA, iru.CellB
+                | SameRegionUnconstrained case ->
+                    case.CellA, case.CellB
 
-                | IntraRegionEquality ire ->
+                | SameRegionEquality case ->
                     if domino.Left = domino.Right then
-                        ire.CellA, ire.CellB
+                        case.CellA, case.CellB
 
-                | IntraRegionInequality iri ->
+                | SameRegionInequality case ->
                     if domino.Left <> domino.Right then
-                        iri.CellA, iri.CellB
-                        iri.CellB, iri.CellA
+                        case.CellA, case.CellB
+                        case.CellB, case.CellA
 
-                | IntraRegionSum irs ->
+                | SameRegionSum case ->
                     let sum = domino.Left + domino.Right
-                    if Operator.compare sum irs.Operator irs.Target then
-                        irs.CellA, irs.CellB
+                    if ComparisonOperator.compare sum case.Operator case.Target then
+                        case.CellA, case.CellB
                         if domino.Left <> domino.Right then
-                            irs.CellB, irs.CellA
+                            case.CellB, case.CellA
 
-                | InterRegion (factA, factB) ->
-                    if CellFact.compare domino.Left factA
-                        && CellFact.compare domino.Right factB then
+                | CrossRegion (factA, factB) ->
+                    if CellFact.isValid domino.Left factA
+                        && CellFact.isValid domino.Right factB then
                         factA.Cell, factB.Cell
                     if domino.Left <> domino.Right
-                        && CellFact.compare domino.Left factB
-                        && CellFact.compare domino.Right factA then
+                        && CellFact.isValid domino.Left factB
+                        && CellFact.isValid domino.Right factA then
                         factB.Cell, factA.Cell
         }

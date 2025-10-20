@@ -74,10 +74,10 @@ module CellFact =
                 // the cell value
             | _ -> Unconstrained cell
 
-    /// Compares the given pip value to the target.
-    let compare pipValue = function
+    /// Is the given pip value valid for this constraint?
+    let isValid pipValue = function
         | Comparison comp ->
-            Operator.compare
+            ComparisonOperator.compare
                 pipValue
                 comp.Operator
                 comp.Target
