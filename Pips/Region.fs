@@ -45,6 +45,15 @@ module Region =
             |> Array.map board.Item
             |> Array.where ((<>) Board.emptyCell)
 
+    module private Seq =
+
+        /// Determines whether the given sequence contains at
+        /// least the given number of elements.
+        let isLengthAtLeast n source =
+            source
+                |> Seq.truncate n
+                |> Seq.length = n
+
     /// Validates an Equal region.
     let private validateEqual board dominoes region =
         assert(region.Type.IsEqual)
@@ -63,12 +72,10 @@ module Region =
             let value = pipCounts[0]
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
-            let nAvailable =
-                dominoes
-                    |> Seq.collect Domino.toSeq
-                    |> Seq.where ((=) value)
-                    |> Seq.length
-            nAvailable >= nNeeded
+            dominoes
+                |> Seq.collect Domino.toSeq
+                |> Seq.where ((=) value)
+                |> Seq.isLengthAtLeast nNeeded
 
         else equal
 
@@ -81,13 +88,11 @@ module Region =
             let distinctValues = set distinctValues
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
-            let nAvailable =
-                dominoes
-                    |> Seq.collect Domino.toSeq
-                    |> Seq.where (
-                        distinctValues.Contains >> not)
-                    |> Seq.length
-            nAvailable >= nNeeded
+            dominoes
+                |> Seq.collect Domino.toSeq
+                |> Seq.where (
+                    distinctValues.Contains >> not)
+                |> Seq.isLengthAtLeast nNeeded
         else false
 
     /// Validates a SumLess region.
