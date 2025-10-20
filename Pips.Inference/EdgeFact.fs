@@ -6,10 +6,10 @@
 type EdgeFact =
 
     /// Edge values must be equal.
-    | SameRegionEquality of Edge
+    | SameRegionEqual of Edge
 
     /// Edge values must be unequal.
-    | SameRegionInequality of Edge
+    | SameRegionUnequal of Edge
 
     /// Edge values are unconstrained.
     | SameRegionUnconstrained of Edge
@@ -22,15 +22,15 @@ type EdgeFact =
             Target : int
         |}
 
-    /// Edge straddles two regions, so it's constrained by
-    /// two independent cell constraints.
+    /// Edge straddles two regions, so it has two separate
+    /// cell constraints.
     | CrossRegion of CellFact * CellFact
 
     /// Edge constrained by this fact.
     member fact.Edge =
         match fact with
-            | SameRegionEquality edge
-            | SameRegionInequality edge
+            | SameRegionEqual edge
+            | SameRegionUnequal edge
             | SameRegionUnconstrained edge -> edge
             | SameRegionSum case -> case.Edge
             | CrossRegion (factA, factB) ->
@@ -38,19 +38,21 @@ type EdgeFact =
 
 module EdgeFact =
 
-    let getEdgeFacts (tiling : Tiling) puzzle =
+    /// Gets constraints for the given edges in the given puzzle.
+    let getAll puzzle edges =
 
         let regionMap =
             Map [
                 for region in puzzle.Regions do
-                    let regions = Region.tighten puzzle region
+                    let regions =
+                        Region.tighten puzzle.Board region
                     for region in regions do
                         for cell in region.Cells do
                             cell, region
             ]
 
         [|   // to-do: sort by "slack"
-            for (cellA, cellB) in tiling do
+            for (cellA, cellB) in edges do
                 let regionA = regionMap[cellA]
                 let regionB = regionMap[cellB]
                 if regionA = regionB then   // to-do: region ID
@@ -60,10 +62,10 @@ module EdgeFact =
                             SameRegionUnconstrained (cellA, cellB)
 
                         | RegionType.Equal ->
-                            SameRegionEquality (cellA, cellB)
+                            SameRegionEqual (cellA, cellB)
 
                         | RegionType.Unequal ->
-                            SameRegionInequality (cellA, cellB)
+                            SameRegionUnequal (cellA, cellB)
 
                         | RegionType.SumLess target ->
                             SameRegionSum {|
@@ -90,11 +92,11 @@ module EdgeFact =
         seq {
             match edgeFact with
 
-                | SameRegionEquality edge ->
+                | SameRegionEqual edge ->
                     if domino.Left = domino.Right then
                         edge
 
-                | SameRegionInequality edge ->
+                | SameRegionUnequal edge ->
                     if domino.Left <> domino.Right then
                         edge
                         Edge.reverse edge

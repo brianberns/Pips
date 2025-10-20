@@ -58,7 +58,7 @@ module Puzzle =
     /// Is the given cell on the given puzzle's board not
     /// covered by a domino?
     let isEmpty cell puzzle =
-        Board.isEmpty puzzle.Board cell
+        Board.isEmpty cell puzzle.Board
 
     /// Gets all tilings for the given puzzle.
     let getAllTilings puzzle =

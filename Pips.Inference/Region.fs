@@ -3,16 +3,16 @@ namespace Pips
 module Region =
 
     /// Tightens the defintion of the given region, if possible.
-    let tighten puzzle (region : Region) =
+    let tighten board (region : Region) =
 
             // group covered and uncovered cells within the region
         let uncovered, covered =
             Array.partition
-                (flip Puzzle.isEmpty puzzle)
+                (flip Board.isEmpty board)
                 region.Cells
 
             // get the values in the covered cells
-        let values = Array.map puzzle.Board.Item covered
+        let values = Array.map board.Item covered
 
         /// Creates a new region for the uncovered cells with a
         /// (potentially) reduced target.

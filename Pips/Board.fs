@@ -89,7 +89,7 @@ module Board =
         }
 
     /// Is the given cell empty (i.e. not covered by a domino)?
-    let isEmpty (board : Board) cell =
+    let isEmpty cell (board : Board) =
         board[cell] = emptyCell
 
     /// Places the given domino in the given location on the
@@ -98,8 +98,8 @@ module Board =
     /// right cell. We use a 2D array for speed.
     let place domino ((cellLeft, cellRight) as edge : Edge) board =
         assert(Cell.areAdjacent cellLeft cellRight)
-        assert(isEmpty board cellLeft)
-        assert(isEmpty board cellRight)
+        assert(isEmpty cellLeft board)
+        assert(isEmpty cellRight board)
 
             // copy on write
         let cells = Array2D.copy board.Cells

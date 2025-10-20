@@ -4,9 +4,9 @@ module Inference =
 
     let solve puzzle =
 
-        let rec loop tiling puzzle =
+        let rec loop (tiling : Tiling) puzzle =
 
-            let edgeFacts = EdgeFact.getEdgeFacts tiling puzzle
+            let edgeFacts = EdgeFact.getAll puzzle tiling
 
             if edgeFacts.Length = 0 then
                 if Puzzle.isSolved puzzle then
