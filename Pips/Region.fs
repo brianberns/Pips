@@ -79,7 +79,21 @@ module Region =
     let private validateUnequal board dominoes region =
         assert(region.Type.IsUnequal)
         let pipCounts = getPipCounts board region
-        (Array.distinct pipCounts).Length = pipCounts.Length
+        let distinctValues = Array.distinct pipCounts
+        if distinctValues.Length = pipCounts.Length then
+            let distinctValues = set distinctValues
+            let nNeeded =
+                region.Cells.Length - pipCounts.Length
+            let nAvailable =
+                dominoes
+                    |> Seq.sumBy (fun domino ->
+                        if distinctValues.Contains(domino.Left) then
+                            if distinctValues.Contains(domino.Right) then 0
+                            else 1
+                        elif distinctValues.Contains(domino.Right) then 1
+                        else 2)
+            nAvailable >= nNeeded
+        else false
 
     /// Validates a SumLess region.
     let private validateSumLess board dominoes n region =
