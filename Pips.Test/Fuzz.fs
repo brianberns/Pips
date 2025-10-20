@@ -90,7 +90,7 @@ module SolvedPuzzle =
                         // pick an arbitrary orientation for the domino
                     let! flag = Gen.elements [ true; false ]
                     let edge =
-                        if domino.Left = domino.Right || flag then edge   // avoid creating a denormalized placement
+                        if Domino.isDouble domino || flag then edge   // avoid creating a denormalized placement
                         else Edge.reverse edge
 
                         // place the domino

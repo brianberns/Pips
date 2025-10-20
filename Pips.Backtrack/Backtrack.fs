@@ -28,7 +28,7 @@ module Backtrack =
                             // try each domino on that edge
                         for domino in puzzle.UnplacedDominoes do
                             yield! loop childTrees domino edge puzzle
-                            if domino.Left <> domino.Right then
+                            if not (Domino.isDouble domino) then
                                 let edge = Edge.reverse edge
                                 yield! loop childTrees domino edge puzzle
             |]
@@ -72,7 +72,7 @@ module Backtrack =
                             // try each domino on that edge
                         for domino in puzzle.UnplacedDominoes do
                             yield! loop childTrees domino edge puzzle
-                            if domino.Left <> domino.Right then
+                            if not (Domino.isDouble domino) then
                                 let edge = Edge.reverse edge
                                 yield! loop childTrees domino edge puzzle
             }

@@ -33,3 +33,14 @@ module Domino =
             Left = left
             Right = right
         }
+
+    /// Is the given domino a "double", such as 6-6?
+    let isDouble domino =
+        domino.Left = domino.Right
+
+    /// Converts the given domino to a sequence of pip counts.
+    let toSeq domino =
+        seq {
+            domino.Left
+            domino.Right
+        }

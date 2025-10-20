@@ -65,12 +65,9 @@ module Region =
                 region.Cells.Length - pipCounts.Length
             let nAvailable =
                 dominoes
-                    |> Seq.sumBy (fun domino ->
-                        if domino.Left = value then
-                            if domino.Right = value then 2
-                            else 1
-                        elif domino.Right = value then 1
-                        else 0)
+                    |> Seq.collect Domino.toSeq
+                    |> Seq.where ((=) value)
+                    |> Seq.length
             nAvailable >= nNeeded
 
         else equal
@@ -86,12 +83,10 @@ module Region =
                 region.Cells.Length - pipCounts.Length
             let nAvailable =
                 dominoes
-                    |> Seq.sumBy (fun domino ->
-                        if distinctValues.Contains(domino.Left) then
-                            if distinctValues.Contains(domino.Right) then 0
-                            else 1
-                        elif distinctValues.Contains(domino.Right) then 1
-                        else 2)
+                    |> Seq.collect Domino.toSeq
+                    |> Seq.where (
+                        distinctValues.Contains >> not)
+                    |> Seq.length
             nAvailable >= nNeeded
         else false
 
