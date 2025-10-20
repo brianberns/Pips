@@ -122,12 +122,17 @@ module Region =
     let private validateSumGreater board dominoes n region =
         assert(region.Type.IsSumGreater)
         let pipCounts = getPipCounts board region
-        let sum = Array.sum pipCounts
 
-            // all cells covered?
-        if pipCounts.Length = region.Cells.Length then
-            sum > n
-        else true
+            // are there enough large values available?
+        let nNeeded =
+            region.Cells.Length - pipCounts.Length
+        let largest =
+            dominoes
+                |> Seq.collect Domino.toSeq
+                |> Seq.sortDescending
+                |> Seq.take nNeeded
+                |> Seq.sum
+        Array.sum pipCounts + largest > n
 
     /// Validates a Sum region.
     let private validateSum board dominoes n region =
