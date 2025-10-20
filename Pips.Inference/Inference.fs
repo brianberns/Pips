@@ -2,31 +2,38 @@
 
 module Inference =
 
+    /// Finds all solutions for the given puzzle by inference,
+    /// like a human!
     let solve puzzle =
 
+        /// Solves the given puzzle by inference on the given
+        /// tiling.
         let rec loop (tiling : Tiling) puzzle =
 
-            let edgeFacts = EdgeFact.getAll puzzle tiling
+                // get constraints on edges in this tiling
+            let facts = EdgeFact.getAll puzzle tiling
 
-            if edgeFacts.Length = 0 then
+            if facts.Length = 0 then
                 if Puzzle.isSolved puzzle then
                     [| puzzle |]
                 else Array.empty
+
             else
                 let puzzleOpts =
-                    edgeFacts
-                        |> Seq.tryPick (fun edgeFact ->
+                    facts
+                        |> Seq.tryPick (fun fact ->
 
-                            let pairs =
+                                // get all possible domino placements consistent with this fact
+                            let placements =
                                 puzzle.UnplacedDominoes
                                     |> Seq.collect (fun domino ->
-                                        EdgeFact.apply domino edgeFact
+                                        EdgeFact.apply domino fact
                                             |> Seq.map (fun edge ->
                                                 domino, edge))
                                     |> Seq.toArray
 
-                            if pairs.Length = 1 then
-                                let domino, edge = pairs[0]
+                            if placements.Length = 1 then
+                                let domino, edge = placements[0]
                                 let puzzle =
                                     Puzzle.place domino edge puzzle
                                 assert(
@@ -44,7 +51,7 @@ module Inference =
                     | None ->
                         let domino = Seq.head puzzle.UnplacedDominoes
                         let edges =
-                            edgeFacts
+                            facts
                                 |> Seq.collect (fun edgeFact ->
                                     EdgeFact.apply domino edgeFact)
                         [|
