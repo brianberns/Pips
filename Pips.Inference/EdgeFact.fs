@@ -38,52 +38,12 @@ type EdgeFact =
 
 module EdgeFact =
 
-    let shrink (region : Region) puzzle =
-
-        let uncovered, covered =
-            Array.partition
-                (flip Puzzle.isEmpty puzzle)
-                region.Cells
-        let values = Array.map puzzle.Board.Item covered
-
-        match region.Type with
-
-            | RegionType.Equal when covered.Length > 0 ->
-                let target =
-                    Seq.distinct values |> Seq.exactlyOne
-                uncovered
-                    |> Array.map (fun cell ->
-                        {
-                            Cells = [| cell |]
-                            Type = RegionType.SumExact target
-                        })
-
-            | RegionType.SumLess target ->
-                let sum = Array.sum values
-                let target = target - sum
-                assert(target >= PipCount.minValue * uncovered.Length)
-                Array.singleton {
-                    Cells = uncovered
-                    Type = RegionType.SumLess target
-                }
-
-            | RegionType.SumExact target ->
-                let sum = Array.sum values
-                let target = target - sum
-                assert(target >= PipCount.minValue * uncovered.Length)
-                Array.singleton {
-                    Cells = uncovered
-                    Type = RegionType.SumExact target
-                }
-
-            | _ -> Array.singleton region
-
     let getEdgeFacts (tiling : Tiling) puzzle =
 
         let regionMap =
             Map [
                 for region in puzzle.Regions do
-                    let regions = shrink region puzzle
+                    let regions = Region.tighten puzzle region
                     for region in regions do
                         for cell in region.Cells do
                             cell, region
