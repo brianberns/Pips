@@ -106,7 +106,17 @@ module Region =
     let private validateSumLess board dominoes n region =
         assert(region.Type.IsSumLess)
         let pipCounts = getPipCounts board region
-        Array.sum pipCounts < n
+
+            // are there enough small values available?
+        let nNeeded =
+            region.Cells.Length - pipCounts.Length
+        let smallest =
+            dominoes
+                |> Seq.collect Domino.toSeq
+                |> Seq.sort
+                |> Seq.take nNeeded
+                |> Seq.sum
+        Array.sum pipCounts + smallest < n
 
     /// Validates a SumGreater region.
     let private validateSumGreater board dominoes n region =
