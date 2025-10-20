@@ -46,6 +46,16 @@ module CellFact =
                 |}
 
                 // if this is the only cell in the region, its value
+                // must be greater than the target
+            | RegionType.SumGreater target
+                when region.Cells.Length = 1 ->
+                Comparison {|
+                    Cell = cell
+                    Operator = GreaterThan
+                    Target = target
+                |}
+
+                // if this is the only cell in the region, its value
                 // must match the target; otherwise, it may be less
                 // than the target
             | RegionType.SumExact target ->
@@ -60,6 +70,8 @@ module CellFact =
                     Target = target
                 |}
 
+                // we don't have enough information to the constrain
+                // the cell value
             | _ -> Unconstrained cell
 
     /// Compares the given pip value to the target.
