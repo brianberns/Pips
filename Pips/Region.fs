@@ -82,9 +82,14 @@ module Region =
     /// Validates an Unequal region.
     let private validateUnequal board dominoes region =
         assert(region.Type.IsUnequal)
+
         let pipCounts = getPipCounts board region
+
+            // are all values distinct so far?
         let distinctValues = Array.distinct pipCounts
         if distinctValues.Length = pipCounts.Length then
+
+                // are there enough distinct values available?
             let distinctValues = set distinctValues
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
@@ -92,7 +97,9 @@ module Region =
                 |> Seq.collect Domino.toSeq
                 |> Seq.where (
                     distinctValues.Contains >> not)
+                |> Seq.distinct
                 |> Seq.isLengthAtLeast nNeeded
+
         else false
 
     /// Validates a SumLess region.
