@@ -63,32 +63,31 @@ module EdgeFact =
 
             // create a fact for each edge
         [|
-            for (cellA, cellB) in edges do
-
-                let regionIdA = regionMap[cellA]
-                let regionIdB = regionMap[cellB]
+            for ((cellA, cellB) as edge) in edges do
 
                     // cells are in the same region?
+                let regionIdA = regionMap[cellA]
+                let regionIdB = regionMap[cellB]
                 if regionIdA = regionIdB then
                     match regions[regionIdA].Type with
 
                             // edge values must be equal to each other
                         | RegionType.Equal ->
-                            SameRegionEqual (cellA, cellB)
+                            SameRegionEqual edge
 
                             // edge values must not be equal to each other
                         | RegionType.Unequal ->
-                            SameRegionUnequal (cellA, cellB)
+                            SameRegionUnequal edge
 
                             // edge values are unconstrained
                         | RegionType.Any ->
-                            SameRegionUnconstrained (cellA, cellB)
+                            SameRegionUnconstrained edge
 
                             // sum of edge values must be less than overall
                             // region target
                         | RegionType.SumLess target ->
                             SameRegionSum {|
-                                Edge = cellA, cellB
+                                Edge = edge
                                 Operator = LessThan
                                 Target = target
                             |}
@@ -97,7 +96,7 @@ module EdgeFact =
                             // to the overall region target
                         | RegionType.SumExact target ->
                             SameRegionSum {|
-                                Edge = cellA, cellB
+                                Edge = edge
                                 Operator = LessThanOrEqualTo
                                 Target = target
                             |}
