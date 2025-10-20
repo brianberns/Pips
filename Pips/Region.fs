@@ -45,19 +45,14 @@ module Region =
             |> Array.map board.Item
             |> Array.where ((<>) Board.emptyCell)
 
-    /// Determines whether the given array has fewer than two
-    /// distinct elements.
-    let private hasLessThanTwoDistinct (array : _[]) =
-        if array.Length < 2 then true
-        else
-            let elem = array[0]
-            Array.forall ((=) elem) array[1..]   // fail early if a second value is found
-
     /// Validates an Equal region.
     let private validateEqual board region =
         assert(region.Type.IsEqual)
         let pipCounts = getPipCounts board region
-        hasLessThanTwoDistinct pipCounts
+        if pipCounts.Length < 2 then true
+        else
+            let value = pipCounts[0]
+            Array.forall ((=) value) pipCounts[1..]   // fail early if a second value is found
 
     /// Validates an Unequal region.
     let private validateUnequal board region =
