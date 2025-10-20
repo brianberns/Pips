@@ -11,12 +11,23 @@ type Puzzle =
         /// dominoes placed there.
         Regions : Region[]
 
+        /// Map from cells to their containing regions.
+        RegionMap : Map<Cell, int (*region index*)>
+
         /// A board of cells, some of which may be covered
         /// with dominoes.
         Board : Board
     }
 
 module Puzzle =
+
+    /// Maps the given regions' cells.
+    let getRegionMap (regions : _[]) =
+        Map [
+            for iRegion = 0 to regions.Length - 1 do
+                for cell in regions[iRegion].Cells do
+                    cell, iRegion
+        ]
 
     /// Creates a puzzle in its initial state, where no dominoes
     /// have yet been placed on the board.
@@ -38,6 +49,7 @@ module Puzzle =
         {
             UnplacedDominoes = set dominoes
             Regions = regions
+            RegionMap = getRegionMap regions
             Board = Board.create (maxRow + 1) (maxColumn + 1)
         }
 
@@ -69,12 +81,48 @@ module Puzzle =
             |> Tiling.getAll
 
     /// Places the given domino in the given location in
-    /// the given puzzle.
+    /// the given puzzle. This must be a valid placement.
     let place domino edge puzzle =
-        {
-            puzzle with
-                UnplacedDominoes =
-                    puzzle.UnplacedDominoes.Remove(domino)
-                Board =
-                    Board.place domino edge puzzle.Board
-        }
+        let puzzle =
+            {
+                puzzle with
+                    UnplacedDominoes =
+                        puzzle.UnplacedDominoes.Remove(domino)
+                    Board =
+                        Board.place domino edge puzzle.Board
+            }
+        assert(isValid puzzle)
+        puzzle
+
+    /// Tries to place the given domino in the given location in
+    /// the given puzzle.
+    let tryPlace domino ((cellA, cellB) as edge) puzzle =
+        assert(isValid puzzle)
+
+            // try to place the domino
+        let puzzle =
+            {
+                puzzle with
+                    UnplacedDominoes =
+                        puzzle.UnplacedDominoes.Remove(domino)
+                    Board =
+                        Board.place domino edge puzzle.Board
+            }
+
+            // affected regions are still valid?
+        let regionIdA = puzzle.RegionMap[cellA]
+        let regionIdB = puzzle.RegionMap[cellB]
+        if regionIdA = regionIdB then
+            let region = puzzle.Regions[regionIdA]
+            if Region.isValid puzzle.Board region then
+                assert(isValid puzzle)
+                Some puzzle
+            else None
+        else
+            let regionA = puzzle.Regions[regionIdA]
+            let regionB = puzzle.Regions[regionIdB]
+            if Region.isValid puzzle.Board regionA
+                && Region.isValid puzzle.Board regionB then
+                assert(isValid puzzle)
+                Some puzzle
+            else None

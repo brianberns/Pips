@@ -52,14 +52,7 @@ module EdgeFact =
                 for region in puzzle.Regions do
                     yield! Region.tighten puzzle.Board region
             |]
-
-            // map cells to their containing regions
-        let regionMap =
-            Map [
-                for iRegion = 0 to regions.Length - 1 do
-                    for cell in regions[iRegion].Cells do
-                        cell, iRegion
-            ]
+        let regionMap = Puzzle.getRegionMap regions
 
             // create a fact for each edge
         [|

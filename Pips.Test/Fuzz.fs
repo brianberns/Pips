@@ -307,6 +307,7 @@ module SolvedPuzzle =
                 {
                     UnplacedDominoes = set dominoes
                     Regions = Array.empty
+                    RegionMap = Map.empty
                     Board = emptyBoard
                 }
             let! solution = place puzzle
@@ -319,10 +320,15 @@ module SolvedPuzzle =
                     |> Seq.toArray
 
             let! regions = createRegions cells solution.Board
+            let regionMap = Puzzle.getRegionMap regions
             let puzzle =
-                { puzzle with Regions = regions }
+                { puzzle with
+                    Regions = regions
+                    RegionMap = regionMap }
             let solution =
-                { solution with Regions = regions }
+                { solution with
+                    Regions = regions
+                    RegionMap = regionMap }
             return {
                 Puzzle = puzzle
                 Solution = solution
