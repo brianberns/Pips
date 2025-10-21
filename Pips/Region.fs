@@ -36,6 +36,30 @@ type Region =
         Type : RegionType
     }
 
+/// Unplaced pip counts.
+type UnplacedPipCounts =
+    {
+        /// Unsorted.
+        Unsorted : PipCount[]
+
+        /// Sorted in ascending order.
+        Ascending : PipCount[]
+
+        /// Sorted in descending order.
+        Descending : PipCount[]
+    }
+
+module UnplacedPipCounts =
+
+    /// Creates unplaced pip counts.
+    let create unsorted =
+        let sorted = Array.sort unsorted
+        {
+            Unsorted = unsorted
+            Ascending = sorted
+            Descending = Array.rev sorted
+        }
+
 module Region =
 
     /// Gets the pip counts covering cells in the given region
@@ -54,32 +78,8 @@ module Region =
                 |> Seq.truncate n
                 |> Seq.length = n
 
-    /// Details needed for region validation.
-    type ValidationInfo =
-        {
-            /// Unplaced pip counts.
-            UnplacedPipCounts : PipCount[]
-
-            /// Unplaced pip counts sorted in ascending order.
-            UnplacedPipCountsAscending : PipCount[]
-
-            /// Unplaced pip counts sorted in descending order.
-            UnplacedPipCountsDescending : PipCount[]
-        }
-
-    module ValidationInfo =
-
-        /// Creates details needed for region validation.
-        let create unplacedPipCounts =
-            let sorted = Array.sort unplacedPipCounts
-            {
-                UnplacedPipCounts = unplacedPipCounts
-                UnplacedPipCountsAscending = sorted
-                UnplacedPipCountsDescending = Array.rev sorted
-            }
-
     /// Validates an Equal region.
-    let private validateEqual board info region =
+    let private validateEqual board unplacedPipCounts region =
         assert(region.Type.IsEqual)
 
         let pipCounts = getPipCounts board region
@@ -96,14 +96,14 @@ module Region =
             let value = pipCounts[0]
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
-            info.UnplacedPipCounts
+            unplacedPipCounts.Unsorted
                 |> Seq.where ((=) value)
                 |> Seq.isLengthAtLeast nNeeded
 
         else equal
 
     /// Validates an Unequal region.
-    let private validateUnequal board info region =
+    let private validateUnequal board unplacedPipCounts region =
         assert(region.Type.IsUnequal)
 
         let pipCounts = getPipCounts board region
@@ -116,7 +116,7 @@ module Region =
             let distinctValues = set distinctValues
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
-            info.UnplacedPipCounts
+            unplacedPipCounts.Unsorted
                 |> Seq.where (
                     distinctValues.Contains >> not)
                 |> Seq.distinct
@@ -125,7 +125,7 @@ module Region =
         else false
 
     /// Validates a SumLess region.
-    let private validateSumLess board info n region =
+    let private validateSumLess board unplacedPipCounts n region =
         assert(region.Type.IsSumLess)
 
         let pipCounts = getPipCounts board region
@@ -134,13 +134,13 @@ module Region =
         let nNeeded =
             region.Cells.Length - pipCounts.Length
         let smallest =
-            info.UnplacedPipCountsAscending
+            unplacedPipCounts.Ascending
                 |> Seq.take nNeeded
                 |> Seq.sum
         Array.sum pipCounts + smallest < n
 
     /// Validates a SumGreater region.
-    let private validateSumGreater board info n region =
+    let private validateSumGreater board unplacedPipCounts n region =
         assert(region.Type.IsSumGreater)
 
         let pipCounts = getPipCounts board region
@@ -149,13 +149,13 @@ module Region =
         let nNeeded =
             region.Cells.Length - pipCounts.Length
         let largest =
-            info.UnplacedPipCountsDescending
+            unplacedPipCounts.Descending
                 |> Seq.take nNeeded
                 |> Seq.sum
         Array.sum pipCounts + largest > n
 
     /// Validates a SumExact region.
-    let private validateSumExact board info n region =
+    let private validateSumExact board unplacedPipCounts n region =
         assert(region.Type.IsSumExact)
 
         let pipCounts = getPipCounts board region
@@ -171,7 +171,7 @@ module Region =
                 // are there enough small values available?
             let valid =
                 let smallest =
-                    info.UnplacedPipCountsAscending
+                    unplacedPipCounts.Ascending
                         |> Seq.take nNeeded
                         |> Seq.sum
                 sum + smallest <= n
@@ -179,7 +179,7 @@ module Region =
                 // are there enough large values available?
             if valid then
                 let largest =
-                    info.UnplacedPipCountsDescending
+                    unplacedPipCounts.Descending
                         |> Seq.take nNeeded
                         |> Seq.sum
                 sum + largest >= n
@@ -188,24 +188,18 @@ module Region =
     /// Validates the given region on the given board with the
     /// given unplaced dominoes.
     let isValid board unplacedPipCounts region =
-        let info = ValidationInfo.create unplacedPipCounts
         match region.Type with
             | RegionType.Any -> true
             | RegionType.Equal ->
-                validateEqual
-                    board info region
+                validateEqual board unplacedPipCounts region
             | RegionType.Unequal ->
-                validateUnequal
-                    board info region
+                validateUnequal board unplacedPipCounts region
             | RegionType.SumLess n ->
-                validateSumLess
-                    board info n region
+                validateSumLess board unplacedPipCounts n region
             | RegionType.SumGreater n ->
-                validateSumGreater
-                    board info n region
+                validateSumGreater board unplacedPipCounts n region
             | RegionType.SumExact n ->
-                validateSumExact
-                    board info n region
+                validateSumExact board unplacedPipCounts n region
 
     /// Determines whether the given region on the given board has
     /// been solved (with no uncovered cells).
