@@ -134,9 +134,8 @@ module Region =
         let nNeeded =
             region.Cells.Length - pipCounts.Length
         let smallest =
-            unplacedPipCounts.Ascending
-                |> Seq.take nNeeded
-                |> Seq.sum
+            unplacedPipCounts.Ascending[0 .. nNeeded-1]
+                |> Array.sum
         Array.sum pipCounts + smallest < n
 
     /// Validates a SumGreater region.
@@ -149,9 +148,8 @@ module Region =
         let nNeeded =
             region.Cells.Length - pipCounts.Length
         let largest =
-            unplacedPipCounts.Descending
-                |> Seq.take nNeeded
-                |> Seq.sum
+            unplacedPipCounts.Descending[0 .. nNeeded-1]
+                |> Array.sum
         Array.sum pipCounts + largest > n
 
     /// Validates a SumExact region.
@@ -171,17 +169,15 @@ module Region =
                 // are there enough small values available?
             let valid =
                 let smallest =
-                    unplacedPipCounts.Ascending
-                        |> Seq.take nNeeded
-                        |> Seq.sum
+                    unplacedPipCounts.Ascending[0 .. nNeeded-1]
+                        |> Array.sum
                 sum + smallest <= n
 
                 // are there enough large values available?
             if valid then
                 let largest =
-                    unplacedPipCounts.Descending
-                        |> Seq.take nNeeded
-                        |> Seq.sum
+                    unplacedPipCounts.Descending[0 .. nNeeded-1]
+                        |> Array.sum
                 sum + largest >= n
             else false
 
