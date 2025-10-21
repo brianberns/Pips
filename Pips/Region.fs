@@ -125,7 +125,7 @@ module Region =
         else false
 
     /// Validates a SumLess region.
-    let private validateSumLess board unplacedPipCounts n region =
+    let private validateSumLess board unplacedPipCounts target region =
         assert(region.Type.IsSumLess)
 
         let pipCounts = getPipCounts board region
@@ -136,10 +136,10 @@ module Region =
         let smallest =
             unplacedPipCounts.Ascending[0 .. nNeeded-1]
                 |> Array.sum
-        Array.sum pipCounts + smallest < n
+        Array.sum pipCounts + smallest < target
 
     /// Validates a SumGreater region.
-    let private validateSumGreater board unplacedPipCounts n region =
+    let private validateSumGreater board unplacedPipCounts target region =
         assert(region.Type.IsSumGreater)
 
         let pipCounts = getPipCounts board region
@@ -150,10 +150,10 @@ module Region =
         let largest =
             unplacedPipCounts.Descending[0 .. nNeeded-1]
                 |> Array.sum
-        Array.sum pipCounts + largest > n
+        Array.sum pipCounts + largest > target
 
     /// Validates a SumExact region.
-    let private validateSumExact board unplacedPipCounts n region =
+    let private validateSumExact board unplacedPipCounts target region =
         assert(region.Type.IsSumExact)
 
         let pipCounts = getPipCounts board region
@@ -163,7 +163,7 @@ module Region =
 
             // all cells covered?
         if nNeeded = 0 then
-            sum = n
+            sum = target
 
         else
                 // are there enough small values available?
@@ -171,14 +171,14 @@ module Region =
                 let smallest =
                     unplacedPipCounts.Ascending[0 .. nNeeded-1]
                         |> Array.sum
-                sum + smallest <= n
+                sum + smallest <= target
 
                 // are there enough large values available?
             if valid then
                 let largest =
                     unplacedPipCounts.Descending[0 .. nNeeded-1]
                         |> Array.sum
-                sum + largest >= n
+                sum + largest >= target
             else false
 
     /// Validates the given region on the given board with the
@@ -190,12 +190,12 @@ module Region =
                 validateEqual board unplacedPipCounts region
             | RegionType.Unequal ->
                 validateUnequal board unplacedPipCounts region
-            | RegionType.SumLess n ->
-                validateSumLess board unplacedPipCounts n region
-            | RegionType.SumGreater n ->
-                validateSumGreater board unplacedPipCounts n region
-            | RegionType.SumExact n ->
-                validateSumExact board unplacedPipCounts n region
+            | RegionType.SumLess target ->
+                validateSumLess board unplacedPipCounts target region
+            | RegionType.SumGreater target ->
+                validateSumGreater board unplacedPipCounts target region
+            | RegionType.SumExact target ->
+                validateSumExact board unplacedPipCounts target region
 
     /// Determines whether the given region on the given board has
     /// been solved (with no uncovered cells).
@@ -208,10 +208,10 @@ module Region =
                     (Array.distinct pipCounts).Length = 1
                 | RegionType.Unequal ->
                     (Array.distinct pipCounts).Length = pipCounts.Length
-                | RegionType.SumLess n ->
-                    Array.sum pipCounts < n
-                | RegionType.SumGreater n ->
-                    Array.sum pipCounts > n
-                | RegionType.SumExact n ->
-                    Array.sum pipCounts = n
+                | RegionType.SumLess target ->
+                    Array.sum pipCounts < target
+                | RegionType.SumGreater target ->
+                    Array.sum pipCounts > target
+                | RegionType.SumExact target ->
+                    Array.sum pipCounts = target
         else false
