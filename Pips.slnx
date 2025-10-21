@@ -1,7 +1,6 @@
 <Solution>
   <Project Path="Pips.Backtrack/Pips.Backtrack.fsproj" Id="4b6cbba3-2d9e-48ce-b615-94a8ffa16ffe" />
   <Project Path="Pips.Benchmark/Pips.Benchmark.fsproj" />
-  <Project Path="Pips.Inference/Pips.Inference.fsproj" Id="56ba7d20-f291-4c10-a430-41dd8c9dfd8f" />
   <Project Path="Pips.Test/Pips.Test.fsproj" />
   <Project Path="Pips/Pips.fsproj" />
 </Solution>
