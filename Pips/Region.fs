@@ -66,12 +66,11 @@ module Region =
 
         /// Creates lazy sorting for unplaced pip counts.
         let create pipCounts =
+            let sorted = lazy (Array.sort pipCounts)
             {
                 Unsorted = pipCounts
-                SortedAscending =
-                    lazy (Array.sort pipCounts)
-                SortedDescending =
-                    lazy (Array.sortDescending pipCounts)
+                SortedAscending = sorted
+                SortedDescending = lazy (Array.rev sorted.Value)
             }
 
     /// Validates an Equal region.
