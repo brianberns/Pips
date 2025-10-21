@@ -154,8 +154,8 @@ module Region =
                 |> Seq.sum
         Array.sum pipCounts + largest > n
 
-    /// Validates a Sum region.
-    let private validateSum board info n region =
+    /// Validates a SumExact region.
+    let private validateSumExact board info n region =
         assert(region.Type.IsSumExact)
 
         let pipCounts = getPipCounts board region
@@ -205,7 +205,7 @@ module Region =
                 validateSumGreater
                     board info n region
             | RegionType.SumExact n ->
-                validateSum
+                validateSumExact
                     board info n region
 
     /// Determines whether the given region on the given board has
