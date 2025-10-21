@@ -38,6 +38,8 @@ Found 1 solution(s) in 00:00:02.5545949:
             └───────┘       └───┴───┘
 ```
 
-# Overview
+# Introduction
 
-[Pips](https://www.nytimes.com/games/pips) is a game from the New York Times. The object is to cover a shape made from square cells with a set of dominoes, subject to some constraints. Every day, the Times publishes three Pips puzzles, described as Easy, Medium, and Hard.
+[Pips](https://www.nytimes.com/games/pips) is a game from the New York Times. The object is to cover an irregular board of square cells with a set of dominoes, subject to some constraints. The Times publishes an easy, medium, and hard Pips puzzle every day.
+
+Solving Pips is a good programming challenge because the number of possible solutions increases quickly as the board gets larger. Some of the hard-level Pips games can take a very long time to solve by a brute force search, so we'll have to be a bit clever to get the time under, say, a few seconds in the worst case.
