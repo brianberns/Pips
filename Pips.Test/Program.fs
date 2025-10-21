@@ -296,7 +296,7 @@ module Program =
 
         let startDate = DateOnly.Parse("8/18/2025")
         let pairs =
-            [| 0 .. 81 |]
+            [| 0 .. 87 |]
                 |> Array.map (fun offset ->
                     let date = startDate.AddDays(offset)
                     let resultOpt =
@@ -380,4 +380,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveTwo ()
+    solveMany ()
