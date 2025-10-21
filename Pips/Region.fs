@@ -167,7 +167,7 @@ module Region =
             // base case: a sum of 0 with 0 items is always possible
         dp[0, 0] <- true
 
-            // if we can make sum (j - num) with (c - 1) items, we can
+            // if we can make sum (j - elem) with (c - 1) items, we can
             // make sum j with c items
         for elem in source do
             for j = target downto elem do
