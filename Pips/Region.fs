@@ -159,9 +159,9 @@ module Region =
         assert(region.Type.IsSumExact)
 
         let pipCounts = getPipCounts board region
-        let sum = Array.sum pipCounts
         let nNeeded =
             region.Cells.Length - pipCounts.Length
+        let sum = Array.sum pipCounts
 
             // all cells covered?
         if nNeeded = 0 then
