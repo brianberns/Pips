@@ -46,7 +46,7 @@ module Puzzle =
 
             // gather all unplaced domino pip counts
         let unplacedPipCounts =
-            Region.UnplacedPipCounts.create [|
+            Region.RegionValidationInfo.create [|
                 for domino in puzzle.UnplacedDominoes do
                     domino.Left   // unroll Domino.toSeq for speed
                     domino.Right
