@@ -268,10 +268,8 @@ module Program =
                 Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                     |> Map.find "hard"
             let stopwatch = Stopwatch.StartNew()
-            match Backtrack.trySolve puzzle with
-                | Some solution ->
-                    stopwatch.Elapsed.TotalSeconds, solution
-                | None -> failwith "No solution"
+            let solutions = Backtrack.solve puzzle
+            stopwatch.Elapsed.TotalSeconds, solutions
 
         let run timeout work =
             let work =
@@ -288,10 +286,10 @@ module Program =
                 None
 
         let print (date : DateOnly) = function
-            | Some (time : float, puzzle) ->
-                printfn $"{date}: {time} seconds"
+            | Some (time : float, solutions : _[]) ->
+                printfn $"{date}: Found {solutions.Length} solution(s) in {time} seconds"
                 printfn ""
-                printfn $"{printSolution puzzle}"
+                printfn $"{printSolution solutions[0]}"
             | None ->
                 printfn $"{date}: timeout"
                 printfn ""
@@ -382,5 +380,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveOne () |> ignore
-
+    solveMany ()
