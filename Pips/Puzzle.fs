@@ -46,10 +46,11 @@ module Puzzle =
 
             // gather all unplaced domino pip counts
         let unplacedPipCounts =
-            puzzle.UnplacedDominoes
-                |> Seq.collect Domino.toSeq
-                |> Seq.toArray
-                |> Region.UnplacedPipCounts.create
+            Region.UnplacedPipCounts.create [|
+                for domino in puzzle.UnplacedDominoes do
+                    domino.Left   // unroll Domino.toSeq for speed
+                    domino.Right
+            |]
 
         puzzle.Regions
             |> Array.forall (
