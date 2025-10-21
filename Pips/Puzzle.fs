@@ -45,16 +45,17 @@ module Puzzle =
     let isValid puzzle =
 
             // gather all unplaced domino pip counts
-        let dominoPipCounts =
+        let unplacedPipCounts =
             puzzle.UnplacedDominoes
                 |> Seq.collect Domino.toSeq
                 |> Seq.toArray
+                |> Region.UnplacedPipCounts.create
 
         puzzle.Regions
             |> Array.forall (
                 Region.isValid
                     puzzle.Board
-                    dominoPipCounts)
+                    unplacedPipCounts)
 
     /// Is the given puzzle completely solved? (Note that
     /// a solved puzzle is in a valid state, but a valid
