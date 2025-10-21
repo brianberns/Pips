@@ -55,7 +55,7 @@ module Region =
                 |> Seq.length = n
 
     /// Details needed for region validation.
-    type RegionValidationInfo =
+    type ValidationInfo =
         {
             /// Unplaced pip counts.
             UnplacedPipCounts : PipCount[]
@@ -67,7 +67,7 @@ module Region =
             UnplacedPipCountsDescending : Lazy<PipCount[]>
         }
 
-    module RegionValidationInfo =
+    module ValidationInfo =
 
         /// Creates details needed for region validation.
         let create unplacedPipCounts =

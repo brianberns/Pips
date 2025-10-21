@@ -44,19 +44,24 @@ module Puzzle =
     /// Is the given puzzle in a valid state?
     let isValid puzzle =
 
-            // gather all unplaced domino pip counts
-        let unplacedPipCounts =
-            Region.RegionValidationInfo.create [|
-                for domino in puzzle.UnplacedDominoes do
-                    domino.Left   // unroll Domino.toSeq for speed
-                    domino.Right
-            |]
+        let validationInfo =
 
+                // gather all unplaced domino pip counts
+            let unplacedPipCounts =
+                [|
+                    for domino in puzzle.UnplacedDominoes do
+                        domino.Left   // unroll Domino.toSeq for speed
+                        domino.Right
+                |]
+
+            Region.ValidationInfo.create unplacedPipCounts
+
+            // validate each region
         puzzle.Regions
             |> Array.forall (
                 Region.isValid
                     puzzle.Board
-                    unplacedPipCounts)
+                    validationInfo)
 
     /// Is the given puzzle completely solved? (Note that
     /// a solved puzzle is in a valid state, but a valid
