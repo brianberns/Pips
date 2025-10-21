@@ -142,15 +142,17 @@ module Program =
 
             // print dominoes
         printfn ""
-        for chunk in Seq.chunkBySize 3 puzzle.UnplacedDominoes do
+        printfn "Dominoes:"
+        printfn ""
+        for chunk in Seq.chunkBySize 7 puzzle.UnplacedDominoes do
             for domino in chunk do
                 printf "%d-%d   " domino.Left domino.Right
             printfn ""
 
-    let printSolution puzzle =
+    let printSolution solution =
 
         let cells =
-            puzzle.Regions
+            solution.Regions
                 |> Array.collect _.Cells
 
         let maxRow =
@@ -168,7 +170,7 @@ module Program =
                     |> Array.max
 
         let dominoMap =
-            puzzle.Board.DominoPlaces
+            solution.Board.DominoPlaces
                 |> Seq.collect (fun (_, (c1, c2)) ->
                     let d = min c1 c2, max c1 c2
                     [ c1, d; c2, d ])
@@ -183,7 +185,7 @@ module Program =
                 || cell.Column < 0
                 || cell.Column > maxCol then true
             else
-                puzzle.Board[cell] = Board.emptyCell
+                solution.Board[cell] = Board.emptyCell
 
         let hasHorizontalDominoBorder row col =
             let cell = Cell.create row col
@@ -240,7 +242,7 @@ module Program =
                     printf " "
                 
                 let cell = Cell.create row col
-                match puzzle.Board[cell] with
+                match solution.Board[cell] with
                     | Board.emptyCell -> printf "   "
                     | v -> printf " %d " v
             
@@ -325,7 +327,7 @@ module Program =
         let stopwatch = Stopwatch.StartNew()
         let solutions = Backtrack.solve puzzle
         stopwatch.Stop()
-        printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
+        printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}:"
         printfn ""
         for solution in solutions do
             printSolution solution
@@ -345,7 +347,7 @@ module Program =
         let stopwatch = Stopwatch.StartNew()
         let solutions = Backtrack.trySolve puzzle |> Option.toArray
         stopwatch.Stop()
-        printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
+        printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}:"
         printfn ""
         for solution in solutions do
             printSolution solution
@@ -380,4 +382,5 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveMany ()
+    solveOne () |> ignore
+
