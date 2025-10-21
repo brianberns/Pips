@@ -324,10 +324,38 @@ module Program =
             // solve puzzle and print solutions
         let stopwatch = Stopwatch.StartNew()
         let solutions = Backtrack.solve puzzle
+        stopwatch.Stop()
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
         printfn ""
         for solution in solutions do
             printSolution solution
+        stopwatch.Elapsed
+
+    let solveAnother () =
+
+            // download and print puzzle
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-15.json"
+        let puzzle = puzzleMap["hard"]
+        printfn "Puzzle:"
+        printfn ""
+        printPuzzle puzzle
+        printfn ""
+
+            // solve puzzle and print solutions
+        let stopwatch = Stopwatch.StartNew()
+        let solutions = Backtrack.trySolve puzzle |> Option.toArray
+        stopwatch.Stop()
+        printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
+        printfn ""
+        for solution in solutions do
+            printSolution solution
+        stopwatch.Elapsed
+
+    let solveTwo () =
+        let timeSpanA = solveOne ()
+        let timeSpanB = solveAnother ()
+        printfn ""
+        printfn $"Total: {timeSpanA + timeSpanB}"
 
     let generate () =
 
@@ -352,4 +380,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveOne ()
+    solveTwo ()
