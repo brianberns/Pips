@@ -158,6 +158,25 @@ module Region =
                 |> Array.sum
         sum + largest > target
 
+    /// Determines if k elements can sum to the given target.
+    let private canSum source target k =
+
+            // dp[j][c] will be true if sum 'j' is possible with 'c' items
+        let dp = Array2D.create (target + 1) (k + 1) false
+    
+            // base case: a sum of 0 with 0 items is always possible
+        dp[0, 0] <- true
+
+            // if we can make sum (j - num) with (c - 1) items, we can
+            // make sum j with c items
+        for elem in source do
+            for j = target downto elem do
+                for c = k downto 1 do
+                    if dp[j - elem, c - 1] then
+                        dp[j, c] <- true
+                
+        dp[target, k]
+
     /// Validates a SumExact region.
     let private validateSumExact board unplacedPipCounts target region =
         assert(region.Type.IsSumExact)
@@ -184,11 +203,19 @@ module Region =
                     sum + smallest <= target
 
                     // are there enough large values available?
+                let valid =
+                    if valid then
+                        let largest =
+                            unplacedPipCounts.Descending[0 .. nNeeded-1]
+                                |> Array.sum
+                        sum + largest >= target
+                    else false
+
                 if valid then
-                    let largest =
-                        unplacedPipCounts.Descending[0 .. nNeeded-1]
-                            |> Array.sum
-                    sum + largest >= target
+                    canSum
+                        unplacedPipCounts.Unsorted
+                        (target - sum)
+                        nNeeded
                 else false
 
     /// Validates the given region on the given board with the
