@@ -129,20 +129,26 @@ module Region =
         assert(region.Type.IsSumLess)
 
         let pipCounts = getPipCounts board region
+        let sum = Array.sum pipCounts
+
+            // target already exceeded? (assume no negative pip counts)
+        if sum > target then false
 
             // are there enough small values available?
-        let nNeeded =
-            region.Cells.Length - pipCounts.Length
-        let smallest =
-            unplacedPipCounts.Ascending[0 .. nNeeded-1]
-                |> Array.sum
-        Array.sum pipCounts + smallest < target
+        else
+            let nNeeded =
+                region.Cells.Length - pipCounts.Length
+            let smallest =
+                unplacedPipCounts.Ascending[0 .. nNeeded-1]
+                    |> Array.sum
+            sum + smallest < target
 
     /// Validates a SumGreater region.
     let private validateSumGreater board unplacedPipCounts target region =
         assert(region.Type.IsSumGreater)
 
         let pipCounts = getPipCounts board region
+        let sum = Array.sum pipCounts
 
             // are there enough large values available?
         let nNeeded =
@@ -150,36 +156,40 @@ module Region =
         let largest =
             unplacedPipCounts.Descending[0 .. nNeeded-1]
                 |> Array.sum
-        Array.sum pipCounts + largest > target
+        sum + largest > target
 
     /// Validates a SumExact region.
     let private validateSumExact board unplacedPipCounts target region =
         assert(region.Type.IsSumExact)
 
         let pipCounts = getPipCounts board region
-        let nNeeded =
-            region.Cells.Length - pipCounts.Length
         let sum = Array.sum pipCounts
 
-            // all cells covered?
-        if nNeeded = 0 then
-            sum = target
-
+            // target already exceeded? (assume no negative pip counts)
+        if sum > target then false
         else
-                // are there enough small values available?
-            let valid =
-                let smallest =
-                    unplacedPipCounts.Ascending[0 .. nNeeded-1]
-                        |> Array.sum
-                sum + smallest <= target
+            let nNeeded =
+                region.Cells.Length - pipCounts.Length
 
-                // are there enough large values available?
-            if valid then
-                let largest =
-                    unplacedPipCounts.Descending[0 .. nNeeded-1]
-                        |> Array.sum
-                sum + largest >= target
-            else false
+                // must hit target exactly when all cells covered
+            if nNeeded = 0 then
+                sum = target
+
+            else
+                    // are there enough small values available?
+                let valid =
+                    let smallest =
+                        unplacedPipCounts.Ascending[0 .. nNeeded-1]
+                            |> Array.sum
+                    sum + smallest <= target
+
+                    // are there enough large values available?
+                if valid then
+                    let largest =
+                        unplacedPipCounts.Descending[0 .. nNeeded-1]
+                            |> Array.sum
+                    sum + largest >= target
+                else false
 
     /// Validates the given region on the given board with the
     /// given unplaced dominoes.
