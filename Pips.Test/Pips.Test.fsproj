@@ -35,7 +35,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pips.Backtrack\Pips.Backtrack.fsproj" />
-    <ProjectReference Include="..\Pips.Inference\Pips.Inference.fsproj" />
     <ProjectReference Include="..\Pips\Pips.fsproj" />
   </ItemGroup>
 

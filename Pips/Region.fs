@@ -61,21 +61,21 @@ module Region =
             UnplacedPipCounts : PipCount[]
 
             /// Unplaced pip counts sorted in ascending order.
-            UnplacedPipCountsAscending : Lazy<PipCount[]>
+            UnplacedPipCountsAscending : PipCount[]
 
             /// Unplaced pip counts sorted in descending order.
-            UnplacedPipCountsDescending : Lazy<PipCount[]>
+            UnplacedPipCountsDescending : PipCount[]
         }
 
     module ValidationInfo =
 
         /// Creates details needed for region validation.
         let create unplacedPipCounts =
-            let sorted = lazy (Array.sort unplacedPipCounts)
+            let sorted = Array.sort unplacedPipCounts
             {
                 UnplacedPipCounts = unplacedPipCounts
                 UnplacedPipCountsAscending = sorted
-                UnplacedPipCountsDescending = lazy (Array.rev sorted.Value)
+                UnplacedPipCountsDescending = Array.rev sorted
             }
 
     /// Validates an Equal region.
@@ -134,7 +134,7 @@ module Region =
         let nNeeded =
             region.Cells.Length - pipCounts.Length
         let smallest =
-            info.UnplacedPipCountsAscending.Value
+            info.UnplacedPipCountsAscending
                 |> Seq.take nNeeded
                 |> Seq.sum
         Array.sum pipCounts + smallest < n
@@ -149,7 +149,7 @@ module Region =
         let nNeeded =
             region.Cells.Length - pipCounts.Length
         let largest =
-            info.UnplacedPipCountsDescending.Value
+            info.UnplacedPipCountsDescending
                 |> Seq.take nNeeded
                 |> Seq.sum
         Array.sum pipCounts + largest > n
@@ -171,7 +171,7 @@ module Region =
                 // are there enough small values available?
             let valid =
                 let smallest =
-                    info.UnplacedPipCountsAscending.Value
+                    info.UnplacedPipCountsAscending
                         |> Seq.take nNeeded
                         |> Seq.sum
                 sum + smallest <= n
@@ -181,7 +181,7 @@ module Region =
                 let nNeeded =
                     region.Cells.Length - pipCounts.Length
                 let largest =
-                    info.UnplacedPipCountsDescending.Value
+                    info.UnplacedPipCountsDescending
                         |> Seq.take nNeeded
                         |> Seq.sum
                 sum + largest >= n
