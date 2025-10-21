@@ -211,6 +211,7 @@ module Region =
                         sum + largest >= target
                     else false
 
+                    // can we hit the target exactly?
                 if valid then
                     canSum
                         unplacedPipCounts.Unsorted
