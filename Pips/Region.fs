@@ -178,8 +178,6 @@ module Region =
 
                 // are there enough large values available?
             if valid then
-                let nNeeded =
-                    region.Cells.Length - pipCounts.Length
                 let largest =
                     info.UnplacedPipCountsDescending
                         |> Seq.take nNeeded
