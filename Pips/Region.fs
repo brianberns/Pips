@@ -54,6 +54,7 @@ module Region =
                 |> Seq.truncate n
                 |> Seq.length = n
 
+    /// Lazy sorting for unplaced pip counts.
     type UnplacedPipCounts =
         {
             Unsorted : PipCount[]
@@ -63,6 +64,7 @@ module Region =
 
     module UnplacedPipCounts =
 
+        /// Creates lazy sorting for unplaced pip counts.
         let create pipCounts =
             {
                 Unsorted = pipCounts
