@@ -105,6 +105,7 @@ module Region =
     /// Validates a SumLess region.
     let private validateSumLess board dominoes n region =
         assert(region.Type.IsSumLess)
+
         let pipCounts = getPipCounts board region
 
             // are there enough small values available?
@@ -121,6 +122,7 @@ module Region =
     /// Validates a SumGreater region.
     let private validateSumGreater board dominoes n region =
         assert(region.Type.IsSumGreater)
+
         let pipCounts = getPipCounts board region
 
             // are there enough large values available?
@@ -137,14 +139,39 @@ module Region =
     /// Validates a Sum region.
     let private validateSum board dominoes n region =
         assert(region.Type.IsSumExact)
+
         let pipCounts = getPipCounts board region
         let sum = Array.sum pipCounts
+        let nNeeded =
+            region.Cells.Length - pipCounts.Length
 
             // all cells covered?
-        if pipCounts.Length = region.Cells.Length then
+        if nNeeded = 0 then
             sum = n
+
         else
-            sum <= n
+                // are there enough small values available?
+            let values =
+                Seq.collect Domino.toSeq dominoes
+            let valid =
+                let smallest =
+                    values
+                        |> Seq.sort
+                        |> Seq.take nNeeded
+                        |> Seq.sum
+                sum + smallest <= n
+
+                // are there enough large values available?
+            if valid then
+                let nNeeded =
+                    region.Cells.Length - pipCounts.Length
+                let largest =
+                    values
+                        |> Seq.sortDescending
+                        |> Seq.take nNeeded
+                        |> Seq.sum
+                sum + largest >= n
+            else false
 
     /// Validates the given region on the given board with the
     /// given unplaced dominoes.
