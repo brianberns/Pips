@@ -187,7 +187,8 @@ module Region =
 
     /// Validates the given region on the given board with the
     /// given unplaced dominoes.
-    let isValid board info region =
+    let isValid board unplacedPipCounts region =
+        let info = ValidationInfo.create unplacedPipCounts
         match region.Type with
             | RegionType.Any -> true
             | RegionType.Equal ->
