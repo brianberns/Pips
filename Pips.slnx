@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="Pips.Benchmark/Pips.Benchmark.fsproj" />
   <Project Path="Pips.Test/Pips.Test.fsproj" />
   <Project Path="Pips/Pips.fsproj" />
