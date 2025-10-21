@@ -329,44 +329,6 @@ module Program =
         for solution in solutions do
             printSolution solution
 
-    let infer () =
-        let startDate = DateOnly.Parse("8/18/2025")
-        let pairs =
-            [ 0 .. 81 ]
-                |> Seq.map (fun offset ->
-                    let date = startDate.AddDays(offset)
-                    let dateStr = date.ToString("yyyy-MM-dd")
-                    System.Threading.Thread.Sleep(500)
-                    let puzzle =
-                        Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                            |> Map.find "hard"
-                    date, puzzle)
-                |> Seq.where (fun (_, puzzle) ->
-                    Puzzle.getAllTilings(puzzle).Length = 1)
-
-        for (date, puzzle) in pairs do
-
-            printfn ""
-            printfn $"Puzzle {date}:"
-            printfn ""
-            printPuzzle puzzle
-
-            let stopwatch = Stopwatch.StartNew()
-            let solutions = Inference.solve puzzle
-            printfn ""
-            printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}"
-            printfn ""
-            printSolution solutions[0]
-
-            let backtracks = set (Backtrack.solve puzzle)
-            if set solutions <> backtracks then
-                printfn ""
-                printfn $"But backtracking found {backtracks.Count} solution(s):"
-                printfn ""
-                for solution in backtracks do
-                    printSolution solution
-                assert(false)
-
     let generate () =
 
         let samples =
@@ -390,4 +352,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveMany ()
+    solveOne ()
