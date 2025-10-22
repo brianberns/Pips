@@ -101,3 +101,48 @@ So a tiling that starts off like this:
  * Otherwise, for each given tiling tree:
    * Get the next domino location from the root of the tree.
    * Try placing each unplaced domino in that location. If that is a valid placement, recursively apply the algorithm to the child trees. (Make sure to place the domino in both orientations, if it is not a "double".)
+
+# Implementation
+
+We're finally ready to turn these ideas into code!
+
+## Domino
+
+True to the name of the game, the dots on a domino are called "pips", and each side of a domino has between 0 and 6 pips. For example, this is the 6-5 domino:
+
+```
+┌───────┬───────┐
+│ o o o │ o   o │
+│       │   o   │
+│ o o o │ o   o │
+└───────┴───────┘
+```
+
+The corresponding F# types:
+
+```fsharp
+/// Number of pips on one side of a domino.
+type PipCount = int
+
+/// The two sides of a domino.
+type Domino =
+    {
+        /// Left side of the domino.
+        Left : PipCount
+
+        /// Right side of the domino.
+        Right : PipCount
+    }
+```
+
+A domino is a "double" if the pip count is the same on both sides:
+
+```fsharp
+module Domino =
+
+    /// Is the given domino a "double", such as 6-6?
+    let isDouble domino =
+        domino.Left = domino.Right
+```
+
+Doubles are special because they only have one distinct orientation, while other dominoes have two.

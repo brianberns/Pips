@@ -11,13 +11,13 @@
 /// Number of pips on one side of a domino.
 type PipCount = int
 
-/// Left and right pips.
+/// The two sides of a domino.
 type Domino =
     {
-        /// Left pips.
+        /// Left side of the domino.
         Left : PipCount
 
-        /// Right pips.
+        /// Right side of the domino.
         Right : PipCount
     }
 
