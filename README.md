@@ -264,8 +264,53 @@ type Region =
     }
 ```
 
+## Tiling
+
+A tiling is a set of edges:
+
+```fsharp
+type Tiling = Set<Edge>
+```
+
+And we need a way to obtain all possible tilings for a given shape, as defined by a set of cells:
+
+```fsharp
+module Tiling =
+
+    
+    /// Gets all tilings for the given set of cells.
+    let getAll (cells : Set<Cell>) : Tiling[] =
+        ...   // implementation omitted for brevity
+```
 
 **************************************************
 
 Thus, it is safe to store a puzzle's dominoes in a `Set`.
 
+## Puzzle
+
+A Pips puzzle contains:
+
+* A set of unplaced dominoes
+* An array of regions
+* A board of cells, some of which may be covered with dominoes
+
+When a puzzle is created, the board is empty. When it is solved, all the cells in the puzzle's regions are covered by dominoes, and the set of unplaced dominoes is empty. Both the initial puzzle and its solution are represented by the same type:
+
+```fsharp
+/// A Pips puzzle in some state of being solved.
+type Puzzle =
+    {
+        /// Available dominoes that have not yet been placed
+        /// on the board.
+        UnplacedDominoes : Set<Domino>   // assume no duplicates
+
+        /// Regions of cells that impose constraints on the
+        /// dominoes placed there.
+        Regions : Region[]
+
+        /// A board of cells, some of which may be covered
+        /// with dominoes.
+        Board : Board
+    }
+```
