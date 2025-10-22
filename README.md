@@ -146,3 +146,35 @@ module Domino =
 ```
 
 Doubles are special because they only have one distinct orientation, while other dominoes have two.
+
+## Cell
+
+Each cell on the board has a (row, column) coordinate:
+
+```fsharp
+/// A cell in a grid.
+type Cell =
+    {
+        /// Row coordinate (0-based).
+        Row : int
+
+        /// Column coordinate (0-based).
+        Column : int
+    }
+```
+
+And in order to place dominoes correctly, we need to define what it means for two cells to be adjacent:
+
+```fsharp
+module Cell =
+
+    /// Gets all possible cells adjacent to the given cell.
+    /// Some of these cells might not actually exist, though.
+    let getAdjacent cell =
+        [|
+            { cell with Row = cell.Row - 1 }
+            { cell with Row = cell.Row + 1 }
+            { cell with Column = cell.Column - 1 }
+            { cell with Column = cell.Column + 1 }
+        |]
+```

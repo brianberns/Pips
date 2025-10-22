@@ -1,12 +1,12 @@
 ﻿namespace Pips
 
-/// A cell on a 2D lattice.
+/// A cell in a grid.
 type Cell =
     {
-        /// 0-based row.
+        /// Row coordinate (0-based).
         Row : int
 
-        /// 0-based column.
+        /// Column coordinate (0-based).
         Column : int
     }
 
