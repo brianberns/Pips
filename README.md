@@ -93,3 +93,11 @@ So a tiling that starts off like this:
  To guide our backtracking algorithm, we can organize the tilings for a board into a "forest" of trees. Each node in a tree shows the placement of a domino in the tiling, and its child nodes show how the rest of the dominoes are placed, until we get each of the complete tilings as leaf nodes. For example, here are the five distinct tilings of a 2x4 rectangle arranged step-by-step in trees:
 
  ![Tiling trees](Tiling.svg)
+
+ Our backtracking algorithm is now:
+
+ * Given: A Pips puzzle in some state of completion, and a collection of tiling trees that indicate where the next domino might be placed.
+ * If there are no more dominoes to place, the puzzle is solved.
+ * Otherwise, for each given tiling tree:
+   * Get the next domino location from the root of the tree.
+   * Try placing each unplaced domino in that location. If that is a valid placement, recursively apply the algorithm to the child trees. (Make sure to place the domino in both orientations, if it is not a "double".)
