@@ -78,7 +78,7 @@ So a tiling that starts off like this:
 │ ■   ■ │   │
 └───────┴───┘
 ```
- is bound to fail because we've left two detached 1x1 areas, and there's no way to tile an odd number of cells with dominoes.
+ is bound to fail because we've left two unconnected 1x1 areas, and there's no way to tile an odd number of cells with dominoes.
 
  We can use this to reduce the number of board configurations we have to examine when searching for Pips solutions. For example, if we start by placing a domino horizontally in the top-left corner of the 2×3 board, we know where the other two dominoes have to go:
 
@@ -90,4 +90,6 @@ So a tiling that starts off like this:
  └───────────┘     └───────┴───┘
  ```
 
- ![Tiling](Tiling.svg)
+ To guide our backtracking algorithm, we can organize the tilings for a board into a "forest" of trees. Each node in a tree shows the placement of a domino in the tiling, and its child nodes show how the rest of the dominoes are placed, until we get each of the complete tilings as leaf nodes. For example, here are the five distinct tilings of a 2x4 rectangle arranged step-by-step in trees:
+
+ ![Tiling trees](Tiling.svg)

@@ -88,7 +88,7 @@
 			<rect x="30" y="30" width="60" height="30" fill="url(#gradIndigo)" stroke="#000"/>
 		</g>
 		<g id="t3-v4">
-			<rect x="90" y="0" width="3D" height="60" fill="url(#gradGreen)" stroke="#000"/>
+			<rect x="90" y="0" width="30" height="60" fill="url(#gradGreen)" stroke="#000"/>
 		</g>
 
 		<g id="t4-h1-top">

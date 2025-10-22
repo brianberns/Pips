@@ -87,3 +87,14 @@ module Tiling =
             ]
         let tilings = Tiling.getAll cells
         Assert.Equal(1, tilings.Length)
+
+    [<Fact>]
+    let ``2x4 grid forest`` () =
+        let cells =
+            createCells [
+                (0, 0); (0, 1); (0, 2); (0, 3)
+                (1, 0); (1, 1); (1, 2); (1, 3)
+            ]
+        let tilings = Tiling.getAll cells
+        let trees = TilingTree.ofTilings tilings
+        Assert.Equal(2, trees.Length)
