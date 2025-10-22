@@ -181,7 +181,7 @@ module Cell =
         |]
 ```
 
-# Edge
+## Edge
 
 A pair of adjacent cells is an "edge" (in the graph theory sense):
 
@@ -244,8 +244,85 @@ module Board =
         }
 ```
 
+## Region
+
+Regions tell us where we are allowed to place dominoes on a board, and impose constraints that must be met:
+
+```fsharp
+/// A region of cells on a board.
+type Region =
+    {
+        /// Cells in the region.
+        Cells : Cell[]
+
+        /// Constraint on the cells in the region.
+        Type : RegionType
+    }
+```
+
+Pips puzzles can have several different constraint types:
+
+```fsharp
+/// A region type defines a constraint on the cells in a
+/// region.
+type RegionType =
+
+    /// Cells in the region can have any value.
+    | Any
+
+    /// All cells in the region must have the same value.
+    | Equal
+
+    /// All cells in the region must have a distinct value.
+    | Unequal
+
+    /// Sum of cell values in the region must be less than
+    /// a certain amount.
+    | SumLess of int
+
+    /// Sum of cell values in the region must be greater than
+    /// a certain amount.
+    | SumGreater of int
+
+    /// Sum of cell values in the region must be equal to
+    /// a certain amount.
+    | SumExact of int
+```
+
+A region is solved when it has no uncovered cells and the values of the dominoes placed on it meet the region's constraint. For example, the cells in an "Equal" region must all have the same value:
+
+```fsharp
+module Region =
+
+    /// Gets the pip counts covering cells in the given region
+    /// on the given board.
+    let private getPipCounts (board : Board) region =
+        region.Cells
+            |> Array.map board.Item
+            |> Array.where ((<>) Board.emptyCell)
+
+    /// Determines whether the given region on the given board has
+    /// been solved (with no uncovered cells).
+    let isSolved board region =
+        let pipCounts = getPipCounts board region
+        if pipCounts.Length = region.Cells.Length then
+            match region.Type with
+                | RegionType.Any -> true
+                | RegionType.Equal ->
+                    (Array.distinct pipCounts).Length = 1
+                | RegionType.Unequal ->
+                    (Array.distinct pipCounts).Length = pipCounts.Length
+                | RegionType.SumLess target ->
+                    Array.sum pipCounts < target
+                | RegionType.SumGreater target ->
+                    Array.sum pipCounts > target
+                | RegionType.SumExact target ->
+                    Array.sum pipCounts = target
+        else false
+```
 
 
 **************************************************
 
 Thus, it is safe to store a puzzle's dominoes in a `Set`.
+
