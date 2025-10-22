@@ -15,7 +15,7 @@ module Edge =
     let reverse ((cellA, cellB) : Edge) : Edge =
         cellB, cellA
 
-/// A 2D lattice with dominoes on it. This is stored in a redundant
+/// A 2D grid with dominoes on it. This is stored in a redundant
 /// data structure for speed. We have the location of each domino,
 /// and also a way to look up the value at any cell on the board.
 [<CustomEquality; CustomComparison>]

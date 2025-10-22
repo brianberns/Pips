@@ -190,8 +190,62 @@ A pair of adjacent cells is an "edge" (in the graph theory sense):
 type Edge = Cell * Cell
 ```
 
-We can place a given domino on an edge in two different orientations (unless the domino is a double). In the first case, the left side of the domino goes on the first cell in the edge, and the right side of the domino goes on the second cell in the edge. In the second orientation, we need to either flip the domino around or reverse the cells in the edge. We've chosen the latter convention in order to avoid changing the dominoes in a puzzle.
+When we place a given domino on a give edge, the left side of the domino always goes on the first cell in the edge, and the right side of the domino goes on the second cell in the edge. To get both possible orientations (if the domino is not a double), we can either flip the domino around or reverse the cells in the edge. We choose the latter convention in order to avoid changing a puzzle's dominoes:
 
-...
+```fsharp
+module Edge =
+
+    /// Reverses the given edge.
+    let reverse ((cellA, cellB) : Edge) : Edge =
+        cellB, cellA
+```
+
+## Board
+
+A board is a rectangular grid on which dominoes are placed. This is stored in a redundant data structure for speed: We need both the location of each domino, and a quick way to look up the value at any cell on the board:
+
+```fsharp
+type Board =
+    {
+        /// Location of each domino placed on the board.
+        DominoPlaces : List<Domino * Edge>
+
+        /// Value in each cell, if any.
+        Cells : PipCount[(*row*), (*column*)]
+    }
+```
+
+We use a special pip count of `-1` to indicate an empty cell, and a copy-on-write scheme when placing dominoes on the board in order to maintain immutability:
+
+```fsharp
+module Board =
+
+    /// Special pip count for an uncovered cell.
+    let emptyCell : PipCount = -1
+
+    /// Places the given domino in the given location on the
+    /// board. The left side of the domino is placed on the left
+    /// cell and the right side of the domino is placed on the
+    /// right cell.
+    let place domino ((cellLeft, cellRight) as edge : Edge) board =
+        assert(Cell.areAdjacent cellLeft cellRight)
+        assert(isEmpty cellLeft board)
+        assert(isEmpty cellRight board)
+
+            // copy on write
+        let cells = Array2D.copy board.Cells
+        cells[cellLeft.Row, cellLeft.Column] <- domino.Left
+        cells[cellRight.Row, cellRight.Column] <- domino.Right
+
+        {
+            Cells = cells
+            DominoPlaces =
+                (domino, edge) :: board.DominoPlaces
+        }
+```
+
+
+
+**************************************************
 
 Thus, it is safe to store a puzzle's dominoes in a `Set`.
