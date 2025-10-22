@@ -59,7 +59,7 @@ More on both of these below.
 
 # Tiling
 
-One key observation is that there are only so many ways to tile a given board with dominoes. For example, there are just three ways to tile a 2x3 rectangle:
+One key observation is that there are only so many ways to tile a given board with dominoes. For example, there are just three ways to tile a 2×3 rectangle:
 
 ```
 ┌───┬───┬───┐      ┌───┬───────┐      ┌───────┬───┐
@@ -80,7 +80,7 @@ So a tiling that starts off like this:
 ```
  is bound to fail because we've left two detached 1x1 areas, and there's no way to tile an odd number of cells with dominoes.
 
- We can use this to reduce the number of board configurations we have to examine when searching for Pips solutions. For example, if we start with a domino placed domino horizontally in the bottom-left corner of the 2x3 board, we know where the other two dominoes have to go:
+ We can use this to reduce the number of board configurations we have to examine when searching for Pips solutions. For example, if we start with a domino placed domino horizontally in the bottom-left corner of the 2×3 board, we know where the other two dominoes have to go:
 
  ```
  ┌───────────┐     ┌───────┬───┐
