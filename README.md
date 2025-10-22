@@ -135,6 +135,8 @@ type Domino =
     }
 ```
 
+Note that the 6-4 domino is different from the 4-6 domino according to this definition. We could implement custom equality and comparison to prevent this, but it would slow down the solver. This is not a problem in practice, because there are no duplicate dominoes in a conventional Pips puzzle.
+
 A domino is a "double" if the pip count is the same on both sides:
 
 ```fsharp
@@ -149,7 +151,7 @@ Doubles are special because they only have one distinct orientation, while other
 
 ## Cell
 
-Each cell on the board has a (row, column) coordinate:
+Each cell on the board has (row, column) coordinates:
 
 ```fsharp
 /// A cell in a grid.
@@ -178,3 +180,18 @@ module Cell =
             { cell with Column = cell.Column + 1 }
         |]
 ```
+
+# Edge
+
+A pair of adjacent cells is an "edge" (in the graph theory sense):
+
+```fsharp
+/// A pair of adjacent cells.
+type Edge = Cell * Cell
+```
+
+We can place a given domino on an edge in two different orientations (unless the domino is a double). In the first case, the left side of the domino goes on the first cell in the edge, and the right side of the domino goes on the second cell in the edge. In the second orientation, we need to either flip the domino around or reverse the cells in the edge. We've chosen the latter convention in order to avoid changing the dominoes in a puzzle.
+
+...
+
+Thus, it is safe to store a puzzle's dominoes in a `Set`.

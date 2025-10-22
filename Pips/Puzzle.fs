@@ -22,8 +22,14 @@ module Puzzle =
     /// have yet been placed on the board.
     let create dominoes regions =
         assert(
-            Seq.distinct dominoes |> Seq.length
-                = Seq.length dominoes)
+            dominoes   // duplicate dominoes not allowed in either orientation
+                |> Seq.map (fun domino ->
+                    let pipCounts = Domino.toSeq domino
+                    Domino.create
+                        (Seq.min pipCounts)
+                        (Seq.max pipCounts))
+                |> Seq.distinct
+                |> Seq.length = Seq.length dominoes)
         let cells =
             regions
                 |> Array.collect _.Cells
