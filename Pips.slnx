@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
+    <File Path="Tiling.svg" />
   </Folder>
   <Project Path="Pips.Benchmark/Pips.Benchmark.fsproj" />
   <Project Path="Pips.Test/Pips.Test.fsproj" />

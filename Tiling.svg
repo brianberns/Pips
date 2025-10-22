@@ -1,0 +1,245 @@
+<svg width="1100" height="750" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+  
+  <defs>
+    <style>
+      .C_GRID   { fill: #F0F0F0; stroke: #D0D0D0; stroke-width: 0.5; }
+      .C_LINE   { stroke: #777; stroke-width: 2; marker-end: url(#arrowhead); }
+      
+      /* New Node Box styles based on domino color */
+      .C_BOX_A { fill: #FDEDEC; stroke: #C0392B; stroke-width: 2; filter: url(#shadow); } /* Red Step */
+      .C_BOX_B { fill: #FEF9E7; stroke: #F39C12; stroke-width: 2; filter: url(#shadow); } /* Gold Step */
+      .C_BOX_C { fill: #EAECEE; stroke: #4A5A7A; stroke-width: 2; filter: url(#shadow); } /* Indigo Step */
+      .C_BOX_D { fill: #E8F5E9; stroke: #27AE60; stroke-width: 2.5; filter: url(#shadow); } /* Green Step (Leaf) */
+    </style>
+
+    <linearGradient id="gradRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E74C3C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C0392B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F1C40F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F39C12;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradIndigo" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5D6D8E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4A5A7A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3D9970;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E7D5E;stop-opacity:1" />
+    </linearGradient>
+
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset result="offOut" in="SourceAlpha" dx="2" dy="2" />
+      <feGaussianBlur result="blurOut" in="offOut" stdDeviation="2" />
+      <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+    </filter>
+
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#777" />
+    </marker>
+
+    <rect id="node-rect-base" x="0" y="0" width="150" height="90" rx="10"/>
+
+    <g id="grid_2x4">
+      <rect x="0" y="0" width="30" height="30" class="C_GRID"/>
+      <rect x="30" y="0" width="30" height="30" class="C_GRID"/>
+      <rect x="60" y="0" width="30" height="30" class="C_GRID"/>
+      <rect x="90" y="0" width="30" height="30" class="C_GRID"/>
+      <rect x="0" y="30" width="30" height="30" class="C_GRID"/>
+      <rect x="30" y="30" width="30" height="30" class="C_GRID"/>
+      <rect x="60" y="30" width="30" height="30" class="C_GRID"/>
+      <rect x="90" y="30" width="30" height="30" class="C_GRID"/>
+    </g>
+
+    <g id="t1-v1"> <rect x="0" y="0" width="30" height="60" fill="url(#gradRed)" stroke="#000"/></g>
+    <g id="t1-v2"> <rect x="30" y="0" width="30" height="60" fill="url(#gradGold)" stroke="#000"/></g>
+    <g id="t1-v3"> <rect x="60" y="0" width="30" height="60" fill="url(#gradIndigo)" stroke="#000"/></g>
+    <g id="t1-v4"> <rect x="90" y="0" width="30" height="60" fill="url(#gradGreen)" stroke="#000"/></g>
+
+    <g id="t2-v1"> <rect x="0" y="0" width="30" height="60" fill="url(#gradRed)" stroke="#000"/></g>
+    <g id="t2-v2"> <rect x="30" y="0" width="30" height="60" fill="url(#gradGold)" stroke="#000"/></g>
+    <g id="t2-h3-top"> <rect x="60" y="0" width="60" height="30" fill="url(#gradIndigo)" stroke="#000"/></g>
+    <g id="t2-h3-bot"> <rect x="60" y="30" width="60" height="30" fill="url(#gradGreen)" stroke="#000"/></g>
+
+    <g id="t3-v1"> <rect x="0" y="0" width="30" height="60" fill="url(#gradRed)" stroke="#000"/></g>
+    <g id="t3-h2-top"> <rect x="30" y="0" width="60" height="30" fill="url(#gradGold)" stroke="#000"/></g>
+    <g id="t3-h2-bot"> <rect x="30" y="30" width="60" height="30" fill="url(#gradIndigo)" stroke="#000"/></g>
+    <g id="t3-v4"> <rect x="90" y="0" width="30" height="60" fill="url(#gradGreen)" stroke="#000"/></g>
+
+    <g id="t4-h1-top"> <rect x="0" y="0" width="60" height="30" fill="url(#gradRed)" stroke="#000"/></g>
+    <g id="t4-h1-bot"> <rect x="0" y="30" width="60" height="30" fill="url(#gradGold)" stroke="#000"/></g>
+    <g id="t4-h3-top"> <rect x="60" y="0" width="60" height="30" fill="url(#gradIndigo)" stroke="#000"/></g>
+    <g id="t4-h3-bot"> <rect x="60" y="30" width="60" height="30" fill="url(#gradGreen)" stroke="#000"/></g>
+
+    <g id="t5-h1-top"> <rect x="0" y="0" width="60" height="30" fill="url(#gradRed)" stroke="#000"/></g>
+    <g id="t5-h1-bot"> <rect x="0" y="30" width="60" height="30" fill="url(#gradGold)" stroke="#000"/></g>
+    <g id="t5-v3"> <rect x="60" y="0" width="30" height="60" fill="url(#gradIndigo)" stroke="#000"/></g>
+    <g id="t5-v4"> <rect x="90" y="0" width="30" height="60" fill="url(#gradGreen)" stroke="#000"/></g>
+  </defs>
+  
+  <g id="Tree1">
+    
+    <g transform="translate(260, 50)">
+      <use href="#node-rect-base" class="C_BOX_A"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t1-v1"/>
+      </g>
+    </g>
+
+    <g transform="translate(115, 180)">
+      <use href="#node-rect-base" class="C_BOX_B"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t1-v1"/>
+        <use href="#t1-v2"/>
+      </g>
+    </g>
+    <g transform="translate(20, 310)">
+      <use href="#node-rect-base" class="C_BOX_C"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t1-v1"/>
+        <use href="#t1-v2"/>
+        <use href="#t1-v3"/>
+      </g>
+    </g>
+    <g transform="translate(20, 440)">
+      <use href="#node-rect-base" class="C_BOX_D"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t1-v1"/>
+        <use href="#t1-v2"/>
+        <use href="#t1-v3"/>
+        <use href="#t1-v4"/>
+      </g>
+    </g>
+
+    <g transform="translate(210, 310)">
+      <use href="#node-rect-base" class="C_BOX_C"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t2-v1"/>
+        <use href="#t2-v2"/>
+        <use href="#t2-h3-top"/>
+      </g>
+    </g>
+    <g transform="translate(210, 440)">
+      <use href="#node-rect-base" class="C_BOX_D"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t2-v1"/>
+        <use href="#t2-v2"/>
+        <use href="#t2-h3-top"/>
+        <use href="#t2-h3-bot"/>
+      </g>
+    </g>
+
+    <g transform="translate(400, 180)">
+      <use href="#node-rect-base" class="C_BOX_B"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t3-v1"/>
+        <use href="#t3-h2-top"/>
+      </g>
+    </g>
+    <g transform="translate(400, 310)">
+      <use href="#node-rect-base" class="C_BOX_C"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t3-v1"/>
+        <use href="#t3-h2-top"/>
+        <use href="#t3-h2-bot"/>
+      </g>
+    </g>
+    <g transform="translate(400, 440)">
+      <use href="#node-rect-base" class="C_BOX_D"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t3-v1"/>
+        <use href="#t3-h2-top"/>
+        <use href="#t3-h2-bot"/>
+        <use href="#t3-v4"/>
+      </g>
+    </g>
+
+    <line x1="335" y1="140" x2="190" y2="180" class="C_LINE"/>
+    <line x1="335" y1="140" x2="475" y2="180" class="C_LINE"/>
+
+    <line x1="190" y1="270" x2="95" y2="310" class="C_LINE"/>
+    <line x1="190" y1="270" x2="285" y2="310" class="C_LINE"/>
+    
+    <line x1="95" y1="400" x2="95" y2="440" class="C_LINE"/>
+    <line x1="285" y1="400" x2="285" y2="440" class="C_LINE"/>
+    <line x1="285" y1="400" x2="285" y2="440" class="C_LINE"/> <line x1="475" y1="270" x2="475" y2="310" class="C_LINE"/>
+    <line x1="475" y1="400" x2="475" y2="440" class="C_LINE"/>
+  </g>
+  
+  <g id="Tree2">
+    
+    <g transform="translate(700, 50)">
+      <use href="#node-rect-base" class="C_BOX_A"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t4-h1-top"/>
+      </g>
+    </g>
+
+    <g transform="translate(700, 180)">
+      <use href="#node-rect-base" class="C_BOX_B"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t4-h1-top"/>
+        <use href="#t4-h1-bot"/>
+      </g>
+    </g>
+    <g transform="translate(600, 310)">
+      <use href="#node-rect-base" class="C_BOX_C"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t4-h1-top"/>
+        <use href="#t4-h1-bot"/>
+        <use href="#t4-h3-top"/>
+      </g>
+    </g>
+    <g transform="translate(600, 440)">
+      <use href="#node-rect-base" class="C_BOX_D"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t4-h1-top"/>
+        <use href="#t4-h1-bot"/>
+        <use href="#t4-h3-top"/>
+        <use href="#t4-h3-bot"/>
+      </g>
+    </g>
+
+    <g transform="translate(800, 310)">
+      <use href="#node-rect-base" class="C_BOX_C"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t5-h1-top"/>
+        <use href="#t5-h1-bot"/>
+        <use href="#t5-v3"/>
+      </g>
+    </g>
+    <g transform="translate(800, 440)">
+      <use href="#node-rect-base" class="C_BOX_D"/>
+      <g transform="translate(15, 15)">
+        <use href="#grid_2x4"/>
+        <use href="#t5-h1-top"/>
+        <use href="#t5-h1-bot"/>
+        <use href="#t5-v3"/>
+        <use href="#t5-v4"/>
+      </g>
+    </g>
+    
+    <line x1="775" y1="140" x2="775" y2="180" class="C_LINE"/>
+    <line x1="775" y1="270" x2="665" y2="310" class="C_LINE"/>
+    <line x1="775" y1="270" x2="865" y2="310" class="C_LINE"/>
+    
+    <line x1="665" y1="400" x2="665" y2="440" class="C_LINE"/>
+    <line x1="865" y1="400" x2="865" y2="440" class="C_LINE"/>
+    
+  </g>
+</svg>

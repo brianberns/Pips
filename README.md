@@ -89,3 +89,5 @@ So a tiling that starts off like this:
  │           │     │ ■   ■ │ ■ │
  └───────────┘     └───────┴───┘
  ```
+
+ ![Tiling](Tiling.svg)
