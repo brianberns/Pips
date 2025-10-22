@@ -59,7 +59,7 @@ More on both of these below.
 
 # Tiling
 
-One key observation is that there are only so many ways to tile a given board with dominoes. For example, there are just three ways to tile a 2×3 rectangle:
+One key observation is that there are only so many ways to tile a given shape with dominoes. For example, there are just three ways to tile a 2×3 rectangle:
 
 ```
 ┌───┬───┬───┐      ┌───┬───────┐      ┌───────┬───┐
@@ -80,7 +80,7 @@ So a tiling that starts off like this:
 ```
  is bound to fail because we've left two unconnected 1x1 areas, and there's no way to tile an odd number of cells with dominoes.
 
- We can use this to reduce the number of board configurations we have to examine when searching for Pips solutions. For example, if we start by placing a domino horizontally in the top-left corner of the 2×3 board, we know where the other two dominoes have to go:
+ We can use this to reduce the number of configurations we have to examine when searching for Pips solutions. For example, if we start by placing a domino horizontally in the top-left corner of the 2×3 rectangle, we know where the other two dominoes have to go:
 
  ```
  ┌───────┬───┐     ┌───────┬───┐
@@ -90,7 +90,7 @@ So a tiling that starts off like this:
  └───────────┘     └───────┴───┘
  ```
 
- To guide our backtracking algorithm, we can organize the tilings for a board into a "forest" of trees. Each node in a tree shows the placement of a domino in the tiling, and its child nodes show how the rest of the dominoes are placed, until we get each of the complete tilings as leaf nodes. For example, here are the five distinct tilings of a 2x4 rectangle arranged step-by-step in trees:
+ To guide our backtracking algorithm, we can organize the tilings of a given shape into a "forest" of trees. Each node in a tree shows the placement of a domino in the tiling, and its child nodes show how the rest of the dominoes are placed, until we get each of the complete tilings as leaf nodes. For example, here are the five distinct tilings of a 2x4 rectangle arranged step-by-step in trees:
 
  ![Tiling trees](Tiling.svg)
 
@@ -101,6 +101,10 @@ So a tiling that starts off like this:
  * Otherwise, for each given tiling tree:
    * Get the next domino location from the root of the tree.
    * Try placing each unplaced domino in that location. If that is a valid placement, recursively apply the algorithm to the child trees. (Make sure to place the domino in both orientations, if it is not a "double".)
+
+# Results
+
+Before we get into the implementation, let's talk a bit about the results.
 
 # Implementation
 
@@ -135,8 +139,6 @@ type Domino =
     }
 ```
 
-Note that the 6-4 domino is different from the 4-6 domino according to this definition. We could implement custom equality and comparison to prevent this, but it would slow down the solver. This is not a problem in practice, because there are no duplicate dominoes in a conventional Pips puzzle.
-
 A domino is a "double" if the pip count is the same on both sides:
 
 ```fsharp
@@ -148,6 +150,8 @@ module Domino =
 ```
 
 Doubles are special because they only have one distinct orientation, while other dominoes have two.
+
+Note that, according to this definition, the 6-4 domino is different from the 4-6 domino. We could implement custom equality and comparison to make them equal, but it would slow down the solver for little benefit. By convention, there are no duplicate dominoes in a Pips puzzle, so checking for them is not necessary.
 
 ## Cell
 
@@ -190,7 +194,7 @@ A pair of adjacent cells is an "edge" (in the graph theory sense):
 type Edge = Cell * Cell
 ```
 
-When we place a given domino on a give edge, the left side of the domino always goes on the first cell in the edge, and the right side of the domino goes on the second cell in the edge. To get both possible orientations (if the domino is not a double), we can either flip the domino around or reverse the cells in the edge. We choose the latter convention in order to avoid changing a puzzle's dominoes:
+When we place a domino on an edge, the left side of the domino always goes on the first cell in the edge, and the right side of the domino goes on the second cell. To get both possible orientations (assuming the domino is not a double), we could either flip the domino around or reverse the cells in the edge. We choose the latter convention in order to avoid changing a puzzle's dominoes:
 
 ```fsharp
 module Edge =
@@ -202,7 +206,7 @@ module Edge =
 
 ## Board
 
-A board is a rectangular grid on which dominoes are placed. This is stored in a redundant data structure for speed: We need both the location of each domino, and a quick way to look up the value at any cell on the board:
+A board is a rectangular grid on which dominoes are placed. In addition to storing the location of each domino, we also need a quick way to look up the value at any cell on the board:
 
 ```fsharp
 type Board =
@@ -210,7 +214,7 @@ type Board =
         /// Location of each domino placed on the board.
         DominoPlaces : List<Domino * Edge>
 
-        /// Value in each cell, if any.
+        /// Value in each cell.
         Cells : PipCount[(*row*), (*column*)]
     }
 ```
@@ -246,7 +250,7 @@ module Board =
 
 ## Region
 
-Regions tell us where we are allowed to place dominoes on a board, and impose constraints that must be met:
+Regions tell us where we are allowed to place dominoes on a board and impose constraints that must be met by those dominoes:
 
 ```fsharp
 /// A region of cells on a board.
@@ -258,67 +262,6 @@ type Region =
         /// Constraint on the cells in the region.
         Type : RegionType
     }
-```
-
-Pips puzzles can have several different constraint types:
-
-```fsharp
-/// A region type defines a constraint on the cells in a
-/// region.
-type RegionType =
-
-    /// Cells in the region can have any value.
-    | Any
-
-    /// All cells in the region must have the same value.
-    | Equal
-
-    /// All cells in the region must have a distinct value.
-    | Unequal
-
-    /// Sum of cell values in the region must be less than
-    /// a certain amount.
-    | SumLess of int
-
-    /// Sum of cell values in the region must be greater than
-    /// a certain amount.
-    | SumGreater of int
-
-    /// Sum of cell values in the region must be equal to
-    /// a certain amount.
-    | SumExact of int
-```
-
-A region is solved when it has no uncovered cells and the values of the dominoes placed on it meet the region's constraint. For example, the cells in an "Equal" region must all have the same value:
-
-```fsharp
-module Region =
-
-    /// Gets the pip counts covering cells in the given region
-    /// on the given board.
-    let private getPipCounts (board : Board) region =
-        region.Cells
-            |> Array.map board.Item
-            |> Array.where ((<>) Board.emptyCell)
-
-    /// Determines whether the given region on the given board has
-    /// been solved (with no uncovered cells).
-    let isSolved board region =
-        let pipCounts = getPipCounts board region
-        if pipCounts.Length = region.Cells.Length then
-            match region.Type with
-                | RegionType.Any -> true
-                | RegionType.Equal ->
-                    (Array.distinct pipCounts).Length = 1
-                | RegionType.Unequal ->
-                    (Array.distinct pipCounts).Length = pipCounts.Length
-                | RegionType.SumLess target ->
-                    Array.sum pipCounts < target
-                | RegionType.SumGreater target ->
-                    Array.sum pipCounts > target
-                | RegionType.SumExact target ->
-                    Array.sum pipCounts = target
-        else false
 ```
 
 

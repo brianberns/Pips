@@ -22,11 +22,9 @@ module Edge =
 type Board =
     {
         /// Location of each domino placed on the board.
-        /// (Semantically, this is a set, but is stored as a list
-        /// for speed.)
         DominoPlaces : List<Domino * Edge>
 
-        /// Value in each cell, if any.
+        /// Value in each cell.
         Cells : PipCount[(*row*), (*column*)]
     }
 
