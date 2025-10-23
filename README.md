@@ -104,6 +104,54 @@ So a tiling that starts off like this:
    * Get the next domino location from the root of the tree.
    * Try placing each remaining domino in that location. If that is a valid placement, recursively apply the algorithm to the child trees. (Don't forget to try placing the domino in both orientations, if it is not a double.)
 
+# Pruning
+
+If we wait until all dominoes have been placed to check whether the constraints of the puzzle have been met, it can take too long to find a solution. Instead, we aggressively check the constraints as we go along, and backtrack as soon as we know that a solution isn't possible along the current path. This process is called "pruning" the search tree.
+
+Note that placing a domino in one region of the puzzle can affect the validity of another region, because dominoes can't be used twice. This means that we have to check the validity of all the regions of the puzzle after each domino is placed.
+
+## "Equal" region
+
+All cells in an "equal" region must have the same value, although the value itself is not specified by the constraint. We use two rules to validate these regions:
+
+1. The number of distinct pip counts in the region cannot exceed one.
+
+2. There must be enough matching values available among the remaining dominoes to fill the region, For example, if the region has four cells, and one of them is covered by a domino with 2 pips on that side, are there at least three more domino sides with 2 pips among the remaining dominoes?
+
+## "Unequal" region
+
+All cell values in an "unequal" region must be different. Again, we use two rules to validate these regions:
+
+1. The number of distinct pip counts in the region cannot be less than the number of filled cells.
+
+2. There must be enough distinct values available among the remaining dominoes to fill the region.
+
+## "Sum less than" region
+
+The sum of all cell values in this type of region must be less than the specified value. There are two ways to validate these regions:
+
+1. The sum of all filled cells in the region must always be less than the specified value.
+
+2. There must be enough small values available among the remaining dominoes to fill the region without exceeding the specified value. For example, if a values in a three-cell region must sum to less than 15, and two of the cells are already filled with 5 and 6 pips, then there must be at least one domino side with 3 or fewer pips among the unused dominoes.
+
+## "Sum greater than" region
+
+The sum of all cell values in this type of region must be greater than the specified value. In this case, we can't invalidate the region just because the filled cells don't yet exceed the specified value. However, we can still prune the search tree using this rule:
+
+1. There must be enough large values available among the remaining dominoes to fill the region and exceed the specified value.
+
+# "Sum exact" region
+
+The sum of all cell values in this type of region must equal the specified value. This is the most complex region type to validate, because we have to consider both upper and lower bounds:
+
+1. The sum of all cell values in the region must never exceed the specified value. (Assuming there are no negative pip counts!)
+
+2. If the region is completely filled, the sum must equal the specified value.
+
+3. Otherwise, there must be enough small values among the remaining dominoes to fill the region without exceeding the specified value, and there must also be enough large values among them to reach the specified value.
+
+4. Lastly, we can use a knapsack algorithm to determine whether it is possible to reach the specified sum with the remaining dominoes. This is an expensive check, so we only perform it if the other checks pass.
+
 # Results
 
 As of this writing, there have been 88 hard Pips puzzles published by the New York Times, from August 18 to November 13, 2025. Using the above algorithm, I was able to find a solution to all of them in a total of about 1.8 seconds on my development machine (a Dell XPS with an Intel i9-12900 CPU). The hardest by far was the elephant-shaped puzzle from October 14 (top illustration), which took just over one second to solve.
@@ -233,6 +281,8 @@ type Domino =
         Right : PipCount
     }
 ```
+
+The code actually makes no assumption that 6 is the largest pip count on a domino, although this is the convention in all NY Times puzzles.
 
 A domino is a "double" if the pip count is the same on both sides:
 
