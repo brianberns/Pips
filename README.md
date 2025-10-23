@@ -269,7 +269,6 @@ And we need a way to obtain all possible tilings for a given shape, as defined b
 ```fsharp
 module Tiling =
 
-    
     /// Gets all tilings for the given set of cells.
     let getAll (cells : Set<Cell>) : Tiling[] =
         ...   // implementation omitted for brevity
@@ -283,7 +282,7 @@ A Pips puzzle contains:
 * An array of regions
 * A board of cells, some of which may be covered with dominoes
 
-When a puzzle is created, the board is empty. When it is solved, all the cells in the puzzle's regions are covered by dominoes, and the set of unplaced dominoes is empty. Both the initial puzzle and its solution are represented by the same type:
+When a puzzle is created, the board is empty. When it is solved, all the cells in the puzzle's regions are covered by dominoes, and the set of unplaced dominoes is empty. The initial puzzle, its solution, and all the states in between are represented by the same type:
 
 ```fsharp
 /// A Pips puzzle in some state of being solved.
