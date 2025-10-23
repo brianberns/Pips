@@ -319,3 +319,5 @@ module Backtrack =
     let trySolve (puzzle : Puzzle) : Option<Puzzle> =
         ...   // implementation omitted for brevity
 ```
+
+Note that the implementations of both these functions are essentially the same, except that `solve` uses an array comprehenion, while `trySolve` uses `Seq.tryPick` to stop after finding the first solution.
