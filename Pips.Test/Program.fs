@@ -306,8 +306,8 @@ module Program =
                     date, resultOpt)
         for (date, resultOpt) in pairs do
             match resultOpt with
-                | Some (time, _) ->
-                    printfn $"{date}, {time}"
+                | Some (time, solutions) ->
+                    printfn $"{date}, {time}, {solutions.Length}"
                 | None ->
                     printfn $"{date}, timeout"
 
