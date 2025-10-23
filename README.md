@@ -94,13 +94,15 @@ So a tiling that starts off like this:
 
  ![Tiling trees](Tiling.svg)
 
- Our backtracking algorithm is now:
+ (Side note: Gemini is quite good at generating SVG files, if you coax it along. But PNGs, not so much.)
+
+ With this in mind, our backtracking algorithm is:
 
  * Given: A Pips puzzle in some state of completion, and a collection of tiling trees that indicate where the next domino might be placed.
  * If there are no more dominoes to place, the puzzle is solved.
  * Otherwise, for each given tiling tree:
    * Get the next domino location from the root of the tree.
-   * Try placing each unplaced domino in that location. If that is a valid placement, recursively apply the algorithm to the child trees. (Make sure to place the domino in both orientations, if it is not a "double".)
+   * Try placing each remaining domino in that location. If that is a valid placement, recursively apply the algorithm to the child trees. (Don't forget to try placing the domino in both orientations, if it is not a double.)
 
 # Results
 
