@@ -130,25 +130,25 @@ All cell values in an "unequal" region must be different. Again, we use two rule
 
 The sum of all cell values in this type of region must be less than the specified target. There are two ways to validate these regions:
 
-1. The sum of all filled cells in the region must always be less than the specified value.
+1. The sum of all filled cells in the region must always be less than the specified target.
 
-2. There must be enough small values available among the remaining dominoes to fill the region without exceeding the specified value. For example, if a values in a three-cell region must sum to less than 15, and two of the cells are already filled with 5 and 6 pips, then there must be at least one domino side with 3 or fewer pips among the unused dominoes.
+2. There must be enough small values available among the remaining dominoes to fill the region without exceeding the target. For example, if a values in a three-cell region must sum to less than 15, and two of the cells are already filled with 5 and 6 pips, then there must be at least one domino side with 3 or fewer pips among the unused dominoes.
 
 ## "Sum greater than" region
 
-The sum of all cell values in this type of region must be greater than the specified target. In this case, we can't invalidate the region just because the filled cells don't yet exceed the specified value. However, we can still prune the search tree using this rule:
+The sum of all cell values in this type of region must be greater than the specified target. In this case, we can't invalidate the region just because the filled cells don't yet exceed the target. However, we can still prune the search tree using this rule:
 
-1. There must be enough large values available among the remaining dominoes to fill the region and exceed the specified value.
+1. There must be enough large values available among the remaining dominoes to fill the region and exceed the target.
 
 ## "Sum exact" region
 
 The sum of all cell values in this type of region must equal the specified target. This is the most complex region type to validate, because we have to consider both upper and lower bounds:
 
-1. The sum of all cell values in the region must never exceed the specified value. (Assuming there are no negative pip counts!)
+1. The sum of all cell values in the region must never exceed the target. (Assuming there are no negative pip counts!)
 
-2. If the region is completely filled, the sum must equal the specified value.
+2. If the region is completely filled, the sum must equal the target.
 
-3. Otherwise, there must be enough small values among the remaining dominoes to fill the region without exceeding the specified value, and there must also be enough large values among them to reach the specified value.
+3. Otherwise, there must be enough small values among the remaining dominoes to fill the region without exceeding the target, and there must also be enough large values among them to reach the target.
 
 4. Lastly, we can use a knapsack algorithm to determine whether it is possible to reach the specified sum with the remaining dominoes. This is an expensive check, so we only perform it if the other checks pass.
 
