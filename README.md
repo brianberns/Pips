@@ -94,7 +94,7 @@ So a tiling that starts off like this:
 
  ![Tiling trees](Tiling.svg)
 
- (Side note: Gemini is quite good at generating SVG files, if you coax it along. But PNGs, not so much.)
+ (Side note: Gemini is quite good at generating SVG images, if you coax it along. But PNGs, not so much.)
 
  With this in mind, our backtracking algorithm is:
 
@@ -106,9 +106,9 @@ So a tiling that starts off like this:
 
 # Results
 
-As of this writing, there have been 88 hard Pips puzzles published by the New York Times (from August 18 to November 13, 2025). Using the above algorithm, I was able to find a solution to all of them in a total of about 1.8 seconds on my development machine (a Dell XPS with an Intel i9-12900 CPU). The hardest by far was the elephant-shaped puzzle from October 14 (top illustration), which took just over one second to solve.
+As of this writing, there have been 88 hard Pips puzzles published by the New York Times, from August 18 to November 13, 2025. Using the above algorithm, I was able to find a solution to all of them in a total of about 1.8 seconds on my development machine (a Dell XPS with an Intel i9-12900 CPU). The hardest by far was the elephant-shaped puzzle from October 14 (top illustration), which took just over one second to solve.
 
-Finding all the solutions to each puzzle took longer, especially for the monster from September 15:
+Finding all the solutions to each puzzle took longer, especially for the monster from September 15, which took 130 seconds:
 
 | Date       | \# solutions | Time (sec.) |
 | ---------- | -----------: | ----------: |
