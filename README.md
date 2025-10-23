@@ -46,16 +46,16 @@ Solving Pips is a good programming challenge because the number of possible solu
 
 # Backtracking
 
-The algorithm we'll use is called  [backtracking](https://en.wikipedia.org/wiki/Backtracking), which is essentially a rigorous version of "trial and error". The idea is to place one domino at a time on the board. If, after placing a domino, the resulting state of the puzzle is still valid (i.e. conforms to all the constraints), then we repeat the procedure with another domino in another location, etc. If the placement is invalid, we pick up that domino and try another one in that spot. In this way, we will eventually find all solutions to the puzzle, or we can stop after we find the first one. In practice, most of the hard Pips puzzles have a single solution, but a few have more than 100 distinct solutions, and one has [2,764,800](https://www.forbes.com/sites/erikkain/2025/09/14/todays-nyt-pips-hints-and-solutions-for-monday-september-15th/)!
+To solve Pips, we'll use a [backtracking](https://en.wikipedia.org/wiki/Backtracking) algorithm, which is essentially a rigorous version of "trial and error". The idea is to place one domino at a time on the board. If, after placing a domino, the resulting state of the puzzle is still valid (i.e. conforms to all the constraints), then we repeat the procedure with another domino in another location, etc. If the placement is invalid, we pick up that domino and try another one in that spot. In this way, we will eventually find all solutions to the puzzle, or we can stop after we find the first one. Most of the hard Pips puzzles have a single solution, but a few have more than 100 distinct solutions, and one has [2,764,800](https://www.forbes.com/sites/erikkain/2025/09/14/todays-nyt-pips-hints-and-solutions-for-monday-september-15th/)!
 
 We'll use [F#](https://fsharp.org/) to implement this algorithm because functional programming is a good choice for "black box" problems like this that have no side-effects, and [.NET](https://dotnet.microsoft.com/) is an easy, fast platform to work with. (F# is actually a great all-purpose language for just about anything, but I digress.)
 
-To make the search for solutions tenable, we'll use two enhancements over vanilla backtracking:
+In order to speed up the search for solutions, we'll make two improvements over vanilla backtracking:
 
 * Use geometric information about possible tilings to guide the search.
 * Prune the search tree aggressively to avoid investigating dead ends.
 
-More on both of these below.
+More on both of these enhancements below.
 
 # Tiling
 
@@ -80,7 +80,7 @@ So a tiling that starts off like this:
 ```
  is bound to fail because we've left two unconnected 1x1 areas, and there's no way to tile an odd number of cells with dominoes.
 
- We can use this to reduce the number of configurations we have to examine when searching for Pips solutions. For example, if we start by placing a domino horizontally in the top-left corner of the 2×3 rectangle, we know where the other two dominoes have to go:
+ We can use this knowledge to reduce the number of configurations we have to examine when searching for Pips solutions. For example, if we start by placing a domino horizontally in the top-left corner of the 2×3 rectangle, we know where the other two dominoes have to go:
 
  ```
  ┌───────┬───┐     ┌───────┬───┐
@@ -320,4 +320,4 @@ module Backtrack =
         ...   // implementation omitted for brevity
 ```
 
-Note that the implementations of both these functions are essentially the same, except that `solve` uses an array comprehenion, while `trySolve` uses `Seq.tryPick` to stop after finding the first solution.
+The implementations of these functions are essentially the same, except that `solve` uses an array comprehension to collect all the solutions, while `trySolve` uses `Seq.tryPick` to stop after finding the first solution.
