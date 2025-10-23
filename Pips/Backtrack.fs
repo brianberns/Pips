@@ -7,7 +7,7 @@ module Backtrack =
         Puzzle.getAllTilings >> TilingTree.ofTilings
 
     /// Finds all solutions for the given puzzle by back-
-    /// tracking. This can take a while!
+    /// tracking.
     let solve puzzle =
 
         /// Finds all solutions to the given puzzle, guided
@@ -50,8 +50,7 @@ module Backtrack =
         solutions
 
     /// Finds an arbitrary solution for the given puzzle by
-    /// backtracking, if at least one exists. This can take a
-    /// while!
+    /// backtracking, if at least one exists.
     let trySolve puzzle =
 
         /// Tries to find a solution to the given puzzle, guided

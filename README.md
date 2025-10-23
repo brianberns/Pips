@@ -301,3 +301,21 @@ type Puzzle =
         Board : Board
     }
 ```
+
+## Backtrack
+
+We can use our backtracking algorithm to find all solutions to a Pips puzzle, or stop after finding one solution:
+
+```fsharp
+module Backtrack =
+
+    /// Finds all solutions for the given puzzle by back-
+    /// tracking.
+    let solve (puzzle : Puzzle) : Puzzle[] =
+        ...   // implementation omitted for brevity
+
+    /// Finds an arbitrary solution for the given puzzle by
+    /// backtracking, if at least one exists.
+    let trySolve (puzzle : Puzzle) : Option<Puzzle> =
+        ...   // implementation omitted for brevity
+```
