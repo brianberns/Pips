@@ -40,7 +40,7 @@ Found 1 solution(s) in 00:00:02.5545949:
 
 # Introduction
 
-[Pips](https://www.nytimes.com/games/pips) is a game from the New York Times. The object is to cover an irregular board of square cells with a set of dominoes, subject to some constraints, such as that the number of pips in a region of the board must sum to a specific number. The Times publishes an easy, medium, and hard Pips puzzle every day. (In fact, as of this writing, they publish the puzzle data well ahead of time, if you're willing to read [JSON](https://www.nytimes.com/svc/pips/v1/2025-11-13.json).)
+[Pips](https://www.nytimes.com/games/pips) is a new puzzle game from the New York Times. The object is to cover a shape made from square cells with a set of dominoes, subject to some constraints, such as that the number of pips in a region of the puzzle must sum to a specific number. The Times publishes three puzzles every day, labeled "easy", "medium", and "hard". (In fact, as of this writing, they publish the puzzle data well ahead of time, if you're willing to read [JSON](https://www.nytimes.com/svc/pips/v1/2025-11-13.json).)
 
 Solving Pips is a good programming challenge because the number of possible solutions increases quickly as the board gets larger. Some of the hard-level Pips games can take a very long time to solve by a brute force search, so we'll have to be clever to get the time under, say, a few seconds in the worst case.
 
