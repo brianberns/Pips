@@ -128,7 +128,7 @@ All cell values in an "unequal" region must be different. Again, we use two rule
 
 ## "Sum less than" region
 
-The sum of all cell values in this type of region must be less than the specified value. There are two ways to validate these regions:
+The sum of all cell values in this type of region must be less than the specified target. There are two ways to validate these regions:
 
 1. The sum of all filled cells in the region must always be less than the specified value.
 
@@ -136,13 +136,13 @@ The sum of all cell values in this type of region must be less than the specifie
 
 ## "Sum greater than" region
 
-The sum of all cell values in this type of region must be greater than the specified value. In this case, we can't invalidate the region just because the filled cells don't yet exceed the specified value. However, we can still prune the search tree using this rule:
+The sum of all cell values in this type of region must be greater than the specified target. In this case, we can't invalidate the region just because the filled cells don't yet exceed the specified value. However, we can still prune the search tree using this rule:
 
 1. There must be enough large values available among the remaining dominoes to fill the region and exceed the specified value.
 
-# "Sum exact" region
+## "Sum exact" region
 
-The sum of all cell values in this type of region must equal the specified value. This is the most complex region type to validate, because we have to consider both upper and lower bounds:
+The sum of all cell values in this type of region must equal the specified target. This is the most complex region type to validate, because we have to consider both upper and lower bounds:
 
 1. The sum of all cell values in the region must never exceed the specified value. (Assuming there are no negative pip counts!)
 
