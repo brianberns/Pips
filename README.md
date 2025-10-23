@@ -219,22 +219,14 @@ type Board =
     }
 ```
 
-We use a special pip count of `-1` to indicate an empty cell, and a copy-on-write scheme when placing dominoes on the board in order to maintain immutability:
+We store a special pip count of `-1` in the array to indicate an empty cell, and copy the entire array every time we place a domino on the board in order to maintain immutability:
 
 ```fsharp
 module Board =
 
-    /// Special pip count for an uncovered cell.
-    let emptyCell : PipCount = -1
-
     /// Places the given domino in the given location on the
-    /// board. The left side of the domino is placed on the left
-    /// cell and the right side of the domino is placed on the
-    /// right cell.
+    /// board.
     let place domino ((cellLeft, cellRight) as edge : Edge) board =
-        assert(Cell.areAdjacent cellLeft cellRight)
-        assert(isEmpty cellLeft board)
-        assert(isEmpty cellRight board)
 
             // copy on write
         let cells = Array2D.copy board.Cells
@@ -282,10 +274,6 @@ module Tiling =
     let getAll (cells : Set<Cell>) : Tiling[] =
         ...   // implementation omitted for brevity
 ```
-
-**************************************************
-
-Thus, it is safe to store a puzzle's dominoes in a `Set`.
 
 ## Puzzle
 
