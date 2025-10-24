@@ -6,18 +6,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Pips\Prelude.fs" Link="Prelude.fs" />
     <Compile Include="Array2DSafe.fs" />
-    <Compile Include="..\Pips\Domino.fs" Link="Domino.fs" />
-    <Compile Include="..\Pips\Cell.fs" Link="Cell.fs" />
-    <Compile Include="..\Pips\Board.fs" Link="Board.fs" />
-    <Compile Include="..\Pips\Region.fs" Link="Region.fs" />
-    <Compile Include="..\Pips\Tiling.fs" Link="Tiling.fs" />
-    <Compile Include="..\Pips\Puzzle.fs" Link="Puzzle.fs" />
-    <Compile Include="..\Pips\Daily.fs" Link="Daily.fs" />
-    <Compile Include="..\Pips\TilingTree.fs" Link="TilingTree.fs" />
-    <Compile Include="..\Pips\TryPickBuilder.fs" Link="TryPickBuilder.fs" />
-    <Compile Include="..\Pips\Backtrack.fs" Link="Backtrack.fs" />
+    <Compile Include="..\Pips\Prelude.fs" Link="Model/Prelude.fs" />
+    <Compile Include="..\Pips\Domino.fs" Link="Model/Domino.fs" />
+    <Compile Include="..\Pips\Cell.fs" Link="Model/Cell.fs" />
+    <Compile Include="..\Pips\Board.fs" Link="Model/Board.fs" />
+    <Compile Include="..\Pips\Region.fs" Link="Model/Region.fs" />
+    <Compile Include="..\Pips\Tiling.fs" Link="Model/Tiling.fs" />
+    <Compile Include="..\Pips\Puzzle.fs" Link="Model/Puzzle.fs" />
+    <Compile Include="..\Pips\Daily.fs" Link="Model/Daily.fs" />
+    <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
+    <Compile Include="..\Pips\TryPickBuilder.fs" Link="Model/TryPickBuilder.fs" />
+    <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
+    <Content Include="index.html" />
+    <Compile Include="View\Canvas.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
