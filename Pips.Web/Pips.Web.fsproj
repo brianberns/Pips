@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <Compile Include="..\Pips\Prelude.fs" Link="Prelude.fs" />
-    <Compile Include="..\Pips\Array2DSafe.fs" Link="Array2DSafe.fs" />
+    <Compile Include="Array2DSafe.fs" />
     <Compile Include="..\Pips\Domino.fs" Link="Domino.fs" />
     <Compile Include="..\Pips\Cell.fs" Link="Cell.fs" />
     <Compile Include="..\Pips\Board.fs" Link="Board.fs" />
