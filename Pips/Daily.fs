@@ -77,7 +77,7 @@ type Daily =
 module Daily =
 
     /// Converts from NY Times daily structure to internal representation.
-    let convert daily =
+    let private convert daily =
         Map [
             "easy", DailyPuzzle.convert daily.easy
             "medium", DailyPuzzle.convert daily.medium
