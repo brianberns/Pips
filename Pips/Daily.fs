@@ -1,7 +1,10 @@
 ﻿namespace Pips
 
+open System
 open System.IO
+
 #if FABLE_COMPILER
+open Thoth.Fetch
 #else
 open System.Net.Http
 open System.Text.Json
@@ -62,35 +65,50 @@ module DailyPuzzle =
                 |> Array.map DailyRegion.convert
         Puzzle.create dominoes regions
 
-#if FABLE_COMPILER
-#else
+type Daily =
+    {
+        printDate : DateOnly
+        editor : string
+        easy : DailyPuzzle
+        medium : DailyPuzzle
+        hard : DailyPuzzle
+    }
+
 module Daily =
+
+    /// Converts from NY Times daily structure to internal representation.
+    let convert daily =
+        Map [
+            "easy", DailyPuzzle.convert daily.easy
+            "medium", DailyPuzzle.convert daily.medium
+            "hard", DailyPuzzle.convert daily.hard
+        ]
+
+#if !FABLE_COMPILER
 
     /// Parses puzzles from the given JSON text.
     let parse (text : string) =
-        let dailyJson = JsonDocument.Parse(text)
-        let root = dailyJson.RootElement
-        Map [
-            for prop in root.EnumerateObject() do
-                match prop.Name with
-                    | "printDate"
-                    | "editor" -> ()
-                    | _ ->
-                        let puzzle =
-                            JsonSerializer.Deserialize<DailyPuzzle>(
-                                prop.Value.GetRawText())
-                        yield prop.Name, DailyPuzzle.convert puzzle
-        ]
+        JsonSerializer.Deserialize<Daily>(text)
+            |> convert
 
     /// Loads puzzles from the given JSON file.
     let loadFile =
         File.ReadAllText >> parse
+#endif
 
     /// Loads puzzles from the given JSON URL.
     /// E.g. "https://www.nytimes.com/svc/pips/v1/2025-10-14.json".
+#if FABLE_COMPILER
+    let loadHttp (uri : string) =
+        promise {
+            let! result = Fetch.get(uri)
+            return convert result
+        }
+#else
     let loadHttp (uri : string) =
         use client = new HttpClient()
-        client.GetStringAsync(uri)
-            .Result
-            |> parse
+        task {
+            let! text = client.GetStringAsync(uri)
+            return parse text
+        }
 #endif

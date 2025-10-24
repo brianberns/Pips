@@ -5,6 +5,10 @@
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);FABLE_COMPILER</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="Array2DSafe.fs" />
     <Compile Include="..\Pips\Prelude.fs" Link="Model/Prelude.fs" />
@@ -26,6 +30,7 @@
   <ItemGroup>
     <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
     <PackageReference Include="Fable.Core" Version="4.5.0" />
+    <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
   </ItemGroup>
 
 </Project>
