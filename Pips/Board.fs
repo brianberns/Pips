@@ -12,20 +12,13 @@ type Board =
         DominoPlaces : List<Domino * Edge>
 
         /// Value in each cell.
-#if FABLE_COMPILER
-        Cells : PipCount[(*row*)][(*column*)]
-#else
-        Cells : PipCount[(*row*), (*column*)]
-#endif
+        Cells : Array2DSafe<PipCount>
     }
 
     /// Pip count of each cell.
     member board.Item(cell) =
-#if FABLE_COMPILER
-        board.Cells[cell.Row][cell.Column]
-#else
-        board.Cells[cell.Row, cell.Column]
-#endif
+        Array2DSafe.getItem
+            cell.Row cell.Column board.Cells
 
     /// Equality key.
     member private board.DominoPlacesSet =
@@ -78,13 +71,7 @@ module Board =
     let create numRows numColumns =
         {
             DominoPlaces = List.empty
-#if FABLE_COMPILER
-            Cells =
-                Array.create numRows (
-                    Array.create numColumns emptyCell)
-#else
-            Cells = Array2D.create numRows numColumns emptyCell
-#endif
+            Cells = Array2DSafe.create numRows numColumns emptyCell
         }
 
     /// Is the given cell empty (i.e. not covered by a domino)?
@@ -101,15 +88,11 @@ module Board =
         assert(isEmpty cellRight board)
 
             // copy on write
-#if FABLE_COMPILER
-        let cells = Array.copy board.Cells
-        cells[cellLeft.Row][cellLeft.Column] <- domino.Left
-        cells[cellRight.Row][cellRight.Column] <- domino.Right
-#else
-        let cells = Array2D.copy board.Cells
-        cells[cellLeft.Row, cellLeft.Column] <- domino.Left
-        cells[cellRight.Row, cellRight.Column] <- domino.Right
-#endif
+        let cells = Array2DSafe.copy board.Cells
+        Array2DSafe.setItem
+            cellLeft.Row cellLeft.Column domino.Left cells
+        Array2DSafe.setItem
+            cellRight.Row cellRight.Column domino.Right cells
         {
             Cells = cells
             DominoPlaces =
@@ -123,10 +106,5 @@ module Board =
             |> Seq.where (fun adj ->
                 adj.Row >= 0
                     && adj.Column >= 0
-#if FABLE_COMPILER
-                    && adj.Row < board.Cells.Length
-                    && adj.Column < board.Cells[0].Length)
-#else
-                    && adj.Row < board.Cells.GetLength(0)
-                    && adj.Column < board.Cells.GetLength(1))
-#endif
+                    && adj.Row < Array2DSafe.length0 board.Cells
+                    && adj.Column < Array2DSafe.length1 board.Cells)

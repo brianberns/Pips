@@ -162,38 +162,20 @@ module Region =
     let private canSum source target k =
 
             // dp[j][c] will be true if sum 'j' is possible with 'c' items
-#if FABLE_COMPILER
-        let dp =
-            Array.create (target + 1)
-                (Array.create (k + 1) false)
-#else
-        let dp = Array2D.create (target + 1) (k + 1) false
-#endif
+        let dp = Array2DSafe.create (target + 1) (k + 1) false
+
             // base case: a sum of 0 with 0 items is always possible
-#if FABLE_COMPILER
-        dp[0][0] <- true
-#else
-        dp[0, 0] <- true
-#endif
+        Array2DSafe.setItem 0 0 true dp
 
             // if we can make sum (j - elem) with (c - 1) items, we can
             // make sum j with c items
         for elem in source do
             for j = target downto elem do
                 for c = k downto 1 do
-#if FABLE_COMPILER
-                    if dp[j - elem][c - 1] then
-                        dp[j][c] <- true
-#else
-                    if dp[j - elem, c - 1] then
-                        dp[j, c] <- true
-#endif
+                    if Array2DSafe.getItem (j - elem) (c - 1) dp then
+                        Array2DSafe.setItem j c true dp
                 
-#if FABLE_COMPILER
-        dp[target][k]
-#else
-        dp[target, k]
-#endif
+        Array2DSafe.getItem target k dp
 
     /// Validates a SumExact region.
     let private validateSumExact board unplacedPipCounts target region =

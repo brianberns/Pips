@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
+    <Compile Include="Array2DSafe.fs" />
     <Compile Include="Domino.fs" />
     <Compile Include="Cell.fs" />
     <Compile Include="Board.fs" />
