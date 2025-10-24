@@ -1,12 +1,13 @@
 ﻿namespace Pips
 
-open System.IO
-open System.Net.Http
-open System.Text.Json
-
 (*
  * Support for NY Times daily JSON format.
  *)
+
+open System
+open System.IO
+open System.Net.Http
+open System.Text.Json
 
 type DailyRegion =
     {
@@ -59,32 +60,42 @@ module DailyPuzzle =
                 |> Array.map DailyRegion.convert
         Puzzle.create dominoes regions
 
+type Daily =
+    {
+        printDate : DateOnly
+        editor : string
+        easy : DailyPuzzle
+        medium : DailyPuzzle
+        hard : DailyPuzzle
+    }
+
 module Daily =
 
-    /// Parses puzzles from the given JSON text.
-    let parse (text : string) =
-        let dailyJson = JsonDocument.Parse(text)
-        let root = dailyJson.RootElement
+    /// Deserializes puzzles from the given JSON text.
+    let private deserialize (text : string) =
+        let daily = JsonSerializer.Deserialize<Daily>(text)
         Map [
-            for prop in root.EnumerateObject() do
-                match prop.Name with
-                    | "printDate"
-                    | "editor" -> ()
-                    | _ ->
-                        let puzzle =
-                            JsonSerializer.Deserialize<DailyPuzzle>(
-                                prop.Value.GetRawText())
-                        yield prop.Name, DailyPuzzle.convert puzzle
-        ]
+            "easy", daily.easy
+            "medium", daily.medium
+            "hard", daily.hard
+        ] |> Map.map (fun _ puzzle -> DailyPuzzle.convert puzzle)
 
     /// Loads puzzles from the given JSON file.
     let loadFile =
-        File.ReadAllText >> parse
+        File.ReadAllText >> deserialize
 
     /// Loads puzzles from the given JSON URL.
     /// E.g. "https://www.nytimes.com/svc/pips/v1/2025-10-14.json".
-    let loadHttp (uri : string) =
+    let loadHttpAsync (uri : string) =
         use client = new HttpClient()
-        client.GetStringAsync(uri)
-            .Result
-            |> parse
+        task {
+            let! text = client.GetStringAsync(uri)
+            return deserialize text
+        }
+
+    /// Loads puzzles from the given JSON URL.
+    /// E.g. "https://www.nytimes.com/svc/pips/v1/2025-10-14.json".
+    let loadHttp uri =
+        loadHttpAsync uri
+            |> Async.AwaitTask
+            |> Async.RunSynchronously
