@@ -12,6 +12,7 @@
     <Compile Include="Region.fs" />
     <Compile Include="Tiling.fs" />
     <Compile Include="Puzzle.fs" />
+    <Compile Include="Daily.fs" />
     <Compile Include="TilingTree.fs" />
     <Compile Include="TryPickBuilder.fs" />
     <Compile Include="Backtrack.fs" />
