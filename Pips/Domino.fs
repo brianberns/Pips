@@ -25,6 +25,13 @@ type Domino =
     override domino.ToString() =
         $"[{domino.Left}-{domino.Right}]"
 
+(*
+ * Note that an X-Y domino is technically not equal to a Y-X
+ * domino by this definition, but since Pips puzzles never
+ * contain duplicate dominoes, we don't need to account for
+ * this via custom equality or comparison.
+ *)
+
 module Domino =
 
     /// Creates a domino.
