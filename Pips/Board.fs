@@ -2,19 +2,6 @@
 
 open System
 
-/// A pair of adjacent cells.
-type Edge = Cell * Cell
-
-module Edge =
-
-    /// Does the given edge contain the given cell?
-    let contains cell ((cellA, cellB) : Edge) =
-        cell = cellA || cell = cellB
-
-    /// Reverses the given edge.
-    let reverse ((cellA, cellB) : Edge) : Edge =
-        cellB, cellA
-
 /// A 2D grid with dominoes on it. This is stored in a redundant
 /// data structure for speed. We have the location of each domino,
 /// and also a way to look up the value at any cell on the board.

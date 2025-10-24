@@ -36,3 +36,16 @@ module Cell =
             && abs (cellA.Column - cellB.Column) = 1)
             || (cellA.Column = cellB.Column
                 && abs (cellA.Row - cellB.Row) = 1)
+
+/// A pair of adjacent cells.
+type Edge = Cell * Cell
+
+module Edge =
+
+    /// Does the given edge contain the given cell?
+    let contains cell ((cellA, cellB) : Edge) =
+        cell = cellA || cell = cellB
+
+    /// Reverses the given edge.
+    let reverse ((cellA, cellB) : Edge) : Edge =
+        cellB, cellA
