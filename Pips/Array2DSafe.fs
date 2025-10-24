@@ -18,7 +18,7 @@ module Array2DSafe =
         array.Length
 
     let inline length1 (array : Array2DSafe<_>) =
-        array[0].Length]
+        array[0].Length
 
     let getItem row col (array : Array2DSafe<'t>) =
         array[row][col]
