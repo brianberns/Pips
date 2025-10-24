@@ -87,8 +87,8 @@ module Daily =
     /// Loads puzzles from the given JSON URL.
     /// E.g. "https://www.nytimes.com/svc/pips/v1/2025-10-14.json".
     let loadHttpAsync (uri : string) =
-        use client = new HttpClient()
         task {
+            use client = new HttpClient()
             let! text = client.GetStringAsync(uri)
             return deserialize text
         }
