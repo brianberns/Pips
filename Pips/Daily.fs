@@ -1,8 +1,11 @@
 ﻿namespace Pips
 
 open System.IO
+#if FABLE_COMPILER
+#else
 open System.Net.Http
 open System.Text.Json
+#endif
 
 (*
  * Support for NY Times daily JSON format.
@@ -59,6 +62,8 @@ module DailyPuzzle =
                 |> Array.map DailyRegion.convert
         Puzzle.create dominoes regions
 
+#if FABLE_COMPILER
+#else
 module Daily =
 
     /// Parses puzzles from the given JSON text.
@@ -88,3 +93,4 @@ module Daily =
         client.GetStringAsync(uri)
             .Result
             |> parse
+#endif
