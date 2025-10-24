@@ -80,7 +80,9 @@ module Region =
 
     /// Validates an Equal region.
     let private validateEqual board unplacedPipCounts region =
+#if !FABLE_COMPILER
         assert(region.Type.IsEqual)
+#endif
 
         let pipCounts = getPipCounts board region
 
@@ -104,7 +106,9 @@ module Region =
 
     /// Validates an Unequal region.
     let private validateUnequal board unplacedPipCounts region =
+#if !FABLE_COMPILER
         assert(region.Type.IsUnequal)
+#endif
 
         let pipCounts = getPipCounts board region
 
@@ -126,7 +130,9 @@ module Region =
 
     /// Validates a SumLess region.
     let private validateSumLess board unplacedPipCounts target region =
+#if !FABLE_COMPILER
         assert(region.Type.IsSumLess)
+#endif
 
         let pipCounts = getPipCounts board region
         let sum = Array.sum pipCounts
@@ -145,7 +151,9 @@ module Region =
 
     /// Validates a SumGreater region.
     let private validateSumGreater board unplacedPipCounts target region =
+#if !FABLE_COMPILER
         assert(region.Type.IsSumGreater)
+#endif
 
         let pipCounts = getPipCounts board region
         let sum = Array.sum pipCounts
@@ -179,7 +187,9 @@ module Region =
 
     /// Validates a SumExact region.
     let private validateSumExact board unplacedPipCounts target region =
+#if !FABLE_COMPILER
         assert(region.Type.IsSumExact)
+#endif
 
         let pipCounts = getPipCounts board region
         let sum = Array.sum pipCounts

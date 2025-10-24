@@ -6,6 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Pips\Prelude.fs" Link="Prelude.fs" />
+    <Compile Include="..\Pips\Domino.fs" Link="Domino.fs" />
+    <Compile Include="..\Pips\Cell.fs" Link="Cell.fs" />
+    <Compile Include="..\Pips\Board.fs" Link="Board.fs" />
+    <Compile Include="..\Pips\Region.fs" Link="Region.fs" />
+    <Compile Include="..\Pips\Tiling.fs" Link="Tiling.fs" />
+    <Compile Include="..\Pips\Puzzle.fs" Link="Puzzle.fs" />
+    <Compile Include="..\Pips\Daily.fs" Link="Daily.fs" />
+    <Compile Include="..\Pips\TilingTree.fs" Link="TilingTree.fs" />
+    <Compile Include="..\Pips\TryPickBuilder.fs" Link="TryPickBuilder.fs" />
+    <Compile Include="..\Pips\Backtrack.fs" Link="Backtrack.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
