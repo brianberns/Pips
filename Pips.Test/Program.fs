@@ -7,9 +7,6 @@ open FsCheck.FSharp
 
 module Program =
 
-    let loadPuzzles uri =
-        (Daily.loadHttp uri).Result
-
     let printPuzzle puzzle =
 
         let cells =
@@ -268,7 +265,7 @@ module Program =
         let solve (date : DateOnly) =
             let puzzle =
                 let dateStr = date.ToString("yyyy-MM-dd")
-                loadPuzzles $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+                Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                     |> Map.find "hard"
             let stopwatch = Stopwatch.StartNew()
             let solutions = Backtrack.solve puzzle
@@ -318,7 +315,7 @@ module Program =
 
             // download and print puzzle
         let puzzle =
-            loadPuzzles "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
+            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
                 |> Map.find "hard"
         printfn "Puzzle:"
         printfn ""
@@ -339,7 +336,7 @@ module Program =
 
             // download and print puzzle
         let puzzle =
-            loadPuzzles "https://www.nytimes.com/svc/pips/v1/2025-09-15.json"
+            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-15.json"
                 |> Map.find "hard"
         printfn "Puzzle:"
         printfn ""
@@ -385,4 +382,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveMany ()
+    solveTwo ()

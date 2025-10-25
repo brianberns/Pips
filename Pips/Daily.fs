@@ -17,7 +17,7 @@ type DailyRegion =
     {
         indices : int[][]
         ``type`` : string
-        target : int
+        target : Option<int>
     }
 
 module DailyRegion =
@@ -32,9 +32,9 @@ module DailyRegion =
             match region.``type`` with
                 | "empty"   -> RegionType.Any
                 | "equals"  -> RegionType.Equal
-                | "greater" -> RegionType.SumGreater region.target
-                | "less"    -> RegionType.SumLess region.target
-                | "sum"     -> RegionType.SumExact region.target
+                | "greater" -> RegionType.SumGreater region.target.Value
+                | "less"    -> RegionType.SumLess region.target.Value
+                | "sum"     -> RegionType.SumExact region.target.Value
                 | "unequal" -> RegionType.Unequal
                 | typ -> failwith $"Unexpected region type: {typ}"
         {
@@ -66,8 +66,6 @@ module DailyPuzzle =
 
 type Daily =
     {
-        printDate : DateOnly
-        editor : string
         easy : DailyPuzzle
         medium : DailyPuzzle
         hard : DailyPuzzle
@@ -76,25 +74,19 @@ type Daily =
 module Daily =
 
     /// Converts a daily to a map of puzzles.
-    let private convert daily =
+    let convert daily =
         Map [
             "easy", daily.easy
             "medium", daily.medium
             "hard", daily.hard
         ] |> Map.map (fun _ puzzle -> DailyPuzzle.convert puzzle)
 
+#if !FABLE_COMPILER
     /// Deserializes puzzles from the given JSON text.
-    let deserialize (text : string) =
-#if FABLE_COMPILER
-        match Decode.Auto.fromString<Daily>(text) with
-            | Ok daily -> convert daily
-            | Error msg -> failwith msg
-#else
+    let private deserialize (text : string) =
         JsonSerializer.Deserialize<Daily>(text)
             |> convert
-#endif
 
-#if !FABLE_COMPILER
     /// Loads puzzles from the given JSON file.
     let loadFile =
         File.ReadAllText >> deserialize

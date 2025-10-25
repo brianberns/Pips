@@ -21,9 +21,10 @@ module Canvas =
 
         let work =
             promise {
-                let! (text : string) =
+                let! (daily : Daily) =
                     Fetch.get("http://localhost:7071/api/Daily?date=10-25-2025")
-                return Daily.deserialize text
+                let puzzleMap = Daily.convert daily
+                console.log(puzzleMap["easy"])
             }
         Promise.start work
 
