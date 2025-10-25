@@ -6,8 +6,12 @@
 
 open System
 open System.IO
+#if FABLE_COMPILER
+open Thoth.Json
+#else
 open System.Net.Http
 open System.Text.Json
+#endif
 
 type DailyRegion =
     {
@@ -71,15 +75,26 @@ type Daily =
 
 module Daily =
 
-    /// Deserializes puzzles from the given JSON text.
-    let private deserialize (text : string) =
-        let daily = JsonSerializer.Deserialize<Daily>(text)
+    /// Converts a daily to a map of puzzles.
+    let private convert daily =
         Map [
             "easy", daily.easy
             "medium", daily.medium
             "hard", daily.hard
         ] |> Map.map (fun _ puzzle -> DailyPuzzle.convert puzzle)
 
+    /// Deserializes puzzles from the given JSON text.
+    let deserialize (text : string) =
+#if FABLE_COMPILER
+        match Decode.Auto.fromString<Daily>(text) with
+            | Ok daily -> convert daily
+            | Error msg -> failwith msg
+#else
+        JsonSerializer.Deserialize<Daily>(text)
+            |> convert
+#endif
+
+#if !FABLE_COMPILER
     /// Loads puzzles from the given JSON file.
     let loadFile =
         File.ReadAllText >> deserialize
@@ -99,3 +114,4 @@ module Daily =
         loadHttpAsync uri
             |> Async.AwaitTask
             |> Async.RunSynchronously
+#endif

@@ -1,22 +1,27 @@
 namespace Pips
 
 open System
+open System.Net
+open System.Net.Http
 
-open Microsoft.AspNetCore.Http
-open Microsoft.AspNetCore.Mvc
-open Microsoft.Azure.WebJobs
-open Microsoft.Azure.WebJobs.Extensions.Http
+open Microsoft.Azure.Functions.Worker
+open Microsoft.Azure.Functions.Worker.Http
 
 module Daily =
 
-    [<FunctionName("Daily")>]
-    let run (
-        [<HttpTrigger(AuthorizationLevel.Function, "get")>]
-        req : HttpRequest) =
+    let private client = new HttpClient()
+
+    [<Function("Daily")>]
+    let run ([<HttpTrigger(AuthorizationLevel.Function, "get")>] req : HttpRequestData) =
         task {
-            let date = DateOnly.Parse(req.Query["date"][0])
+            let dateValue = req.Query["date"]
+            let date = DateOnly.Parse(dateValue)
             let dateStr = date.ToString("yyyy-MM-dd")
             let uri = $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-            let! puzzleMap = Daily.loadHttpAsync uri
-            return OkObjectResult(puzzleMap) :> IActionResult
+            let! text = client.GetStringAsync(uri)
+
+            let response = req.CreateResponse(HttpStatusCode.OK)
+            response.Headers.Add("Content-Type", "application/json; charset=utf-8")
+            do! response.WriteStringAsync(text)
+            return response
         }
