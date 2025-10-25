@@ -22,7 +22,7 @@ module Canvas =
         let work =
             promise {
                 let! (daily : Daily) =
-                    Fetch.get("http://localhost:7071/api/Daily?date=10-25-2025")
+                    Fetch.get("https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily?date=10-25-2025")
                 let puzzleMap = Daily.convert daily
                 console.log(puzzleMap["easy"])
             }
