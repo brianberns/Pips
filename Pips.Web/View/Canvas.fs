@@ -17,12 +17,16 @@ module Canvas =
         // initialize drawing context
     let ctx = canvas.getContext_2d()
 
+    let private dailyUrl =
+        "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
+
     let run () =
 
         let work =
             promise {
+                let dateStr = System.DateTime.Today.ToString("yyyy-MM-dd")
                 let! (daily : Daily) =
-                    Fetch.get("https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily?date=10-25-2025")
+                    Fetch.get($"{dailyUrl}?date={dateStr}")
                 let puzzleMap = Daily.convert daily
                 console.log(puzzleMap["easy"])
             }
