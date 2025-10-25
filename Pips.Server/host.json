@@ -14,7 +14,7 @@
       "routePrefix": "api",
       "cors": {
         "allowedOrigins": [ "*" ],
-        "allowedMethods": [ "GET" ]
+        "allowedMethods": [ "GET", "OPTIONS" ]
       }
     }
   }
