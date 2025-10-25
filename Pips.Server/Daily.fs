@@ -12,7 +12,7 @@ module Daily =
     let private client = new HttpClient()
 
     [<Function("Daily")>]
-    let run ([<HttpTrigger(AuthorizationLevel.Function, "get")>] req : HttpRequestData) =
+    let run ([<HttpTrigger(AuthorizationLevel.Anonymous, "get")>] req : HttpRequestData) =
         task {
             let dateValue = req.Query["date"]
             let date = DateOnly.Parse(dateValue)
