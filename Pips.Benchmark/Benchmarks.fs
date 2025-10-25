@@ -7,7 +7,6 @@ module Puzzle =
 
     let puzzle =
         (Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json")
-            .Result
             |> Map.find "hard"
 
     let solveOne () =
