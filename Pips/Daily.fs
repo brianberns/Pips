@@ -1,18 +1,13 @@
 ﻿namespace Pips
 
-open System
-open System.IO
-
-#if FABLE_COMPILER
-open Thoth.Fetch
-#else
-open System.Net.Http
-open System.Text.Json
-#endif
-
 (*
  * Support for NY Times daily JSON format.
  *)
+
+open System
+open System.IO
+open System.Net.Http
+open System.Text.Json
 
 type DailyRegion =
     {
@@ -76,39 +71,31 @@ type Daily =
 
 module Daily =
 
-    /// Converts from NY Times daily structure to internal representation.
-    let private convert daily =
+    /// Deserializes puzzles from the given JSON text.
+    let private deserialize (text : string) =
+        let daily = JsonSerializer.Deserialize<Daily>(text)
         Map [
-            "easy", DailyPuzzle.convert daily.easy
-            "medium", DailyPuzzle.convert daily.medium
-            "hard", DailyPuzzle.convert daily.hard
-        ]
-
-#if !FABLE_COMPILER
-
-    /// Parses puzzles from the given JSON text.
-    let parse (text : string) =
-        JsonSerializer.Deserialize<Daily>(text)
-            |> convert
+            "easy", daily.easy
+            "medium", daily.medium
+            "hard", daily.hard
+        ] |> Map.map (fun _ puzzle -> DailyPuzzle.convert puzzle)
 
     /// Loads puzzles from the given JSON file.
     let loadFile =
-        File.ReadAllText >> parse
-#endif
+        File.ReadAllText >> deserialize
 
     /// Loads puzzles from the given JSON URL.
     /// E.g. "https://www.nytimes.com/svc/pips/v1/2025-10-14.json".
-#if FABLE_COMPILER
-    let loadHttp (uri : string) =
-        promise {
-            let! result = Fetch.get(uri)
-            return convert result
-        }
-#else
-    let loadHttp (uri : string) =
-        use client = new HttpClient()
+    let loadHttpAsync (uri : string) =
         task {
+            use client = new HttpClient()
             let! text = client.GetStringAsync(uri)
-            return parse text
+            return deserialize text
         }
-#endif
+
+    /// Loads puzzles from the given JSON URL.
+    /// E.g. "https://www.nytimes.com/svc/pips/v1/2025-10-14.json".
+    let loadHttp uri =
+        loadHttpAsync uri
+            |> Async.AwaitTask
+            |> Async.RunSynchronously

@@ -18,7 +18,6 @@
     <Compile Include="..\Pips\Region.fs" Link="Model/Region.fs" />
     <Compile Include="..\Pips\Tiling.fs" Link="Model/Tiling.fs" />
     <Compile Include="..\Pips\Puzzle.fs" Link="Model/Puzzle.fs" />
-    <Compile Include="..\Pips\Daily.fs" Link="Model/Daily.fs" />
     <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
     <Compile Include="..\Pips\TryPickBuilder.fs" Link="Model/TryPickBuilder.fs" />
     <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />

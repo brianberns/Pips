@@ -5,6 +5,8 @@ open Browser.Types
 
 open Fable.Core.JsInterop
 
+open Thoth.Fetch
+
 module Canvas =
 
         // initialize canvas
@@ -17,13 +19,13 @@ module Canvas =
 
     let run () =
 
-        let promise =
+        let work =
             promise {
                 let! puzzleMap =
-                    Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-15.json"
+                    Fetch.get<_, Map<string, Puzzle>>("http://localhost:7071/api/Daily?date=10-25-2025")
                 console.log puzzleMap["hard"]
             }
-        Promise.start promise
+        Promise.start work
 
         ctx.beginPath()
         ctx.rect(100, 200, 300, 400)
