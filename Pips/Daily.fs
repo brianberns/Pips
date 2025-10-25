@@ -29,13 +29,13 @@ module DailyRegion =
                     assert(pair.Length = 2)
                     Cell.create pair[0] pair[1])
         let typ =
-            match region.``type`` with
-                | "empty"   -> RegionType.Any
-                | "equals"  -> RegionType.Equal
-                | "greater" -> RegionType.SumGreater region.target.Value
-                | "less"    -> RegionType.SumLess region.target.Value
-                | "sum"     -> RegionType.SumExact region.target.Value
-                | "unequal" -> RegionType.Unequal
+            match region.``type``, region.target with
+                | "empty", None          -> RegionType.Any
+                | "equals", None         -> RegionType.Equal
+                | "greater", Some target -> RegionType.SumGreater target
+                | "less", Some target    -> RegionType.SumLess target
+                | "sum", Some target     -> RegionType.SumExact target
+                | "unequal", None        -> RegionType.Unequal
                 | typ -> failwith $"Unexpected region type: {typ}"
         {
             Cells = cells
