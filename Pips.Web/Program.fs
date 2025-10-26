@@ -17,6 +17,15 @@ type WaitCursor() =
         member this.Dispose() =
             document.body?style?cursor <- "default"
 
+module FetchError =
+
+    let getMessage error =
+        match error with
+            | PreparingRequestFailed exn -> exn.Message
+            | DecodingFailed msg -> msg
+            | FetchFailed response -> response.StatusText
+            | NetworkError exn -> exn.Message
+
 module Program =
 
     let private dailyUrl =
@@ -32,8 +41,10 @@ module Program =
                 puzzleDateInput.value
                     |> DateTime.Parse
             let dateStr = date.ToString("yyyy-MM-dd")
-            let! (daily : Daily) =
-                Fetch.get($"{dailyUrl}?date={dateStr}")
-            let puzzleMap = Daily.convert daily
-            Canvas.drawPuzzle(puzzleMap["easy"])
+            match! Fetch.tryGet($"{dailyUrl}?date={dateStr}") with
+                | Ok daily ->
+                    let puzzleMap = Daily.convert daily
+                    Canvas.drawPuzzle(puzzleMap["easy"])
+                | Error err ->
+                    window.alert(FetchError.getMessage err)
         } |> ignore)
