@@ -5,7 +5,17 @@ open System
 open Browser
 open Browser.Types
 
+open Fable.Core.JsInterop
+
 open Thoth.Fetch
+
+type WaitCursor() =
+
+    do document.body?style?cursor <- "wait"
+
+    interface IDisposable with
+        member this.Dispose() =
+            document.body?style?cursor <- "default"
 
 module Program =
 
@@ -17,6 +27,7 @@ module Program =
             :?> HTMLInputElement
     puzzleDateInput.onchange <- (fun _ ->
         promise {
+            use _ = new WaitCursor()
             let date =
                 puzzleDateInput.value
                     |> DateTime.Parse
