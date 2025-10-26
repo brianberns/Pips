@@ -15,6 +15,14 @@ type Board =
         Cells : Array2DSafe<PipCount>
     }
 
+    /// Number of row in the board.
+    member board.NumCols =
+        Array2DSafe.length0 board.Cells
+
+    /// Number of columns in the board.
+    member board.NumRows =
+        Array2DSafe.length1 board.Cells
+
     /// Pip count of each cell.
     member board.Item(cell) =
         Array2DSafe.getItem
@@ -101,10 +109,12 @@ module Board =
 
     /// Gets all possible cells adjacent to the given cell on
     /// the given board.
-    let getAdjacent cell board =
+    let getAdjacent cell (board : Board) =
+        let nRows = board.NumRows
+        let nCols = board.NumCols
         Cell.getAdjacent cell
             |> Seq.where (fun adj ->
                 adj.Row >= 0
                     && adj.Column >= 0
-                    && adj.Row < Array2DSafe.length0 board.Cells
-                    && adj.Column < Array2DSafe.length1 board.Cells)
+                    && adj.Row < nRows
+                    && adj.Column < nCols)

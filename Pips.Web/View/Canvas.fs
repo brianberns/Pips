@@ -15,8 +15,16 @@ module Canvas =
         // initialize drawing context
     let ctx = canvas.getContext_2d()
 
+    let cellSize = 50.0
+
     let drawPuzzle (puzzle : Puzzle) =
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        let width = float puzzle.Board.NumCols * cellSize
+        let height = float puzzle.Board.NumRows * cellSize
+
         ctx.beginPath()
-        ctx.rect(100, 200, 300, 400)
+        ctx.rect(2.0 * cellSize, 2.0 * cellSize, width, height)
         ctx.fillStyle <- !^"blue"
         ctx.fill()
