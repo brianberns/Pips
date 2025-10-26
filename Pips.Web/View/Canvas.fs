@@ -17,14 +17,18 @@ module Canvas =
 
     let cellSize = 50.0
 
-    let drawPuzzle (puzzle : Puzzle) =
+    let drawRegion region =
+        for cell in region.Cells do
+            let x = float cell.Column * cellSize
+            let y = float cell.Row * cellSize
+            ctx.beginPath()
+            ctx.rect(x, y, cellSize, cellSize)
+            ctx.fillStyle <- !^"white"
+            ctx.fill()
+            ctx.strokeStyle <- !^"black"
+            ctx.stroke()
 
+    let drawPuzzle puzzle =
         ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-        let width = float puzzle.Board.NumCols * cellSize
-        let height = float puzzle.Board.NumRows * cellSize
-
-        ctx.beginPath()
-        ctx.rect(2.0 * cellSize, 2.0 * cellSize, width, height)
-        ctx.fillStyle <- !^"blue"
-        ctx.fill()
+        for region in puzzle.Regions do
+            drawRegion region
