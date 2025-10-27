@@ -7,7 +7,42 @@ type Context = CanvasRenderingContext2D
 
 module Canvas =
 
-    let cellSize = 50.0
+    let getRegionMap puzzle =
+        Map [
+            for region in puzzle.Regions do
+                for cell in region.Cells do
+                    yield cell, region
+        ]
+
+    let inSameRegion regionMap c1 c2 =
+        Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
+
+    let hasLeftBorder regionMap cell =
+        let adj = { cell with Column = cell.Column - 1 }
+        not (inSameRegion regionMap cell adj)
+
+    let hasRightBorder regionMap cell =
+        let adj = { cell with Column = cell.Column + 1 }
+        not (inSameRegion regionMap cell adj)
+
+    let hasTopBorder regionMap cell =
+        let adj = { cell with Row = cell.Row - 1 }
+        not (inSameRegion regionMap cell adj)
+
+    let hasBottomBorder regionMap cell =
+        let adj = { cell with Row = cell.Row + 1 }
+        not (inSameRegion regionMap cell adj)
+
+    let getConstraintString region =
+        match region.Type with
+            | RegionType.Any -> "✶"
+            | RegionType.Equal -> "="
+            | RegionType.Unequal -> "≠"
+            | RegionType.SumLess n -> $"<{n}"
+            | RegionType.SumGreater n -> $">{n}"
+            | RegionType.SumExact n -> $"{n}"
+
+    let cellSize = 40.0
 
     let offset = 5.0
 
@@ -30,84 +65,53 @@ module Canvas =
         ctx.strokeStyle <- !^strokeStyle
         ctx.stroke()
 
-    let getRegionDisplay region =
-        match region.Type with
-            | RegionType.Any -> "✶"
-            | RegionType.Equal -> "="
-            | RegionType.Unequal -> "≠"
-            | RegionType.SumLess n -> $"<{n}"
-            | RegionType.SumGreater n -> $">{n}"
-            | RegionType.SumExact n -> $"{n}"
+    let drawConstraint (ctx : Context) region =
+        let cell = Seq.max region.Cells
+        let x = (float cell.Column + 0.5) * cellSize
+        let y = (float cell.Row + 0.5) * cellSize
+        ctx.fillStyle <- !^"black"
+        ctx.font <- "20px sans-serif"
+        ctx.textAlign <- "center"
+        ctx.textBaseline <- "middle"
+        ctx.fillText(getConstraintString region, x, y)
+
+    let drawRegion (ctx : Context) regionMap outerStyle innerStyle region =
+        for cell in region.Cells do
+
+                // draw left border?
+            if hasLeftBorder regionMap cell then
+                drawBorder ctx cell (0, 0) (1, 0) outerStyle
+
+                // draw right border
+            let style =
+                if hasRightBorder regionMap cell then outerStyle
+                else innerStyle
+            drawBorder ctx cell (0, 1) (1, 1) style
+
+                // draw top border?
+            if hasTopBorder regionMap cell then
+                drawBorder ctx cell (0, 0) (0, 1) outerStyle
+
+                // draw bottom border
+            let style =
+                if hasBottomBorder regionMap cell then outerStyle
+                else innerStyle
+            drawBorder ctx cell (1, 0) (1, 1) style
+
+                // draw constraint
+            drawConstraint ctx region
 
     let drawPuzzle (ctx : Context) puzzle =
 
-        let cells =
-            puzzle.Regions
-                |> Seq.collect _.Cells
-
-        let regionMap =
-            Map [
-                for region in puzzle.Regions do
-                    for cell in region.Cells do
-                        yield cell, region
-            ]
-
-        let inSameRegion c1 c2 =
-            Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
-
-        let hasLeftBorder cell =
-            let adj = { cell with Column = cell.Column - 1 }
-            not (inSameRegion cell adj)
-
-        let hasRightBorder cell =
-            let adj = { cell with Column = cell.Column + 1 }
-            not (inSameRegion cell adj)
-
-        let hasTopBorder cell =
-            let adj = { cell with Row = cell.Row - 1 }
-            not (inSameRegion cell adj)
-
-        let hasBottomBorder cell =
-            let adj = { cell with Row = cell.Row + 1 }
-            not (inSameRegion cell adj)
+        let regionMap = getRegionMap puzzle
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
 
         let outerStyle = 2.0, "black"
         let innerStyle = 1.0, "lightgray"
-
-        for cell in cells do
-
-                // draw left border?
-            if hasLeftBorder cell then
-                drawBorder ctx cell (0, 0) (1, 0) outerStyle
-
-                // draw right border
-            let style =
-                if hasRightBorder cell then outerStyle
-                else innerStyle
-            drawBorder ctx cell (0, 1) (1, 1) style
-
-                // draw top border?
-            if hasTopBorder cell then
-                drawBorder ctx cell (0, 0) (0, 1) outerStyle
-
-                // draw bottom border
-            let style =
-                if hasBottomBorder cell then outerStyle
-                else innerStyle
-            drawBorder ctx cell (1, 0) (1, 1) style
-
         for region in puzzle.Regions do
-            let cell = Seq.max region.Cells
-            let x = (float cell.Column + 0.5) * cellSize
-            let y = (float cell.Row + 0.5) * cellSize
-            ctx.fillStyle <- !^"black"
-            ctx.font <- "24px sans-serif"
-            ctx.textAlign <- "center"
-            ctx.textBaseline <- "middle"
-            ctx.fillText(getRegionDisplay region, x, y)
+            drawRegion ctx regionMap outerStyle innerStyle region
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
