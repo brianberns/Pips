@@ -35,7 +35,7 @@ module Canvas =
 
     let getConstraintString region =
         match region.Type with
-            | RegionType.Any -> "✶"
+            | RegionType.Any -> ""
             | RegionType.Equal -> "="
             | RegionType.Unequal -> "≠"
             | RegionType.SumLess n -> $"<{n}"
@@ -75,30 +75,38 @@ module Canvas =
         ctx.textBaseline <- "middle"
         ctx.fillText(getConstraintString region, x, y)
 
-    let drawRegion (ctx : Context) regionMap outerStyle innerStyle region =
+    let drawCell (ctx : Context) regionMap outerStyle innerStyle cell =
+
+        ctx.fillStyle <- !^"lavender"
+        ctx.fillRect(
+            float cell.Column * cellSize,
+            float cell.Row * cellSize,
+            cellSize,
+            cellSize)
+
+            // draw left border?
+        if hasLeftBorder regionMap cell then
+            drawBorder ctx cell (0, 0) (1, 0) outerStyle
+
+            // draw right border
+        let style =
+            if hasRightBorder regionMap cell then outerStyle
+            else innerStyle
+        drawBorder ctx cell (0, 1) (1, 1) style
+
+            // draw top border?
+        if hasTopBorder regionMap cell then
+            drawBorder ctx cell (0, 0) (0, 1) outerStyle
+
+            // draw bottom border
+        let style =
+            if hasBottomBorder regionMap cell then outerStyle
+            else innerStyle
+        drawBorder ctx cell (1, 0) (1, 1) style
+
+    let drawRegion ctx regionMap outerStyle innerStyle region =
         for cell in region.Cells do
-
-                // draw left border?
-            if hasLeftBorder regionMap cell then
-                drawBorder ctx cell (0, 0) (1, 0) outerStyle
-
-                // draw right border
-            let style =
-                if hasRightBorder regionMap cell then outerStyle
-                else innerStyle
-            drawBorder ctx cell (0, 1) (1, 1) style
-
-                // draw top border?
-            if hasTopBorder regionMap cell then
-                drawBorder ctx cell (0, 0) (0, 1) outerStyle
-
-                // draw bottom border
-            let style =
-                if hasBottomBorder regionMap cell then outerStyle
-                else innerStyle
-            drawBorder ctx cell (1, 0) (1, 1) style
-
-                // draw constraint
+            drawCell ctx regionMap outerStyle innerStyle cell
             drawConstraint ctx region
 
     let drawPuzzle (ctx : Context) puzzle =
