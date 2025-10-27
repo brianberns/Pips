@@ -53,8 +53,11 @@ module Program =
                 | Ok daily ->
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
+                    Canvas.drawPuzzle ctx puzzle
+                    (*
                     let solutions = Backtrack.solve puzzle
-                    Canvas.drawPuzzle ctx solutions[0]
+                    Canvas.drawSolutions ctx solutions
+                    *)
                 | Error err ->
                     window.alert(FetchError.getMessage err)
         } |> ignore)
