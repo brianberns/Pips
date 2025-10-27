@@ -35,12 +35,24 @@ module Canvas =
 
     let getConstraintString region =
         match region.Type with
-            | RegionType.Any -> ""
-            | RegionType.Equal -> "="
-            | RegionType.Unequal -> "≠"
-            | RegionType.SumLess n -> $"<{n}"
+            | RegionType.Any          -> ""
+            | RegionType.Equal        -> "="
+            | RegionType.Unequal      -> "≠"
+            | RegionType.SumLess n    -> $"<{n}"
             | RegionType.SumGreater n -> $">{n}"
-            | RegionType.SumExact n -> $"{n}"
+            | RegionType.SumExact n   -> $"{n}"
+
+    let getConstraintColor region =
+        let sat = 50
+        let light = 80
+        let alpha = 0.6
+        match region.Type with
+            | RegionType.Any          -> "whitesmoke"
+            | RegionType.Equal        -> $"hsla(  0, {sat}%%, {light}%%, {alpha})"
+            | RegionType.Unequal      -> $"hsla( 60, {sat}%%, {light}%%, {alpha})"
+            | RegionType.SumLess _    -> $"hsla(120, {sat}%%, {light}%%, {alpha})"
+            | RegionType.SumGreater _ -> $"hsla(180, {sat}%%, {light}%%, {alpha})"
+            | RegionType.SumExact _   -> $"hsla(240, {sat}%%, {light}%%, {alpha})"
 
     let cellSize = 40.0
 
@@ -75,9 +87,10 @@ module Canvas =
         ctx.textBaseline <- "middle"
         ctx.fillText(getConstraintString region, x, y)
 
-    let drawCell (ctx : Context) regionMap outerStyle innerStyle cell =
+    let drawCell (ctx : Context) regionMap fillStyle outerStyle innerStyle cell =
 
-        ctx.fillStyle <- !^"lavender"
+            // fill cell
+        ctx.fillStyle <- !^fillStyle
         ctx.fillRect(
             float cell.Column * cellSize,
             float cell.Row * cellSize,
@@ -106,7 +119,9 @@ module Canvas =
 
     let drawRegion ctx regionMap outerStyle innerStyle region =
         for cell in region.Cells do
-            drawCell ctx regionMap outerStyle innerStyle cell
+            let fillStyle = getConstraintColor region
+            drawCell
+                ctx regionMap fillStyle outerStyle innerStyle cell
             drawConstraint ctx region
 
     let drawPuzzle (ctx : Context) puzzle =
