@@ -132,7 +132,7 @@ module Canvas =
         ctx.translate(offset, offset)
 
         let outerStyle = 2.0, "black"
-        let innerStyle = 1.0, "lightgray"
+        let innerStyle = 1.0, "gray"
         for region in puzzle.Regions do
             drawRegion ctx regionMap outerStyle innerStyle region
 
@@ -181,3 +181,6 @@ module Canvas =
 
         drawPipCount ctx cellA domino.Left
         drawPipCount ctx cellB domino.Right
+
+    let drawSolutions (ctx : Context) solutions =
+        drawPuzzle ctx (Seq.head solutions)

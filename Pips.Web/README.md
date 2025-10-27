@@ -1,3 +1,3 @@
 ﻿```
-dotnet fable watch --sourceMaps --run npx vite
+dotnet fable watch --configuration Release --sourceMaps --run npx vite
 ```
