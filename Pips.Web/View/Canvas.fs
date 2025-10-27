@@ -30,12 +30,20 @@ module Canvas =
         ctx.strokeStyle <- !^strokeStyle
         ctx.stroke()
 
+    let getRegionDisplay region =
+        match region.Type with
+            | RegionType.Any -> "✶"
+            | RegionType.Equal -> "="
+            | RegionType.Unequal -> "≠"
+            | RegionType.SumLess n -> $"<{n}"
+            | RegionType.SumGreater n -> $">{n}"
+            | RegionType.SumExact n -> $"{n}"
+
     let drawPuzzle (ctx : Context) puzzle =
 
         let cells =
             puzzle.Regions
                 |> Seq.collect _.Cells
-                |> set
 
         let regionMap =
             Map [
@@ -47,19 +55,19 @@ module Canvas =
         let inSameRegion c1 c2 =
             Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
 
-        let hasLeftRegionBorder cell =
+        let hasLeftBorder cell =
             let adj = { cell with Column = cell.Column - 1 }
             not (inSameRegion cell adj)
 
-        let hasRightRegionBorder cell =
+        let hasRightBorder cell =
             let adj = { cell with Column = cell.Column + 1 }
             not (inSameRegion cell adj)
 
-        let hasTopRegionBorder cell =
+        let hasTopBorder cell =
             let adj = { cell with Row = cell.Row - 1 }
             not (inSameRegion cell adj)
 
-        let hasBottomRegionBorder cell =
+        let hasBottomBorder cell =
             let adj = { cell with Row = cell.Row + 1 }
             not (inSameRegion cell adj)
 
@@ -72,24 +80,34 @@ module Canvas =
         for cell in cells do
 
                 // draw left border?
-            if hasLeftRegionBorder cell then
+            if hasLeftBorder cell then
                 drawBorder ctx cell (0, 0) (1, 0) outerStyle
 
                 // draw right border
             let style =
-                if hasRightRegionBorder cell then outerStyle
+                if hasRightBorder cell then outerStyle
                 else innerStyle
             drawBorder ctx cell (0, 1) (1, 1) style
 
                 // draw top border?
-            if hasTopRegionBorder cell then
+            if hasTopBorder cell then
                 drawBorder ctx cell (0, 0) (0, 1) outerStyle
 
                 // draw bottom border
             let style =
-                if hasBottomRegionBorder cell then outerStyle
+                if hasBottomBorder cell then outerStyle
                 else innerStyle
             drawBorder ctx cell (1, 0) (1, 1) style
+
+        for region in puzzle.Regions do
+            let cell = Seq.max region.Cells
+            let x = (float cell.Column + 0.5) * cellSize
+            let y = (float cell.Row + 0.5) * cellSize
+            ctx.fillStyle <- !^"black"
+            ctx.font <- "24px sans-serif"
+            ctx.textAlign <- "center"
+            ctx.textBaseline <- "middle"
+            ctx.fillText(getRegionDisplay region, x, y)
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
