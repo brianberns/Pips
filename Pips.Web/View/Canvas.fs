@@ -11,24 +11,24 @@ module Canvas =
 
     let offset = 5.0
 
-    let drawRegion (ctx : Context) region =
+    let drawBorder
+        (ctx : Context)
+        cell
+        (rowFrom, colFrom)
+        (rowTo, colTo)
+        (lineWidth, strokeStyle : string) =
 
-        for cell in region.Cells do
+        let xFrom = float (cell.Column + colFrom) * cellSize
+        let yFrom = float (cell.Row + rowFrom) * cellSize
+        let xTo = float (cell.Column + colTo) * cellSize
+        let yTo = float (cell.Row + rowTo) * cellSize
 
-            ctx.beginPath()
-
-            let x = float cell.Column * cellSize
-            let y = float cell.Row * cellSize
-            ctx.rect(
-                x, y,
-                cellSize, cellSize)
-
-            ctx.fillStyle <- !^"white"
-            ctx.fill()
-
-            ctx.lineWidth <- 2.0
-            ctx.strokeStyle <- !^"black"
-            ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(xFrom, yFrom)
+        ctx.lineTo(xTo, yTo)
+        ctx.lineWidth <- lineWidth
+        ctx.strokeStyle <- !^strokeStyle
+        ctx.stroke()
 
     let drawPuzzle (ctx : Context) puzzle =
 
@@ -36,20 +36,6 @@ module Canvas =
             puzzle.Regions
                 |> Seq.collect _.Cells
                 |> set
-
-        let maxRow =
-            if Seq.isEmpty cells then 0
-            else
-                cells
-                    |> Seq.map _.Row
-                    |> Seq.max
-
-        let maxCol =
-            if Seq.isEmpty cells then 0
-            else
-                cells
-                    |> Seq.map _.Column
-                    |> Seq.max
 
         let regionMap =
             Map [
@@ -61,26 +47,49 @@ module Canvas =
         let inSameRegion c1 c2 =
             Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
 
-        let isPresent cell =
-            cells.Contains(cell)
+        let hasLeftRegionBorder cell =
+            let adj = { cell with Column = cell.Column - 1 }
+            not (inSameRegion cell adj)
 
-        let hasHorizontalRegionBorder row col =
-            let cell = Cell.create row col
-            let topCell = Cell.create (row - 1) cell.Column
-            isPresent cell && isPresent topCell
-                && not (inSameRegion cell topCell)
+        let hasRightRegionBorder cell =
+            let adj = { cell with Column = cell.Column + 1 }
+            not (inSameRegion cell adj)
 
-        let hasVerticalRegionBorder row col =
-            let cell = Cell.create row col
-            let leftCell = Cell.create cell.Row (col - 1)
-            (not (isPresent cell) || not (isPresent leftCell))
-                && not (inSameRegion cell leftCell)
+        let hasTopRegionBorder cell =
+            let adj = { cell with Row = cell.Row - 1 }
+            not (inSameRegion cell adj)
+
+        let hasBottomRegionBorder cell =
+            let adj = { cell with Row = cell.Row + 1 }
+            not (inSameRegion cell adj)
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
 
-        for region in puzzle.Regions do
-            drawRegion ctx region
+        let outerStyle = 2.0, "black"
+        let innerStyle = 1.0, "lightgray"
+
+        for cell in cells do
+
+                // draw left border?
+            if hasLeftRegionBorder cell then
+                drawBorder ctx cell (0, 0) (1, 0) outerStyle
+
+                // draw right border
+            let style =
+                if hasRightRegionBorder cell then outerStyle
+                else innerStyle
+            drawBorder ctx cell (0, 1) (1, 1) style
+
+                // draw top border?
+            if hasTopRegionBorder cell then
+                drawBorder ctx cell (0, 0) (0, 1) outerStyle
+
+                // draw bottom border
+            let style =
+                if hasBottomRegionBorder cell then outerStyle
+                else innerStyle
+            drawBorder ctx cell (1, 0) (1, 1) style
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
