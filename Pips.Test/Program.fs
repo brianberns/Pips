@@ -28,18 +28,18 @@ module Program =
             Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
 
         let isPresent cell =
-            not (cells.Contains(cell))
+            cells.Contains(cell)
 
         let hasHorizontalRegionBorder row col =
             let cell = Cell.create row col
             let topCell = Cell.create (row - 1) cell.Column
-            (not (isPresent cell) || not (isPresent topCell))
+            (isPresent cell || isPresent topCell)
                 && not (inSameRegion cell topCell)
 
         let hasVerticalRegionBorder row col =
             let cell = Cell.create row col
             let leftCell = Cell.create cell.Row (col - 1)
-            (not (isPresent cell) || not (isPresent leftCell))
+            (isPresent cell || isPresent leftCell)
                 && not (inSameRegion cell leftCell)
 
         let getRegionCornerChar row col =
