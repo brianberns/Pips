@@ -26,6 +26,15 @@ module Canvas =
 
     let margin = 1.0
 
+    let getColor region =
+        match region.Type with
+            | RegionType.Any -> "whitesmoke"
+            | _ ->
+                let range = 360
+                let count = 8
+                let hue = (region.GetHashCode() % (range / count)) * count
+                $"hsl({hue} 100%% 60%%)"
+
     let drawRegion region =
         for cell in region.Cells do
             let x = float cell.Column * cellSize
@@ -37,7 +46,7 @@ module Canvas =
                 cellSize - 2.0 * margin,
                 cellSize - 2.0 * margin,
                 cellSize / 10.0)
-            ctx.fillStyle <- !^"blue"
+            ctx.fillStyle <- !^(getColor region)
             ctx.fill()
 
     let drawPuzzle puzzle =
