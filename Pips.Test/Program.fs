@@ -11,51 +11,46 @@ module Program =
 
         let cells =
             puzzle.Regions
-                |> Array.collect _.Cells
+                |> Seq.collect _.Cells
+                |> set
 
         let maxRow =
-            if Array.isEmpty cells then 0
+            if Seq.isEmpty cells then 0
             else
                 cells
-                    |> Array.map _.Row
-                    |> Array.max
+                    |> Seq.map _.Row
+                    |> Seq.max
 
         let maxCol =
-            if Array.isEmpty cells then 0
+            if Seq.isEmpty cells then 0
             else
                 cells
-                    |> Array.map _.Column
-                    |> Array.max
+                    |> Seq.map _.Column
+                    |> Seq.max
 
         let regionMap =
-            puzzle.Regions
-                |> Seq.collect (fun region ->
-                    region.Cells
-                        |> Seq.map (fun cell ->
-                            cell, region))
-                |> Map
+            Map [
+                for region in puzzle.Regions do
+                    for cell in region.Cells do
+                        yield cell, region
+            ]
 
         let inSameRegion c1 c2 =
             Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
 
-        let cellSet =
-            puzzle.Regions
-                |> Array.collect _.Cells
-                |> set
-
-        let isCellEmpty cell =
-            not (cellSet.Contains(cell))
+        let isPresent cell =
+            not (cells.Contains(cell))
 
         let hasHorizontalRegionBorder row col =
             let cell = Cell.create row col
             let topCell = Cell.create (row - 1) cell.Column
-            (not (isCellEmpty cell) || not (isCellEmpty topCell))
+            (not (isPresent cell) || not (isPresent topCell))
                 && not (inSameRegion cell topCell)
 
         let hasVerticalRegionBorder row col =
             let cell = Cell.create row col
             let leftCell = Cell.create cell.Row (col - 1)
-            (not (isCellEmpty cell) || not (isCellEmpty leftCell))
+            (not (isPresent cell) || not (isPresent leftCell))
                 && not (inSameRegion cell leftCell)
 
         let getRegionCornerChar row col =
@@ -92,12 +87,12 @@ module Program =
                 | RegionType.SumExact n -> sprintf "%d" n
 
         let regionDisplayMap =
-            puzzle.Regions
-                |> Array.map (fun region ->
+            Map [
+                for region in puzzle.Regions do
                     let cell = Seq.max region.Cells
                     let display = getRegionDisplay region
-                    cell, display)
-                |> Map
+                    cell, display
+            ]
 
         for row in 0 .. maxRow do
 
@@ -153,28 +148,31 @@ module Program =
 
         let cells =
             solution.Regions
-                |> Array.collect _.Cells
+                |> Seq.collect _.Cells
+                |> set
 
         let maxRow =
-            if Array.isEmpty cells then 0
+            if Seq.isEmpty cells then 0
             else
                 cells
-                    |> Array.map _.Row
-                    |> Array.max
+                    |> Seq.map _.Row
+                    |> Seq.max
 
         let maxCol =
-            if Array.isEmpty cells then 0
+            if Seq.isEmpty cells then 0
             else
                 cells
-                    |> Array.map _.Column
-                    |> Array.max
+                    |> Seq.map _.Column
+                    |> Seq.max
 
         let dominoMap =
-            solution.Board.DominoPlaces
-                |> Seq.collect (fun (_, (c1, c2)) ->
-                    let d = min c1 c2, max c1 c2
-                    [ c1, d; c2, d ])
-                |> Map
+            Map [
+                for (_, (c1, c2)) in solution.Board.DominoPlaces do
+                    let d =
+                        min c1 c2,
+                        max c1 c2
+                    yield! [ c1, d; c2, d ]
+            ]
 
         let inSameDomino c1 c2 =
             Map.tryFind c1 dominoMap = Map.tryFind c2 dominoMap
@@ -382,4 +380,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveTwo ()
+    solveAnother () |> ignore

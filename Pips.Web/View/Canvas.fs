@@ -32,6 +32,50 @@ module Canvas =
 
     let drawPuzzle (ctx : Context) puzzle =
 
+        let cells =
+            puzzle.Regions
+                |> Seq.collect _.Cells
+                |> set
+
+        let maxRow =
+            if Seq.isEmpty cells then 0
+            else
+                cells
+                    |> Seq.map _.Row
+                    |> Seq.max
+
+        let maxCol =
+            if Seq.isEmpty cells then 0
+            else
+                cells
+                    |> Seq.map _.Column
+                    |> Seq.max
+
+        let regionMap =
+            Map [
+                for region in puzzle.Regions do
+                    for cell in region.Cells do
+                        yield cell, region
+            ]
+
+        let inSameRegion c1 c2 =
+            Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
+
+        let isPresent cell =
+            cells.Contains(cell)
+
+        let hasHorizontalRegionBorder row col =
+            let cell = Cell.create row col
+            let topCell = Cell.create (row - 1) cell.Column
+            isPresent cell && isPresent topCell
+                && not (inSameRegion cell topCell)
+
+        let hasVerticalRegionBorder row col =
+            let cell = Cell.create row col
+            let leftCell = Cell.create cell.Row (col - 1)
+            (not (isPresent cell) || not (isPresent leftCell))
+                && not (inSameRegion cell leftCell)
+
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
 
