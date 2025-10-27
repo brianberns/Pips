@@ -29,7 +29,7 @@ module Canvas =
                 let hue = (region.GetHashCode() % (range / count)) * count
                 $"hsl({hue} 100%% 60%%)"
 
-    let drawRegion region =
+    let drawRegion region puzzle =
 
         for cell in region.Cells do
 
@@ -47,6 +47,19 @@ module Canvas =
             ctx.strokeStyle <- !^"black"
             ctx.stroke()
 
+            let value = puzzle.Board[cell]
+            if value <> Board.emptyCell then
+                ctx.fillStyle <- !^"black"
+                ctx.font <- "20px Arial"
+                ctx.textAlign <- "center"
+                ctx.textBaseline <- "middle"
+                let textX = x + cellSize / 2.0
+                let textY = y + cellSize / 2.0
+                ctx.fillText(
+                    value.ToString(),
+                    textX,
+                    textY)
+
     let drawPuzzle puzzle =
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -54,6 +67,6 @@ module Canvas =
         ctx.lineWidth <- 2.0
 
         for region in puzzle.Regions do
-            drawRegion region
+            drawRegion region puzzle
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
