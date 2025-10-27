@@ -44,7 +44,7 @@ module Program =
             match! Fetch.tryGet($"{dailyUrl}?date={dateStr}") with
                 | Ok daily ->
                     let puzzleMap = Daily.convert daily
-                    let puzzle = puzzleMap["easy"]
+                    let puzzle = puzzleMap["hard"]
                     let solutions = Backtrack.solve puzzle
                     Canvas.drawPuzzle(solutions[0])
                 | Error err ->

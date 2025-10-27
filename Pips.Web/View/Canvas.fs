@@ -27,9 +27,9 @@ module Canvas =
                 let range = 360
                 let count = 10
                 let hue = (region.GetHashCode() % (range / count)) * count
-                $"hsl({hue} 100%% 60%%)"
+                $"hsl({hue} 100%% 80%%)"
 
-    let drawRegion region puzzle =
+    let drawRegion region =
 
         for cell in region.Cells do
 
@@ -44,29 +44,65 @@ module Canvas =
             ctx.fillStyle <- !^(getColor region)
             ctx.fill()
 
+            ctx.lineWidth <- 2.0
             ctx.strokeStyle <- !^"black"
             ctx.stroke()
 
-            let value = puzzle.Board[cell]
-            if value <> Board.emptyCell then
-                ctx.fillStyle <- !^"black"
-                ctx.font <- "20px Arial"
-                ctx.textAlign <- "center"
-                ctx.textBaseline <- "middle"
-                let textX = x + cellSize / 2.0
-                let textY = y + cellSize / 2.0
-                ctx.fillText(
-                    value.ToString(),
-                    textX,
-                    textY)
+    let drawPipCount cell (value : PipCount) =
+        let x = (float cell.Column + 0.5) * cellSize
+        let y = (float cell.Row + 0.5) * cellSize
+        ctx.fillStyle <- !^"black"
+        ctx.font <- "24px sans-serif"
+        ctx.textAlign <- "center"
+        ctx.textBaseline <- "middle"
+        ctx.fillText(string value, x, y)
+
+    let drawDomino (domino : Domino) ((cellA, cellB) : Edge) =
+
+        ctx.beginPath()
+
+        let x =
+            float (min cellA.Column cellB.Column) * cellSize
+        let y =
+            float (min cellA.Row cellB.Row) * cellSize
+
+        let width =
+            if cellA.Row = cellB.Row then
+                cellSize * 2.0
+            else
+                cellSize
+        let height =
+            if cellA.Row <> cellB.Row then
+                cellSize * 2.0
+            else
+                cellSize
+
+        let margin = 4.0
+        ctx.rect(
+            x + margin,
+            y + margin,
+            width - (2.0 * margin),
+            height - (2.0 * margin))
+
+        ctx.fillStyle <- !^"rgba(0, 0, 0, 0.2)"
+        ctx.fill()
+
+        ctx.lineWidth <- 1.0
+        ctx.strokeStyle <- !^"black"
+        ctx.stroke()
+
+        drawPipCount cellA domino.Left
+        drawPipCount cellB domino.Right
 
     let drawPuzzle puzzle =
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         ctx.translate(offset, offset)
-        ctx.lineWidth <- 2.0
 
         for region in puzzle.Regions do
-            drawRegion region puzzle
+            drawRegion region
+
+        for (domino, edge) in puzzle.Board.DominoPlaces do
+            drawDomino domino edge
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
