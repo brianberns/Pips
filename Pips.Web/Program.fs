@@ -28,6 +28,14 @@ module FetchError =
 
 module Program =
 
+        // initialize canvas
+    let canvas =
+        document.getElementById "canvas-puzzle"
+            :?> HTMLCanvasElement
+
+        // initialize drawing context
+    let ctx = canvas.getContext_2d()
+
     let private dailyUrl =
         "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
 
@@ -46,7 +54,7 @@ module Program =
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
                     let solutions = Backtrack.solve puzzle
-                    Canvas.drawPuzzle(solutions[0])
+                    Canvas.drawPuzzle ctx solutions[0]
                 | Error err ->
                     window.alert(FetchError.getMessage err)
         } |> ignore)
