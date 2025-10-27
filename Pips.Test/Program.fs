@@ -9,24 +9,13 @@ module Program =
 
     let printPuzzle puzzle =
 
+        let maxRow = puzzle.Board.NumRows - 1
+        let maxCol = puzzle.Board.NumColumns - 1
+
         let cells =
             puzzle.Regions
                 |> Seq.collect _.Cells
                 |> set
-
-        let maxRow =
-            if Seq.isEmpty cells then 0
-            else
-                cells
-                    |> Seq.map _.Row
-                    |> Seq.max
-
-        let maxCol =
-            if Seq.isEmpty cells then 0
-            else
-                cells
-                    |> Seq.map _.Column
-                    |> Seq.max
 
         let regionMap =
             Map [
@@ -146,24 +135,13 @@ module Program =
 
     let printSolution solution =
 
+        let maxRow = solution.Board.NumRows - 1
+        let maxCol = solution.Board.NumColumns - 1
+
         let cells =
             solution.Regions
                 |> Seq.collect _.Cells
                 |> set
-
-        let maxRow =
-            if Seq.isEmpty cells then 0
-            else
-                cells
-                    |> Seq.map _.Row
-                    |> Seq.max
-
-        let maxCol =
-            if Seq.isEmpty cells then 0
-            else
-                cells
-                    |> Seq.map _.Column
-                    |> Seq.max
 
         let dominoMap =
             Map [

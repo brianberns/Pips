@@ -17,11 +17,11 @@ type Board =
 
     /// Number of rows in the board.
     member board.NumRows =
-        Array2DSafe.length1 board.Cells
+        Array2DSafe.length0 board.Cells
 
     /// Number of columns in the board.
     member board.NumColumns =
-        Array2DSafe.length0 board.Cells
+        Array2DSafe.length1 board.Cells
 
     /// Pip count of each cell.
     member board.Item(cell) =
