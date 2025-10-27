@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pips Solver</title>
 </head>
-<body>
-    <label for="puzzle-date">Puzzle date:</label>
-    <input type="date" id="puzzle-date" min="2025-08-18">
-    <canvas id="canvas" width="800" height="600"></canvas>
+<body style="background-color:lightgray">
+    <div style="margin:10px">
+        <label for="puzzle-date">Puzzle date:</label>
+        <input type="date" id="puzzle-date" min="2025-08-18">
+    </div>
+    <canvas id="canvas" width="400" height="400" style="background-color:white; margin:10px"></canvas>
     <script type="module" src="/Program.fs.js"></script>
 </body>
 </html>
