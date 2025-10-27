@@ -27,7 +27,7 @@ module Canvas =
                 let range = 360
                 let count = 10
                 let hue = (region.GetHashCode() % (range / count)) * count
-                $"hsl({hue} 100%% 80%%)"
+                $"hsl({hue} 100%% 60%%)"
 
     let drawRegion region =
 
@@ -45,7 +45,7 @@ module Canvas =
             ctx.fill()
 
             ctx.lineWidth <- 2.0
-            ctx.strokeStyle <- !^"black"
+            ctx.strokeStyle <- !^"lightgray"
             ctx.stroke()
 
     let drawPipCount cell (value : PipCount) =
@@ -66,25 +66,23 @@ module Canvas =
         let y =
             float (min cellA.Row cellB.Row) * cellSize
 
-        let width =
-            if cellA.Row = cellB.Row then
-                cellSize * 2.0
-            else
-                cellSize
-        let height =
-            if cellA.Row <> cellB.Row then
-                cellSize * 2.0
-            else
-                cellSize
-
         let margin = 4.0
+        let dominoHalfSize = cellSize - (2.0 * margin)
+        let x, width =
+            if cellA.Row = cellB.Row then
+                x + margin, dominoHalfSize * 2.0
+            else
+                x, dominoHalfSize
+        let y, height =
+            if cellA.Row <> cellB.Row then
+                y + margin, dominoHalfSize * 2.0
+            else
+                y, dominoHalfSize
         ctx.rect(
-            x + margin,
-            y + margin,
-            width - (2.0 * margin),
-            height - (2.0 * margin))
+            x + margin, y + margin,
+            width, height)
 
-        ctx.fillStyle <- !^"rgba(0, 0, 0, 0.2)"
+        ctx.fillStyle <- !^"white"
         ctx.fill()
 
         ctx.lineWidth <- 1.0
