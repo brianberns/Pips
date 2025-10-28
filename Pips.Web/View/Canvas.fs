@@ -58,6 +58,7 @@ module Canvas =
 
     let offset = 5.0
 
+    /// Draws a border line for the given cell.
     let drawBorder
         (ctx : Context)
         cell
@@ -77,6 +78,7 @@ module Canvas =
         ctx.strokeStyle <- !^strokeStyle
         ctx.stroke()
 
+    /// Draws the constraint string for the given region.
     let drawConstraint (ctx : Context) region =
         let cell = Seq.max region.Cells
         let x = (float cell.Column + 0.5) * cellSize
@@ -87,7 +89,11 @@ module Canvas =
         ctx.textBaseline <- "middle"
         ctx.fillText(getConstraintString region, x, y)
 
-    let drawCell (ctx : Context) regionMap fillStyle outerStyle innerStyle cell =
+    let outerStyle = 2.0, "black"
+    let innerStyle = 1.0, "gray"
+
+    /// Draws the given cell, including its borders.
+    let drawCell (ctx : Context) regionMap fillStyle cell =
 
             // fill cell
         ctx.fillStyle <- !^fillStyle
@@ -117,13 +123,16 @@ module Canvas =
             else innerStyle
         drawBorder ctx cell (1, 0) (1, 1) style
 
-    let drawRegion ctx regionMap outerStyle innerStyle region =
+    /// Draws the given region by drawing each of its cells and its
+    /// constraint.
+    let drawRegion ctx regionMap region =
         for cell in region.Cells do
             let fillStyle = getConstraintColor region
-            drawCell
-                ctx regionMap fillStyle outerStyle innerStyle cell
+            drawCell ctx regionMap fillStyle cell
             drawConstraint ctx region
 
+    /// Draws the given puzzle by drawing its regions and unplaced
+    /// dominoes.
     let drawPuzzle (ctx : Context) puzzle =
 
         let regionMap = getRegionMap puzzle
@@ -131,10 +140,8 @@ module Canvas =
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
 
-        let outerStyle = 2.0, "black"
-        let innerStyle = 1.0, "gray"
         for region in puzzle.Regions do
-            drawRegion ctx regionMap outerStyle innerStyle region
+            drawRegion ctx regionMap region
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
