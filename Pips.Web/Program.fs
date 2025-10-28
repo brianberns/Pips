@@ -127,3 +127,9 @@ module Program =
 
                 | None -> ()
         } |> ignore)
+
+    let today = DateTime.Now
+    puzzleDateInput.value <- today.ToString("yyyy-MM-dd")
+    Event.Create("change")
+        |> puzzleDateInput.dispatchEvent
+        |> ignore
