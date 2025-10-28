@@ -25,6 +25,7 @@
     <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
     <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
     <Compile Include="Canvas.fs" />
+    <Compile Include="Domino.fs" />
     <Compile Include="Draw.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace Pips
+﻿namespace Pips.Web
 
 open Browser
 open Browser.Types

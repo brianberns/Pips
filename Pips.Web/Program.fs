@@ -1,4 +1,4 @@
-﻿namespace Pips
+﻿namespace Pips.Web
 
 open System
 
@@ -8,6 +8,8 @@ open Browser.Types
 open Fable.Core.JsInterop
 
 open Thoth.Fetch
+
+open Pips
 
 type WaitCursor() =
 
