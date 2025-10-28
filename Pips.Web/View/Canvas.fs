@@ -177,7 +177,7 @@ module Canvas =
     let drawUnplacedDominoes (ctx : Context) startY dominoes =
         let dominoChunks =
             dominoes
-                |> Seq.chunkBySize 3 
+                |> Seq.chunkBySize 5 
                 |> Seq.toArray
         for row = 0 to dominoChunks.Length - 1 do
             let dominoChunk = dominoChunks[row]
