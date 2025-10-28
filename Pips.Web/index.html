@@ -4,20 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pips Solver</title>
+    <link rel="stylesheet" href="index.css">
 </head>
-<body style="font-family:sans-serif; background-color:lightgray">
-    <div style="margin:10px">
-        <label for="puzzle-date">Puzzle date:</label>
-        <input type="date" id="puzzle-date" min="2025-08-18" />
-    </div>
-    <div>
-        <canvas id="puzzle-canvas" width="500" height="500" style="background-color:white; margin:10px"></canvas>
-        <br />
-        <button type="button" id="solve-button" disabled style="margin:10px">Solve</button>
-        <label id="timer-label"></label>
-    </div>
-    <div>
-        <canvas id="solution-canvas" width="500" height="500" style="background-color:white; margin:10px"></canvas>
+<body>
+    <div class="grid-container">
+        <div class="puzzle-date-div">
+            <label for="puzzle-date">Puzzle date:</label>
+            <input type="date" id="puzzle-date" min="2025-08-18" />
+        </div>
+        <div class="puzzle-div">
+            <canvas id="puzzle-canvas" width="500" height="500"></canvas>
+            <br />
+            <button type="button" id="solve-button" disabled>Solve</button>
+            <label id="timer-label"></label>
+        </div>
+        <div class="solution-div">
+            <canvas id="solution-canvas" width="500" height="500"></canvas>
+        </div>
     </div>
     <script type="module" src="/Program.fs.js"></script>
 </body>

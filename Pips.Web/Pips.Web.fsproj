@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <None Include="README.md" />
+    <Content Include="index.html" />
+    <Content Include="index.css" />
     <Compile Include="Array2DSafe.fs" />
     <Compile Include="..\Pips\Prelude.fs" Link="Model/Prelude.fs" />
     <Compile Include="..\Pips\Domino.fs" Link="Model/Domino.fs" />
@@ -22,12 +24,9 @@
     <Compile Include="..\Pips\Daily.fs" Link="Model/Daily.fs" />
     <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
     <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
-    <Content Include="index.html" />
     <Compile Include="View\Canvas.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
