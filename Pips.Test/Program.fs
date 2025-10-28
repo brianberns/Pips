@@ -262,7 +262,8 @@ module Program =
                 None
 
         let print (date : DateOnly) = function
-            | Some (time : float, solutions : _[]) ->
+            | Some (time : float, solutions) ->
+                let solutions = Seq.toArray solutions
                 printfn $"{date}: Found {solutions.Length} solution(s) in {time} seconds"
                 printfn ""
                 printfn $"{printSolution solutions[0]}"
@@ -283,7 +284,7 @@ module Program =
         for (date, resultOpt) in pairs do
             match resultOpt with
                 | Some (time, solutions) ->
-                    printfn $"{date}, {time}, {solutions.Length}"
+                    printfn $"{date}, {time}, {Seq.length solutions}"
                 | None ->
                     printfn $"{date}, timeout"
 
@@ -300,7 +301,7 @@ module Program =
 
             // solve puzzle and print solutions
         let stopwatch = Stopwatch.StartNew()
-        let solutions = Backtrack.solve puzzle
+        let solutions = Backtrack.solve puzzle |> Seq.toArray
         stopwatch.Stop()
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}:"
         printfn ""
@@ -352,7 +353,8 @@ module Program =
                 printfn $"{region.Type}: {region.Cells.Length} cells"
             printfn ""
 
-            let solutions = Backtrack.solve solved.Puzzle
+            let solutions =
+                Backtrack.solve solved.Puzzle |> Seq.toArray
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
             printfn $"{printSolution solutions[0]}"
