@@ -82,7 +82,7 @@ module Program =
                         // convert and draw puzzle
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
-                    Canvas.drawPuzzle puzzleCtx puzzle
+                    Draw.drawPuzzle puzzleCtx puzzle
 
                         // save state
                     puzzleOpt <- Some puzzle
@@ -121,7 +121,7 @@ module Program =
                         $"Found {solutions.Length}{countStr} solution{pluralStr} in %0.1f{duration} ms"
 
                         // draw solutions
-                    Canvas.drawSolutions solutionCtx solutions
+                    Draw.drawSolutions solutionCtx solutions
 
                 | None -> ()
         } |> ignore)
