@@ -34,8 +34,4 @@
     <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="View\" />
-  </ItemGroup>
-
 </Project>
