@@ -58,16 +58,22 @@ module Program =
             clearCanvas puzzleCtx
             clearCanvas solutionCtx
 
+                // fetch puzzle for selected date
             let date =
                 puzzleDateInput.value
                     |> DateTime.Parse
             let dateStr = date.ToString("yyyy-MM-dd")
             match! Fetch.tryGet($"{dailyUrl}?date={dateStr}") with
                 | Ok daily ->
+
+                        // convert and draw puzzle
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
                     Canvas.drawPuzzle puzzleCtx puzzle
+
+                        // save state
                     puzzleOpt <- Some puzzle
+
                 | Error err ->
                     window.alert(FetchError.getMessage err)
         } |> ignore)
@@ -77,9 +83,16 @@ module Program =
             :?> HTMLButtonElement
     solveButton.onclick <- (fun _ ->
         promise {
-            use _ = new WaitCursor()
-            Backtrack.solve puzzleOpt.Value
-                |> Seq.truncate 10
-                |> Seq.toArray
-                |> Canvas.drawSolutions solutionCtx
+            match puzzleOpt with
+                | Some puzzle ->
+                    use _ = new WaitCursor()
+                    do! Promise.sleep 800   // allow cursor change
+
+                    clearCanvas solutionCtx
+
+                    Backtrack.solve puzzleOpt.Value
+                        |> Seq.truncate 10
+                        |> Seq.toArray
+                        |> Canvas.drawSolutions solutionCtx
+                | None -> ()
         } |> ignore)
