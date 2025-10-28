@@ -49,16 +49,15 @@ module Canvas =
             | RegionType.SumExact n   -> $"{n}"
 
     let private getConstraintColor region =
-        let sat = 50
-        let light = 80
-        let alpha = 0.6
-        match region.Type with
-            | RegionType.Any          -> "whitesmoke"
-            | RegionType.Equal        -> $"hsla(  0, {sat}%%, {light}%%, {alpha})"
-            | RegionType.Unequal      -> $"hsla( 60, {sat}%%, {light}%%, {alpha})"
-            | RegionType.SumLess _    -> $"hsla(120, {sat}%%, {light}%%, {alpha})"
-            | RegionType.SumGreater _ -> $"hsla(180, {sat}%%, {light}%%, {alpha})"
-            | RegionType.SumExact _   -> $"hsla(240, {sat}%%, {light}%%, {alpha})"
+        let level =
+            match region.Type with
+                | RegionType.Any          -> 250
+                | RegionType.Equal        -> 235
+                | RegionType.Unequal      -> 220
+                | RegionType.SumLess _    -> 205
+                | RegionType.SumGreater _ -> 190
+                | RegionType.SumExact _   -> 175
+        $"rgb({level}, {level}, {level})"
 
     let private maxPipCount = 6
 
