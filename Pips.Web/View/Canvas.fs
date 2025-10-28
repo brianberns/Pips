@@ -197,7 +197,6 @@ module Canvas =
 
         let regionMap = getRegionMap puzzle
 
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
 
         for region in puzzle.Regions do
@@ -213,7 +212,9 @@ module Canvas =
         let y = (float cell.Row + 0.5) * cellSize
         drawPipCount ctx "24px" x y pipCount
 
-    let private drawSolutionDomino (ctx : Context) domino ((cellA, cellB) : Edge) =
+    /// Draws the given placed domino at the given edge.
+    let private drawSolutionDomino
+        (ctx : Context) domino ((cellA, cellB) : Edge) =
 
         ctx.beginPath()
 
@@ -251,9 +252,9 @@ module Canvas =
         drawSolutionPipCount ctx cellA domino.Left
         drawSolutionPipCount ctx cellB domino.Right
 
+    /// Draws the given solutions.
     let drawSolutions (ctx : Context) (solutions : _[]) =
 
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
 
         for (domino, edge) in solutions[0].Board.DominoPlaces do

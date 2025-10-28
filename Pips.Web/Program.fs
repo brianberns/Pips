@@ -32,6 +32,9 @@ module Program =
         document.getElementById id
             :?> HTMLCanvasElement
 
+    let clearCanvas (ctx: CanvasRenderingContext2D) =
+        ctx.clearRect(0.0, 0.0, ctx.canvas.width, ctx.canvas.height)
+
         // initialize canvases
     let puzzleCanvas = getCanvas "puzzle-canvas"
     let solutionCanvas = getCanvas "solution-canvas"
@@ -51,6 +54,10 @@ module Program =
     puzzleDateInput.onchange <- (fun _ ->
         promise {
             use _ = new WaitCursor()
+
+            clearCanvas puzzleCtx
+            clearCanvas solutionCtx
+
             let date =
                 puzzleDateInput.value
                     |> DateTime.Parse
