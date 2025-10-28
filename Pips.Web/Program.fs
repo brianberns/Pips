@@ -110,13 +110,17 @@ module Program =
                         Backtrack.solve puzzleOpt.Value
                             |> Seq.truncate maxSolutions
                             |> Seq.toArray
+
+                        // update timer label
                     let duration = getTime () - timeStart
                     let countStr =
                         if solutions.Length >= maxSolutions then
                             $"at least {solutions.Length}"
                         else $"{solutions.Length}"
+                    let pluralStr =
+                        if solutions.Length = 1 then "" else "s"
                     timerLabel.textContent <-
-                        $"Found {countStr} solution(s) in %0.1f{duration} ms"
+                        $"Found {countStr} solution{pluralStr} in %0.1f{duration} ms"
 
                         // draw solutions
                     Canvas.drawSolutions solutionCtx solutions
