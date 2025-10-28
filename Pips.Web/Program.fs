@@ -54,7 +54,6 @@ module Program =
     puzzleDateInput.onchange <- (fun _ ->
         promise {
             use _ = new WaitCursor()
-
             clearCanvas puzzleCtx
             clearCanvas solutionCtx
 
@@ -85,11 +84,10 @@ module Program =
         promise {
             match puzzleOpt with
                 | Some puzzle ->
-                    use _ = new WaitCursor()
-                    do! Promise.sleep 300   // allow cursor change
-
+                    use _ = new WaitCursor()   // doesn't work
                     clearCanvas solutionCtx
 
+                        // solve puzzle and draw solutions
                     Backtrack.solve puzzleOpt.Value
                         |> Seq.truncate 10
                         |> Seq.toArray
