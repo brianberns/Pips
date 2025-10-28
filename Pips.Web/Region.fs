@@ -3,14 +3,7 @@
 open Fable.Core.JsInterop
 open Pips
 
-module Draw =
-
-    let private getRegionMap puzzle =
-        Map [
-            for region in puzzle.Regions do
-                for cell in region.Cells do
-                    yield cell, region
-        ]
+module Region =
 
     let private inSameRegion regionMap c1 c2 =
         Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
@@ -50,8 +43,6 @@ module Draw =
                 | RegionType.SumGreater _ -> 190
                 | RegionType.SumExact _   -> 175
         $"rgb({level}, {level}, {level})"
-
-    let private offset = 5.0
 
     let private cellSize = Domino.cellSize
 
@@ -122,40 +113,8 @@ module Draw =
 
     /// Draws the given region by drawing each of its cells and its
     /// constraint.
-    let private drawRegion ctx regionMap region =
+    let drawRegion ctx regionMap region =
         for cell in region.Cells do
             let fillStyle = getConstraintColor region
             drawCell ctx regionMap fillStyle cell
             drawConstraint ctx region
-
-    /// Draws the given puzzle by drawing its regions and unplaced
-    /// dominoes.
-    let drawPuzzle (ctx : Context) puzzle =
-
-        let regionMap = getRegionMap puzzle
-
-        ctx.translate(offset, offset)
-
-        for region in puzzle.Regions do
-            drawRegion ctx regionMap region
-
-        let startY = float (puzzle.Board.NumRows + 1) * cellSize
-        Domino.drawUnplacedDominoes ctx startY puzzle.UnplacedDominoes
-
-        ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
-
-    /// Draws the given solutions.
-    let drawSolutions (ctx : Context) (solutions : _[]) =
-
-        let callback iFrame =
-
-            Canvas.clear ctx
-            ctx.translate(offset, offset)
-
-            let solution = solutions[iFrame % solutions.Length]
-            for (domino, edge) in solution.Board.DominoPlaces do
-                Domino.drawSolutionDomino ctx domino edge
-
-            ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
-
-        Canvas.animate 2.0 callback

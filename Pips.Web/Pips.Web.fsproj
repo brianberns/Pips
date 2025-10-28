@@ -26,7 +26,8 @@
     <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
     <Compile Include="Canvas.fs" />
     <Compile Include="Domino.fs" />
-    <Compile Include="Draw.fs" />
+    <Compile Include="Region.fs" />
+    <Compile Include="Puzzle.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
