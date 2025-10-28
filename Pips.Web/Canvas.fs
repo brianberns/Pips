@@ -61,22 +61,28 @@ module Canvas =
 
     let private maxPipCount = 6
 
-    let private numDominoes =
-        (maxPipCount + 1) * (maxPipCount + 2) / 2
+    let private allDominoes =
+        [|
+            for left in 0 .. maxPipCount do
+                for right in left .. maxPipCount do
+                    yield Domino.create left right
+        |]
+
+    let private dominoMap =
+        Map [
+            for i = 0 to allDominoes.Length - 1 do
+
+                let domino = allDominoes[i]
+                yield domino, i
+
+                let domino = Domino.create domino.Right domino.Left
+                yield domino, i
+        ]
 
     let private getDominoColor domino =
-        let sat = 50
-        let light = 80
-        let alpha = 0.6
-        let pipCounts =
-            Domino.toSeq domino
-                |> Seq.sort
-                |> Seq.toArray
-        let hue = pipCounts[0] * (maxPipCount + 1) + pipCounts[1]
-                |> float
-                |> (*) (360.0 / float numDominoes)
-                |> int
-        $"hsla({hue}, {sat}%%, {light}%%, {alpha})"
+        let hue =
+            360.0 * float dominoMap[domino] / float dominoMap.Count
+        $"hsl({hue}, 100%%, 80%%)"
 
     let private cellSize = 40.0
 
