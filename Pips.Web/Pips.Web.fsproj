@@ -24,7 +24,7 @@
     <Compile Include="..\Pips\Daily.fs" Link="Model/Daily.fs" />
     <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
     <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
-    <Compile Include="View\Canvas.fs" />
+    <Compile Include="Canvas.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -32,6 +32,10 @@
     <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
     <PackageReference Include="Fable.Core" Version="4.5.0" />
     <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="View\" />
   </ItemGroup>
 
 </Project>
