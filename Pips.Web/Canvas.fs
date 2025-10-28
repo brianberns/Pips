@@ -48,5 +48,8 @@ module CanvasExtensions =
     type CanvasRenderingContext2D with
 
         [<Emit("($0).roundRect($1, $2, $3, $4, $5)")>]
-        member this.roundRect(x: float, y: float, w: float, h: float, radii: float) : unit =
+        member _.roundRect(
+            x : float, y : float,
+            width : float, height: float,
+            radius : float) : unit =
             failwith "JS interop"
