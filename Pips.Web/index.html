@@ -8,10 +8,16 @@
 <body style="background-color:lightgray">
     <div style="margin:10px">
         <label for="puzzle-date">Puzzle date:</label>
-        <input type="date" id="puzzle-date" min="2025-08-18">
+        <input type="date" id="puzzle-date" min="2025-08-18" />
     </div>
-    <canvas id="puzzle-canvas" width="500" height="500" style="background-color:white; margin:10px"></canvas>
-    <canvas id="solution-canvas" width="500" height="500" style="background-color:white; margin:10px"></canvas>
+    <div>
+        <canvas id="puzzle-canvas" width="500" height="500" style="background-color:white; margin:10px"></canvas>
+        <br />
+        <button type="button" id="solve-button" style="margin:10px">Solve</button>
+    </div>
+    <div>
+        <canvas id="solution-canvas" width="500" height="500" style="background-color:white; margin:10px"></canvas>
+    </div>
     <script type="module" src="/Program.fs.js"></script>
 </body>
 </html>

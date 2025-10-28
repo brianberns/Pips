@@ -43,6 +43,8 @@ module Program =
     let private dailyUrl =
         "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
 
+    let mutable puzzleOpt = None
+
     let puzzleDateInput =
         document.getElementById "puzzle-date"
             :?> HTMLInputElement
@@ -58,9 +60,16 @@ module Program =
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
                     Canvas.drawPuzzle puzzleCtx puzzle
-                    Backtrack.solve puzzle
-                        |> Seq.take 10
-                        |> Canvas.drawSolutions solutionCtx
+                    puzzleOpt <- Some puzzle
                 | Error err ->
                     window.alert(FetchError.getMessage err)
         } |> ignore)
+
+    let solveButton =
+        document.getElementById "solve-button"
+            :?> HTMLButtonElement
+    solveButton.onclick <- (fun _ ->
+        use _ = new WaitCursor()
+        Backtrack.solve puzzleOpt.Value
+            |> Seq.take 10
+            |> Canvas.drawSolutions solutionCtx)
