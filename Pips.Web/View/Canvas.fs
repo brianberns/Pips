@@ -148,23 +148,24 @@ module Canvas =
 
     let drawDominoHorizontal (ctx : Context) x y domino =
 
-        let cellSize = cellSize * (2.0 / 3.0)
+        let scale = 2.0 / 3.0
+        let cellSize = cellSize * scale
 
         ctx.beginPath()
         ctx.roundRect(
             x, y,
             cellSize * 2.0, cellSize,
-            cellSize / 10.0)
+            cellSize / 8.0)
         ctx.fillStyle <- !^"rgba(255, 255, 255, 0.9)"
         ctx.fill()
-        ctx.lineWidth <- fst outerStyle
+        ctx.lineWidth <- fst outerStyle * scale
         ctx.strokeStyle <- !^(snd outerStyle)
         ctx.stroke()
 
         ctx.beginPath()
         ctx.moveTo(x + cellSize, y)
         ctx.lineTo(x + cellSize, y + cellSize)
-        ctx.lineWidth <- fst innerStyle
+        ctx.lineWidth <- fst innerStyle * scale
         ctx.strokeStyle <- !^(snd innerStyle)
         ctx.stroke()
 
@@ -177,7 +178,7 @@ module Canvas =
     let drawUnplacedDominoes (ctx : Context) startY dominoes =
         let dominoChunks =
             dominoes
-                |> Seq.chunkBySize 5 
+                |> Seq.chunkBySize 4 
                 |> Seq.toArray
         for row = 0 to dominoChunks.Length - 1 do
             let dominoChunk = dominoChunks[row]
