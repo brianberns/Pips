@@ -51,11 +51,19 @@ module Program =
     let puzzleDateInput =
         document.getElementById "puzzle-date"
             :?> HTMLInputElement
+
+    let solveButton =
+        document.getElementById "solve-button"
+            :?> HTMLButtonElement
+
     puzzleDateInput.onchange <- (fun _ ->
         promise {
+
+                // reset
             use _ = new WaitCursor()
             clearCanvas puzzleCtx
             clearCanvas solutionCtx
+            solveButton.disabled <- true
 
                 // fetch puzzle for selected date
             let date =
@@ -72,18 +80,18 @@ module Program =
 
                         // save state
                     puzzleOpt <- Some puzzle
+                    solveButton.disabled <- false
 
                 | Error err ->
                     window.alert(FetchError.getMessage err)
         } |> ignore)
 
-    let solveButton =
-        document.getElementById "solve-button"
-            :?> HTMLButtonElement
     solveButton.onclick <- (fun _ ->
         promise {
             match puzzleOpt with
                 | Some puzzle ->
+
+                        // reset
                     use _ = new WaitCursor()   // doesn't work
                     clearCanvas solutionCtx
 
