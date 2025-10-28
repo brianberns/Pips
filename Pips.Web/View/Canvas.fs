@@ -222,12 +222,13 @@ module Canvas =
         let y =
             float (min cellA.Row cellB.Row) * cellSize
 
+        let isHorizontal = cellA.Row = cellB.Row
         let width =
-            if cellA.Row = cellB.Row then cellSize * 2.0
+            if isHorizontal then cellSize * 2.0
             else cellSize
         let height =
-            if cellA.Row <> cellB.Row then cellSize * 2.0
-            else cellSize
+            if isHorizontal then cellSize
+            else cellSize * 2.0
         ctx.roundRect(
             x, y,
             width, height,
@@ -237,12 +238,10 @@ module Canvas =
         ctx.stroke()
 
         ctx.beginPath()
-        if cellA.Row = cellB.Row then
-            // horizontal domino
+        if isHorizontal then
             ctx.moveTo(x + cellSize, y)
             ctx.lineTo(x + cellSize, y + cellSize)
         else
-            // vertical domino
             ctx.moveTo(x, y + cellSize)
             ctx.lineTo(x + cellSize, y + cellSize)
         ctx.lineWidth <- fst innerStyle
