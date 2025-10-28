@@ -251,7 +251,7 @@ module Canvas =
         drawSolutionPipCount ctx cellA domino.Left
         drawSolutionPipCount ctx cellB domino.Right
 
-    let drawSolutions (ctx : Context) (solutions : _[]) =
+    let drawSolutions (ctx : Context) solutions =
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
