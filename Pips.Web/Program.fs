@@ -86,7 +86,7 @@ module Program =
             match puzzleOpt with
                 | Some puzzle ->
                     use _ = new WaitCursor()
-                    do! Promise.sleep 800   // allow cursor change
+                    do! Promise.sleep 300   // allow cursor change
 
                     clearCanvas solutionCtx
 
