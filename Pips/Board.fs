@@ -12,12 +12,21 @@ type Board =
         DominoPlaces : List<Domino * Edge>
 
         /// Value in each cell.
-        Cells : PipCount[(*row*), (*column*)]
+        Cells : Array2DSafe<PipCount>
     }
+
+    /// Number of rows in the board.
+    member board.NumRows =
+        Array2DSafe.length0 board.Cells
+
+    /// Number of columns in the board.
+    member board.NumColumns =
+        Array2DSafe.length1 board.Cells
 
     /// Pip count of each cell.
     member board.Item(cell) =
-        board.Cells[cell.Row, cell.Column]
+        Array2DSafe.getItem
+            cell.Row cell.Column board.Cells
 
     /// Equality key.
     member private board.DominoPlacesSet =
@@ -70,7 +79,7 @@ module Board =
     let create numRows numColumns =
         {
             DominoPlaces = List.empty
-            Cells = Array2D.create numRows numColumns emptyCell
+            Cells = Array2DSafe.create numRows numColumns emptyCell
         }
 
     /// Is the given cell empty (i.e. not covered by a domino)?
@@ -87,10 +96,11 @@ module Board =
         assert(isEmpty cellRight board)
 
             // copy on write
-        let cells = Array2D.copy board.Cells
-        cells[cellLeft.Row, cellLeft.Column] <- domino.Left
-        cells[cellRight.Row, cellRight.Column] <- domino.Right
-
+        let cells = Array2DSafe.copy board.Cells
+        Array2DSafe.setItem
+            cellLeft.Row cellLeft.Column domino.Left cells
+        Array2DSafe.setItem
+            cellRight.Row cellRight.Column domino.Right cells
         {
             Cells = cells
             DominoPlaces =
@@ -99,10 +109,12 @@ module Board =
 
     /// Gets all possible cells adjacent to the given cell on
     /// the given board.
-    let getAdjacent cell board =
+    let getAdjacent cell (board : Board) =
+        let nRows = board.NumRows
+        let nCols = board.NumColumns
         Cell.getAdjacent cell
             |> Seq.where (fun adj ->
                 adj.Row >= 0
                     && adj.Column >= 0
-                    && adj.Row < board.Cells.GetLength(0)
-                    && adj.Column < board.Cells.GetLength(1))
+                    && adj.Row < nRows
+                    && adj.Column < nCols)

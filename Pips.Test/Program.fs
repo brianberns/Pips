@@ -9,53 +9,37 @@ module Program =
 
     let printPuzzle puzzle =
 
+        let maxRow = puzzle.Board.NumRows - 1
+        let maxCol = puzzle.Board.NumColumns - 1
+
         let cells =
             puzzle.Regions
-                |> Array.collect _.Cells
-
-        let maxRow =
-            if Array.isEmpty cells then 0
-            else
-                cells
-                    |> Array.map _.Row
-                    |> Array.max
-
-        let maxCol =
-            if Array.isEmpty cells then 0
-            else
-                cells
-                    |> Array.map _.Column
-                    |> Array.max
+                |> Seq.collect _.Cells
+                |> set
 
         let regionMap =
-            puzzle.Regions
-                |> Seq.collect (fun region ->
-                    region.Cells
-                        |> Seq.map (fun cell ->
-                            cell, region))
-                |> Map
+            Map [
+                for region in puzzle.Regions do
+                    for cell in region.Cells do
+                        yield cell, region
+            ]
 
         let inSameRegion c1 c2 =
             Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
 
-        let cellSet =
-            puzzle.Regions
-                |> Array.collect _.Cells
-                |> set
-
-        let isCellEmpty cell =
-            not (cellSet.Contains(cell))
+        let isPresent cell =
+            cells.Contains(cell)
 
         let hasHorizontalRegionBorder row col =
             let cell = Cell.create row col
             let topCell = Cell.create (row - 1) cell.Column
-            (not (isCellEmpty cell) || not (isCellEmpty topCell))
+            (isPresent cell || isPresent topCell)
                 && not (inSameRegion cell topCell)
 
         let hasVerticalRegionBorder row col =
             let cell = Cell.create row col
             let leftCell = Cell.create cell.Row (col - 1)
-            (not (isCellEmpty cell) || not (isCellEmpty leftCell))
+            (isPresent cell || isPresent leftCell)
                 && not (inSameRegion cell leftCell)
 
         let getRegionCornerChar row col =
@@ -92,12 +76,12 @@ module Program =
                 | RegionType.SumExact n -> sprintf "%d" n
 
         let regionDisplayMap =
-            puzzle.Regions
-                |> Array.map (fun region ->
+            Map [
+                for region in puzzle.Regions do
                     let cell = Seq.max region.Cells
                     let display = getRegionDisplay region
-                    cell, display)
-                |> Map
+                    cell, display
+            ]
 
         for row in 0 .. maxRow do
 
@@ -151,30 +135,22 @@ module Program =
 
     let printSolution solution =
 
+        let maxRow = solution.Board.NumRows - 1
+        let maxCol = solution.Board.NumColumns - 1
+
         let cells =
             solution.Regions
-                |> Array.collect _.Cells
-
-        let maxRow =
-            if Array.isEmpty cells then 0
-            else
-                cells
-                    |> Array.map _.Row
-                    |> Array.max
-
-        let maxCol =
-            if Array.isEmpty cells then 0
-            else
-                cells
-                    |> Array.map _.Column
-                    |> Array.max
+                |> Seq.collect _.Cells
+                |> set
 
         let dominoMap =
-            solution.Board.DominoPlaces
-                |> Seq.collect (fun (_, (c1, c2)) ->
-                    let d = min c1 c2, max c1 c2
-                    [ c1, d; c2, d ])
-                |> Map
+            Map [
+                for (_, (c1, c2)) in solution.Board.DominoPlaces do
+                    let d =
+                        min c1 c2,
+                        max c1 c2
+                    yield! [ c1, d; c2, d ]
+            ]
 
         let inSameDomino c1 c2 =
             Map.tryFind c1 dominoMap = Map.tryFind c2 dominoMap
@@ -286,7 +262,8 @@ module Program =
                 None
 
         let print (date : DateOnly) = function
-            | Some (time : float, solutions : _[]) ->
+            | Some (time : float, solutions) ->
+                let solutions = Seq.toArray solutions
                 printfn $"{date}: Found {solutions.Length} solution(s) in {time} seconds"
                 printfn ""
                 printfn $"{printSolution solutions[0]}"
@@ -307,15 +284,16 @@ module Program =
         for (date, resultOpt) in pairs do
             match resultOpt with
                 | Some (time, solutions) ->
-                    printfn $"{date}, {time}, {solutions.Length}"
+                    printfn $"{date}, {time}, {Seq.length solutions}"
                 | None ->
                     printfn $"{date}, timeout"
 
     let solveOne () =
 
             // download and print puzzle
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
-        let puzzle = puzzleMap["hard"]
+        let puzzle =
+            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
+                |> Map.find "hard"
         printfn "Puzzle:"
         printfn ""
         printPuzzle puzzle
@@ -323,7 +301,7 @@ module Program =
 
             // solve puzzle and print solutions
         let stopwatch = Stopwatch.StartNew()
-        let solutions = Backtrack.solve puzzle
+        let solutions = Backtrack.solve puzzle |> Seq.toArray
         stopwatch.Stop()
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}:"
         printfn ""
@@ -334,8 +312,9 @@ module Program =
     let solveAnother () =
 
             // download and print puzzle
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-15.json"
-        let puzzle = puzzleMap["hard"]
+        let puzzle =
+            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-15.json"
+                |> Map.find "hard"
         printfn "Puzzle:"
         printfn ""
         printPuzzle puzzle
@@ -374,10 +353,11 @@ module Program =
                 printfn $"{region.Type}: {region.Cells.Length} cells"
             printfn ""
 
-            let solutions = Backtrack.solve solved.Puzzle
+            let solutions =
+                Backtrack.solve solved.Puzzle |> Seq.toArray
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveMany ()
+    solveTwo ()

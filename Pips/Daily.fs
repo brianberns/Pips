@@ -6,14 +6,18 @@
 
 open System
 open System.IO
+#if FABLE_COMPILER
+open Thoth.Json
+#else
 open System.Net.Http
 open System.Text.Json
+#endif
 
 type DailyRegion =
     {
         indices : int[][]
         ``type`` : string
-        target : int
+        target : Option<int>
     }
 
 module DailyRegion =
@@ -25,13 +29,13 @@ module DailyRegion =
                     assert(pair.Length = 2)
                     Cell.create pair[0] pair[1])
         let typ =
-            match region.``type`` with
-                | "empty"   -> RegionType.Any
-                | "equals"  -> RegionType.Equal
-                | "greater" -> RegionType.SumGreater region.target
-                | "less"    -> RegionType.SumLess region.target
-                | "sum"     -> RegionType.SumExact region.target
-                | "unequal" -> RegionType.Unequal
+            match region.``type``, region.target with
+                | "empty", None          -> RegionType.Any
+                | "equals", None         -> RegionType.Equal
+                | "greater", Some target -> RegionType.SumGreater target
+                | "less", Some target    -> RegionType.SumLess target
+                | "sum", Some target     -> RegionType.SumExact target
+                | "unequal", None        -> RegionType.Unequal
                 | typ -> failwith $"Unexpected region type: {typ}"
         {
             Cells = cells
@@ -62,8 +66,6 @@ module DailyPuzzle =
 
 type Daily =
     {
-        printDate : DateOnly
-        editor : string
         easy : DailyPuzzle
         medium : DailyPuzzle
         hard : DailyPuzzle
@@ -71,14 +73,19 @@ type Daily =
 
 module Daily =
 
-    /// Deserializes puzzles from the given JSON text.
-    let private deserialize (text : string) =
-        let daily = JsonSerializer.Deserialize<Daily>(text)
+    /// Converts a daily to a map of puzzles.
+    let convert daily =
         Map [
             "easy", daily.easy
             "medium", daily.medium
             "hard", daily.hard
         ] |> Map.map (fun _ puzzle -> DailyPuzzle.convert puzzle)
+
+#if !FABLE_COMPILER
+    /// Deserializes puzzles from the given JSON text.
+    let private deserialize (text : string) =
+        JsonSerializer.Deserialize<Daily>(text)
+            |> convert
 
     /// Loads puzzles from the given JSON file.
     let loadFile =
@@ -99,3 +106,4 @@ module Daily =
         loadHttpAsync uri
             |> Async.AwaitTask
             |> Async.RunSynchronously
+#endif

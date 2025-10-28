@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);FABLE_COMPILER</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" />
+    <Compile Include="Array2DSafe.fs" />
+    <Compile Include="..\Pips\Prelude.fs" Link="Model/Prelude.fs" />
+    <Compile Include="..\Pips\Domino.fs" Link="Model/Domino.fs" />
+    <Compile Include="..\Pips\Cell.fs" Link="Model/Cell.fs" />
+    <Compile Include="..\Pips\Board.fs" Link="Model/Board.fs" />
+    <Compile Include="..\Pips\Region.fs" Link="Model/Region.fs" />
+    <Compile Include="..\Pips\Tiling.fs" Link="Model/Tiling.fs" />
+    <Compile Include="..\Pips\Puzzle.fs" Link="Model/Puzzle.fs" />
+    <Compile Include="..\Pips\Daily.fs" Link="Model/Daily.fs" />
+    <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
+    <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
+    <Content Include="index.html" />
+    <Compile Include="View\Canvas.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup />
+
+  <ItemGroup>
+    <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
+    <PackageReference Include="Fable.Core" Version="4.5.0" />
+    <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
+  </ItemGroup>
+
+</Project>

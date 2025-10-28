@@ -64,7 +64,7 @@ module Puzzle =
                     }
                 |]
         let actual = Backtrack.solve puzzle
-        Assert.Equal(2, actual.Length)
+        Assert.Equal(2, Seq.length actual)
 
     [<Fact>]
     let ``Small puzzle with many solutions`` () =
@@ -87,4 +87,4 @@ module Puzzle =
                     }
                 |]
         let actual = Backtrack.solve puzzle
-        Assert.Equal(16, actual.Length)
+        Assert.Equal(16, Seq.length actual)

@@ -4,6 +4,8 @@
     <File Path="Tiling.svg" />
   </Folder>
   <Project Path="Pips.Benchmark/Pips.Benchmark.fsproj" />
+  <Project Path="Pips.Server/Pips.Server.fsproj" />
   <Project Path="Pips.Test/Pips.Test.fsproj" />
+  <Project Path="Pips.Web/Pips.Web.fsproj" />
   <Project Path="Pips/Pips.fsproj" />
 </Solution>

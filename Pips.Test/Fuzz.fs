@@ -355,5 +355,4 @@ module Fuzz =
     [<Property>]
     let ``Can find solution to solvable puzzle`` solved =
         let solutions = Backtrack.solve solved.Puzzle
-        Xunit.Assert.True(solutions.Length > 0)
         Seq.contains solved.Solution solutions

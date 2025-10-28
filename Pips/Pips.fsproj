@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
+    <Compile Include="Array2DSafe.fs" />
     <Compile Include="Domino.fs" />
     <Compile Include="Cell.fs" />
     <Compile Include="Board.fs" />
@@ -14,7 +15,6 @@
     <Compile Include="Puzzle.fs" />
     <Compile Include="Daily.fs" />
     <Compile Include="TilingTree.fs" />
-    <Compile Include="TryPickBuilder.fs" />
     <Compile Include="Backtrack.fs" />
   </ItemGroup>
 
