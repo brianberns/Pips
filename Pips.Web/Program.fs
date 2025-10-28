@@ -104,7 +104,7 @@ module Program =
                     clearCanvas solutionCtx
 
                         // solve puzzle
-                    let maxSolutions = 10
+                    let maxSolutions = 100
                     let timeStart = getTime ()
                     let solutions =
                         Backtrack.solve puzzleOpt.Value

@@ -1,5 +1,6 @@
 ﻿namespace Pips
 
+open Browser
 open Browser.Types
 
 open Fable.Core
@@ -254,12 +255,33 @@ module Canvas =
         drawSolutionPipCount ctx cellA domino.Left
         drawSolutionPipCount ctx cellB domino.Right
 
+    let private animate fps callback =
+
+        let interval = 1000.0 / float fps
+        let mutable lastTime = 0.0
+
+        let rec loop iFrame timestamp =
+            let delta = timestamp - lastTime
+            if delta >= interval then
+                requestFrame (iFrame + 1)
+                lastTime <- timestamp - (delta % interval)
+                callback iFrame
+            else
+                requestFrame iFrame
+
+        and requestFrame iFrame =
+            window.requestAnimationFrame(loop iFrame) |> ignore
+
+        requestFrame 0
+
     /// Draws the given solutions.
     let drawSolutions (ctx : Context) (solutions : _[]) =
 
+        let callback iFrame =
+            let solution = solutions[iFrame % solutions.Length]
+            for (domino, edge) in solution.Board.DominoPlaces do
+                drawSolutionDomino ctx domino edge
+
         ctx.translate(offset, offset)
-
-        for (domino, edge) in solutions[0].Board.DominoPlaces do
-            drawSolutionDomino ctx domino edge
-
+        animate 2.0 callback
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
