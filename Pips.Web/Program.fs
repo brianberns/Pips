@@ -58,8 +58,9 @@ module Program =
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
                     Canvas.drawPuzzle puzzleCtx puzzle
-                    let solutions = Backtrack.solve puzzle
-                    Canvas.drawSolutions solutionCtx solutions
+                    Backtrack.solve puzzle
+                        |> Seq.take 10
+                        |> Canvas.drawSolutions solutionCtx
                 | Error err ->
                     window.alert(FetchError.getMessage err)
         } |> ignore)
