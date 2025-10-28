@@ -32,9 +32,6 @@ module Program =
         document.getElementById id
             :?> HTMLCanvasElement
 
-    let clearCanvas (ctx: CanvasRenderingContext2D) =
-        ctx.clearRect(0.0, 0.0, ctx.canvas.width, ctx.canvas.height)
-
     let getTime () =
         box (window?performance?now()) :?> float
 
@@ -68,11 +65,11 @@ module Program =
 
                 // reset
             use _ = new WaitCursor()
-            clearCanvas puzzleCtx
-            clearCanvas solutionCtx
+            Canvas.clear puzzleCtx
+            Canvas.clear solutionCtx
+            Canvas.cancelAnimation ()
             solveButton.disabled <- true
             timerLabel.textContent <- ""
-            Canvas.cancelAnimation ()
 
                 // fetch puzzle for selected date
             let date =
@@ -102,7 +99,7 @@ module Program =
 
                         // reset
                     use _ = new WaitCursor()   // doesn't work
-                    clearCanvas solutionCtx
+                    Canvas.clear solutionCtx
                     Canvas.cancelAnimation ()
 
                         // solve puzzle

@@ -10,6 +10,9 @@ type Context = CanvasRenderingContext2D
 
 module Canvas =
 
+    let clear (ctx : CanvasRenderingContext2D) =
+        ctx.clearRect(0.0, 0.0, ctx.canvas.width, ctx.canvas.height)
+
     let private getRegionMap puzzle =
         Map [
             for region in puzzle.Regions do
@@ -56,6 +59,25 @@ module Canvas =
             | RegionType.SumLess _    -> $"hsla(120, {sat}%%, {light}%%, {alpha})"
             | RegionType.SumGreater _ -> $"hsla(180, {sat}%%, {light}%%, {alpha})"
             | RegionType.SumExact _   -> $"hsla(240, {sat}%%, {light}%%, {alpha})"
+
+    let private maxPipCount = 6
+
+    let private numDominoes =
+        (maxPipCount + 1) * (maxPipCount + 2) / 2
+
+    let private getDominoColor domino =
+        let sat = 50
+        let light = 80
+        let alpha = 0.6
+        let pipCounts =
+            Domino.toSeq domino
+                |> Seq.sort
+                |> Seq.toArray
+        let hue = pipCounts[0] * (maxPipCount + 1) + pipCounts[1]
+                |> float
+                |> (*) (360.0 / float numDominoes)
+                |> int
+        $"hsla({hue}, {sat}%%, {light}%%, {alpha})"
 
     let private cellSize = 40.0
 
@@ -158,7 +180,7 @@ module Canvas =
             x, y,
             cellSize * 2.0, cellSize,
             cellSize / 8.0)
-        ctx.fillStyle <- !^"whitesmoke"
+        ctx.fillStyle <- !^(getDominoColor domino)
         ctx.fill()
         ctx.lineWidth <- fst outerStyle * scale
         ctx.strokeStyle <- !^(snd outerStyle)
@@ -235,7 +257,7 @@ module Canvas =
             x, y,
             width, height,
             cellSize / 8.0)
-        ctx.fillStyle <- !^"whitesmoke"
+        ctx.fillStyle <- !^(getDominoColor domino)
         ctx.fill()
         ctx.lineWidth <- fst outerStyle
         ctx.strokeStyle <- !^(snd outerStyle)
@@ -287,6 +309,7 @@ module Canvas =
 
         let callback iFrame =
 
+            clear ctx
             ctx.translate(offset, offset)
 
             let solution = solutions[iFrame % solutions.Length]
