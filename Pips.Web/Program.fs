@@ -114,13 +114,12 @@ module Program =
                         // update timer label
                     let duration = getTime () - timeStart
                     let countStr =
-                        if solutions.Length >= maxSolutions then
-                            $"at least {solutions.Length}"
-                        else $"{solutions.Length}"
+                        if solutions.Length >= maxSolutions then "+"
+                        else ""
                     let pluralStr =
                         if solutions.Length = 1 then "" else "s"
                     timerLabel.textContent <-
-                        $"Found {countStr} solution{pluralStr} in %0.1f{duration} ms"
+                        $"Found {solutions.Length}{countStr} solution{pluralStr} in %0.1f{duration} ms"
 
                         // draw solutions
                     Canvas.drawSolutions solutionCtx solutions

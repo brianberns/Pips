@@ -157,7 +157,7 @@ module Canvas =
             x, y,
             cellSize * 2.0, cellSize,
             cellSize / 8.0)
-        ctx.fillStyle <- !^"rgba(255, 255, 255, 0.9)"
+        ctx.fillStyle <- !^"whitesmoke"
         ctx.fill()
         ctx.lineWidth <- fst outerStyle * scale
         ctx.strokeStyle <- !^(snd outerStyle)
@@ -234,6 +234,8 @@ module Canvas =
             x, y,
             width, height,
             cellSize / 8.0)
+        ctx.fillStyle <- !^"whitesmoke"
+        ctx.fill()
         ctx.lineWidth <- fst outerStyle
         ctx.strokeStyle <- !^(snd outerStyle)
         ctx.stroke()

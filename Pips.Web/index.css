@@ -26,7 +26,6 @@ body {
 }
 
 #puzzle-canvas, #solution-canvas {
-    background-color: white;
     margin: 10px;
 }
 
