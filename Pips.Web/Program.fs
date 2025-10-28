@@ -69,7 +69,10 @@ module Program =
         document.getElementById "solve-button"
             :?> HTMLButtonElement
     solveButton.onclick <- (fun _ ->
-        use _ = new WaitCursor()
-        Backtrack.solve puzzleOpt.Value
-            |> Seq.take 10
-            |> Canvas.drawSolutions solutionCtx)
+        promise {
+            use _ = new WaitCursor()
+            Backtrack.solve puzzleOpt.Value
+                |> Seq.truncate 10
+                |> Seq.toArray
+                |> Canvas.drawSolutions solutionCtx
+        } |> ignore)

@@ -9,33 +9,33 @@ type Context = CanvasRenderingContext2D
 
 module Canvas =
 
-    let getRegionMap puzzle =
+    let private getRegionMap puzzle =
         Map [
             for region in puzzle.Regions do
                 for cell in region.Cells do
                     yield cell, region
         ]
 
-    let inSameRegion regionMap c1 c2 =
+    let private inSameRegion regionMap c1 c2 =
         Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
 
-    let hasLeftBorder regionMap cell =
+    let private hasLeftBorder regionMap cell =
         let adj = { cell with Column = cell.Column - 1 }
         not (inSameRegion regionMap cell adj)
 
-    let hasRightBorder regionMap cell =
+    let private hasRightBorder regionMap cell =
         let adj = { cell with Column = cell.Column + 1 }
         not (inSameRegion regionMap cell adj)
 
-    let hasTopBorder regionMap cell =
+    let private hasTopBorder regionMap cell =
         let adj = { cell with Row = cell.Row - 1 }
         not (inSameRegion regionMap cell adj)
 
-    let hasBottomBorder regionMap cell =
+    let private hasBottomBorder regionMap cell =
         let adj = { cell with Row = cell.Row + 1 }
         not (inSameRegion regionMap cell adj)
 
-    let getConstraintString region =
+    let private getConstraintString region =
         match region.Type with
             | RegionType.Any          -> ""
             | RegionType.Equal        -> "="
@@ -44,7 +44,7 @@ module Canvas =
             | RegionType.SumGreater n -> $">{n}"
             | RegionType.SumExact n   -> $"{n}"
 
-    let getConstraintColor region =
+    let private getConstraintColor region =
         let sat = 50
         let light = 80
         let alpha = 0.6
@@ -56,18 +56,18 @@ module Canvas =
             | RegionType.SumGreater _ -> $"hsla(180, {sat}%%, {light}%%, {alpha})"
             | RegionType.SumExact _   -> $"hsla(240, {sat}%%, {light}%%, {alpha})"
 
-    let cellSize = 40.0
+    let private cellSize = 40.0
 
-    let offset = 5.0
+    let private offset = 5.0
 
-    type CanvasRenderingContext2D with
+    type private CanvasRenderingContext2D with
 
         [<Emit("($0).roundRect($1, $2, $3, $4, $5)")>]
         member this.roundRect(x: float, y: float, w: float, h: float, radii: float) : unit =
             failwith "JS interop"
 
     /// Draws a border line for the given cell.
-    let drawBorder
+    let private drawBorder
         (ctx : Context)
         cell
         (rowFrom, colFrom)
@@ -87,7 +87,7 @@ module Canvas =
         ctx.stroke()
 
     /// Draws the constraint string for the given region.
-    let drawConstraint (ctx : Context) region =
+    let private drawConstraint (ctx : Context) region =
         let cell = Seq.max region.Cells
         let x = (float cell.Column + 0.5) * cellSize
         let y = (float cell.Row + 0.5) * cellSize
@@ -97,11 +97,11 @@ module Canvas =
         ctx.textBaseline <- "middle"
         ctx.fillText(getConstraintString region, x, y)
 
-    let outerStyle = 2.0, "black"
-    let innerStyle = 1.0, "gray"
+    let private outerStyle = 2.0, "black"
+    let private innerStyle = 1.0, "gray"
 
     /// Draws the given cell, including its borders.
-    let drawCell (ctx : Context) regionMap fillStyle cell =
+    let private drawCell (ctx : Context) regionMap fillStyle cell =
 
             // fill cell
         ctx.fillStyle <- !^fillStyle
@@ -133,13 +133,13 @@ module Canvas =
 
     /// Draws the given region by drawing each of its cells and its
     /// constraint.
-    let drawRegion ctx regionMap region =
+    let private drawRegion ctx regionMap region =
         for cell in region.Cells do
             let fillStyle = getConstraintColor region
             drawCell ctx regionMap fillStyle cell
             drawConstraint ctx region
 
-    let drawPipCount (ctx : Context) (fontSize : string) x y (value : PipCount) =
+    let private drawPipCount (ctx : Context) (fontSize : string) x y (value : PipCount) =
         ctx.fillStyle <- !^"black"
         ctx.font <- $"{fontSize} sans-serif"
         ctx.textAlign <- "center"
@@ -147,7 +147,7 @@ module Canvas =
         ctx.fillText(string value, x, y)
 
     /// Draws the given unplaced domino at the given position.
-    let drawUnplacedDomino (ctx : Context) x y domino =
+    let private drawUnplacedDomino (ctx : Context) x y domino =
 
         let scale = 2.0 / 3.0
         let cellSize = cellSize * scale
@@ -178,7 +178,7 @@ module Canvas =
 
     /// Draws the given unplaced dominoes starting at the given
     /// Y position.
-    let drawUnplacedDominoes (ctx : Context) startY dominoes =
+    let private drawUnplacedDominoes (ctx : Context) startY dominoes =
         let dominoChunks =
             dominoes
                 |> Seq.chunkBySize 4 
@@ -208,12 +208,12 @@ module Canvas =
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
-    let drawSolutionPipCount ctx cell pipCount =
+    let private drawSolutionPipCount ctx cell pipCount =
         let x = (float cell.Column + 0.5) * cellSize
         let y = (float cell.Row + 0.5) * cellSize
         drawPipCount ctx "24px" x y pipCount
 
-    let drawSolutionDomino (ctx : Context) domino ((cellA, cellB) : Edge) =
+    let private drawSolutionDomino (ctx : Context) domino ((cellA, cellB) : Edge) =
 
         ctx.beginPath()
 
@@ -251,13 +251,12 @@ module Canvas =
         drawSolutionPipCount ctx cellA domino.Left
         drawSolutionPipCount ctx cellB domino.Right
 
-    let drawSolutions (ctx : Context) solutions =
+    let drawSolutions (ctx : Context) (solutions : _[]) =
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.translate(offset, offset)
 
-        let solution = Seq.head solutions
-        for (domino, edge) in solution.Board.DominoPlaces do
+        for (domino, edge) in solutions[0].Board.DominoPlaces do
             drawSolutionDomino ctx domino edge
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
