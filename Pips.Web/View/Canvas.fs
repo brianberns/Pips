@@ -146,7 +146,8 @@ module Canvas =
         ctx.textBaseline <- "middle"
         ctx.fillText(string value, x, y)
 
-    let drawDominoHorizontal (ctx : Context) x y domino =
+    /// Draws the given unplaced domino at the given position.
+    let drawUnplacedDomino (ctx : Context) x y domino =
 
         let scale = 2.0 / 3.0
         let cellSize = cellSize * scale
@@ -175,6 +176,8 @@ module Canvas =
         drawPipCount ctx "18px" leftX centerY domino.Left
         drawPipCount ctx "18px" rightX centerY domino.Right
 
+    /// Draws the given unplaced dominoes starting at the given
+    /// Y position.
     let drawUnplacedDominoes (ctx : Context) startY dominoes =
         let dominoChunks =
             dominoes
@@ -186,7 +189,7 @@ module Canvas =
                 let domino = dominoChunk[col]
                 let x = float col * cellSize * 2.0
                 let y = startY + (float row * cellSize)
-                drawDominoHorizontal ctx x y domino
+                drawUnplacedDomino ctx x y domino
 
     /// Draws the given puzzle by drawing its regions and unplaced
     /// dominoes.
@@ -205,8 +208,12 @@ module Canvas =
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
-    (*
-    let drawDomino (ctx : Context) domino ((cellA, cellB) : Edge) =
+    let drawSolutionPipCount ctx cell pipCount =
+        let x = (float cell.Column + 0.5) * cellSize
+        let y = (float cell.Row + 0.5) * cellSize
+        drawPipCount ctx "24px" x y pipCount
+
+    let drawSolutionDomino (ctx : Context) domino ((cellA, cellB) : Edge) =
 
         ctx.beginPath()
 
@@ -215,21 +222,21 @@ module Canvas =
         let y =
             float (min cellA.Row cellB.Row) * cellSize
 
-        let margin = 4.0
-        let dominoHalfSize = cellSize - (2.0 * margin)
+        let dominoHalfSize = cellSize
         let x, width =
             if cellA.Row = cellB.Row then
-                x + margin, dominoHalfSize * 2.0
+                x, dominoHalfSize * 2.0
             else
                 x, dominoHalfSize
         let y, height =
             if cellA.Row <> cellB.Row then
-                y + margin, dominoHalfSize * 2.0
+                y, dominoHalfSize * 2.0
             else
                 y, dominoHalfSize
-        ctx.rect(
-            x + margin, y + margin,
-            width, height)
+        ctx.roundRect(
+            x, y,
+            width, height,
+            cellSize / 8.0)
 
         ctx.fillStyle <- !^"rgba(255, 255, 255, 0.9)"
         ctx.fill()
@@ -238,9 +245,16 @@ module Canvas =
         ctx.strokeStyle <- !^"black"
         ctx.stroke()
 
-        drawPipCount ctx cellA domino.Left
-        drawPipCount ctx cellB domino.Right
-    *)
+        drawSolutionPipCount ctx cellA domino.Left
+        drawSolutionPipCount ctx cellB domino.Right
 
-    let drawSolutions (ctx : Context) solutions =
-        drawPuzzle ctx (Seq.head solutions)
+    let drawSolutions (ctx : Context) (solutions : _[]) =
+
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.translate(offset, offset)
+
+        let solution = Seq.head solutions
+        for (domino, edge) in solution.Board.DominoPlaces do
+            drawSolutionDomino ctx domino edge
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
