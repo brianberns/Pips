@@ -1,6 +1,8 @@
 ﻿namespace Pips
 
 open Browser.Types
+
+open Fable.Core
 open Fable.Core.JsInterop
 
 type Context = CanvasRenderingContext2D
@@ -57,6 +59,12 @@ module Canvas =
     let cellSize = 40.0
 
     let offset = 5.0
+
+    type CanvasRenderingContext2D with
+
+        [<Emit("($0).roundRect($1, $2, $3, $4, $5)")>]
+        member this.roundRect(x: float, y: float, w: float, h: float, radii: float) : unit =
+            failwith "JS interop"
 
     /// Draws a border line for the given cell.
     let drawBorder
@@ -131,6 +139,54 @@ module Canvas =
             drawCell ctx regionMap fillStyle cell
             drawConstraint ctx region
 
+    let drawPipCount (ctx : Context) (fontSize : string) x y (value : PipCount) =
+        ctx.fillStyle <- !^"black"
+        ctx.font <- $"{fontSize} sans-serif"
+        ctx.textAlign <- "center"
+        ctx.textBaseline <- "middle"
+        ctx.fillText(string value, x, y)
+
+    let drawDominoHorizontal (ctx : Context) x y domino =
+
+        let cellSize = cellSize * (2.0 / 3.0)
+
+        ctx.beginPath()
+        ctx.roundRect(
+            x, y,
+            cellSize * 2.0, cellSize,
+            cellSize / 10.0)
+        ctx.fillStyle <- !^"rgba(255, 255, 255, 0.9)"
+        ctx.fill()
+        ctx.lineWidth <- fst outerStyle
+        ctx.strokeStyle <- !^(snd outerStyle)
+        ctx.stroke()
+
+        ctx.beginPath()
+        ctx.moveTo(x + cellSize, y)
+        ctx.lineTo(x + cellSize, y + cellSize)
+        ctx.lineWidth <- fst innerStyle
+        ctx.strokeStyle <- !^(snd innerStyle)
+        ctx.stroke()
+
+        let leftX = x + (cellSize * 0.5)
+        let rightX = x + (cellSize * 1.5)
+        let centerY = y + (cellSize * 0.5)
+        drawPipCount ctx "18px" leftX centerY domino.Left
+        drawPipCount ctx "18px" rightX centerY domino.Right
+
+    let drawUnplacedDominoes (ctx : Context) startY dominoes =
+        let dominoChunks =
+            dominoes
+                |> Seq.chunkBySize 3 
+                |> Seq.toArray
+        for row = 0 to dominoChunks.Length - 1 do
+            let dominoChunk = dominoChunks[row]
+            for col = 0 to dominoChunk.Length - 1 do
+                let domino = dominoChunk[col]
+                let x = float col * cellSize * 2.0
+                let y = startY + (float row * cellSize)
+                drawDominoHorizontal ctx x y domino
+
     /// Draws the given puzzle by drawing its regions and unplaced
     /// dominoes.
     let drawPuzzle (ctx : Context) puzzle =
@@ -143,17 +199,12 @@ module Canvas =
         for region in puzzle.Regions do
             drawRegion ctx regionMap region
 
+        let startY = float (puzzle.Board.NumRows + 1) * cellSize
+        drawUnplacedDominoes ctx startY puzzle.UnplacedDominoes
+
         ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
-    let drawPipCount (ctx : Context) cell (value : PipCount) =
-        let x = (float cell.Column + 0.5) * cellSize
-        let y = (float cell.Row + 0.5) * cellSize
-        ctx.fillStyle <- !^"black"
-        ctx.font <- "24px sans-serif"
-        ctx.textAlign <- "center"
-        ctx.textBaseline <- "middle"
-        ctx.fillText(string value, x, y)
-
+    (*
     let drawDomino (ctx : Context) domino ((cellA, cellB) : Edge) =
 
         ctx.beginPath()
@@ -188,6 +239,7 @@ module Canvas =
 
         drawPipCount ctx cellA domino.Left
         drawPipCount ctx cellB domino.Right
+    *)
 
     let drawSolutions (ctx : Context) solutions =
         drawPuzzle ctx (Seq.head solutions)
