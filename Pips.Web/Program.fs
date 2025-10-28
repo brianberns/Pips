@@ -35,6 +35,9 @@ module Program =
     let clearCanvas (ctx: CanvasRenderingContext2D) =
         ctx.clearRect(0.0, 0.0, ctx.canvas.width, ctx.canvas.height)
 
+    let getTime () =
+        box (window?performance?now()) :?> float
+
         // initialize canvases
     let puzzleCanvas = getCanvas "puzzle-canvas"
     let solutionCanvas = getCanvas "solution-canvas"
@@ -56,6 +59,10 @@ module Program =
         document.getElementById "solve-button"
             :?> HTMLButtonElement
 
+    let timerLabel =
+        document.getElementById "timer-label"
+            :?> HTMLLabelElement
+
     puzzleDateInput.onchange <- (fun _ ->
         promise {
 
@@ -64,6 +71,7 @@ module Program =
             clearCanvas puzzleCtx
             clearCanvas solutionCtx
             solveButton.disabled <- true
+            timerLabel.textContent <- ""
 
                 // fetch puzzle for selected date
             let date =
@@ -95,10 +103,23 @@ module Program =
                     use _ = new WaitCursor()   // doesn't work
                     clearCanvas solutionCtx
 
-                        // solve puzzle and draw solutions
-                    Backtrack.solve puzzleOpt.Value
-                        |> Seq.truncate 10
-                        |> Seq.toArray
-                        |> Canvas.drawSolutions solutionCtx
+                        // solve puzzle
+                    let maxSolutions = 10
+                    let timeStart = getTime ()
+                    let solutions =
+                        Backtrack.solve puzzleOpt.Value
+                            |> Seq.truncate maxSolutions
+                            |> Seq.toArray
+                    let duration = getTime () - timeStart
+                    let countStr =
+                        if solutions.Length >= maxSolutions then
+                            $"at least {solutions.Length}"
+                        else $"{solutions.Length}"
+                    timerLabel.textContent <-
+                        $"Found {countStr} solution(s) in %0.1f{duration} ms"
+
+                        // draw solutions
+                    Canvas.drawSolutions solutionCtx solutions
+
                 | None -> ()
         } |> ignore)
