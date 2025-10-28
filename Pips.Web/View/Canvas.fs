@@ -222,22 +222,31 @@ module Canvas =
         let y =
             float (min cellA.Row cellB.Row) * cellSize
 
-        let x, width =
-            if cellA.Row = cellB.Row then
-                x, cellSize * 2.0
-            else
-                x, cellSize
-        let y, height =
-            if cellA.Row <> cellB.Row then
-                y, cellSize * 2.0
-            else
-                y, cellSize
+        let width =
+            if cellA.Row = cellB.Row then cellSize * 2.0
+            else cellSize
+        let height =
+            if cellA.Row <> cellB.Row then cellSize * 2.0
+            else cellSize
         ctx.roundRect(
             x, y,
             width, height,
             cellSize / 8.0)
         ctx.lineWidth <- fst outerStyle
         ctx.strokeStyle <- !^(snd outerStyle)
+        ctx.stroke()
+
+        ctx.beginPath()
+        if cellA.Row = cellB.Row then
+            // horizontal domino
+            ctx.moveTo(x + cellSize, y)
+            ctx.lineTo(x + cellSize, y + cellSize)
+        else
+            // vertical domino
+            ctx.moveTo(x, y + cellSize)
+            ctx.lineTo(x + cellSize, y + cellSize)
+        ctx.lineWidth <- fst innerStyle
+        ctx.strokeStyle <- !^(snd innerStyle)
         ctx.stroke()
 
         drawSolutionPipCount ctx cellA domino.Left
