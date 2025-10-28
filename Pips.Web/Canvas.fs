@@ -255,7 +255,15 @@ module Canvas =
         drawSolutionPipCount ctx cellA domino.Left
         drawSolutionPipCount ctx cellB domino.Right
 
+    let mutable private animationId = 0.0
+    
+    let cancelAnimation () =
+        window.cancelAnimationFrame(animationId)
+        animationId <- 0.0
+
     let private animate fps callback =
+
+        cancelAnimation()
 
         let interval = 1000.0 / float fps
         let mutable lastTime = 0.0
@@ -270,7 +278,7 @@ module Canvas =
                 requestFrame iFrame
 
         and requestFrame iFrame =
-            window.requestAnimationFrame(loop iFrame) |> ignore
+            animationId <- window.requestAnimationFrame(loop iFrame)
 
         requestFrame 0
 
@@ -278,10 +286,13 @@ module Canvas =
     let drawSolutions (ctx : Context) (solutions : _[]) =
 
         let callback iFrame =
+
+            ctx.translate(offset, offset)
+
             let solution = solutions[iFrame % solutions.Length]
             for (domino, edge) in solution.Board.DominoPlaces do
                 drawSolutionDomino ctx domino edge
 
-        ctx.translate(offset, offset)
+            ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
+
         animate 2.0 callback
-        ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform

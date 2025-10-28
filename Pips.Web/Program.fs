@@ -72,6 +72,7 @@ module Program =
             clearCanvas solutionCtx
             solveButton.disabled <- true
             timerLabel.textContent <- ""
+            Canvas.cancelAnimation ()
 
                 // fetch puzzle for selected date
             let date =
@@ -102,6 +103,7 @@ module Program =
                         // reset
                     use _ = new WaitCursor()   // doesn't work
                     clearCanvas solutionCtx
+                    Canvas.cancelAnimation ()
 
                         // solve puzzle
                     let maxSolutions = 100
