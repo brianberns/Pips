@@ -238,55 +238,57 @@ module Program =
 
     let solveMany () =
 
-        let solve (date : DateOnly) =
-            let puzzle =
-                let dateStr = date.ToString("yyyy-MM-dd")
-                Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                    |> Map.find "hard"
-            let stopwatch = Stopwatch.StartNew()
-            let solutions = Backtrack.solve puzzle
-            stopwatch.Elapsed.TotalSeconds, solutions
+        let trySolve (date : DateOnly) =
+            try
+                let puzzle =
+                    let dateStr = date.ToString("yyyy-MM-dd")
+                    Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+                        |> Map.find "hard"
+                let stopwatch = Stopwatch.StartNew()
+                let solutions = Backtrack.solve puzzle
+                Ok (stopwatch.Elapsed.TotalSeconds, solutions)
+            with ex -> Error ex.Message
 
         let run timeout work =
             let work =
                 async {
                     let! child =
                         Async.StartChild(
-                            async { return Some (work ()) },
+                            async { return work () },
                             timeout)
                     return! child
                 }
             try
                 Async.RunSynchronously(work, timeout)
             with :? TimeoutException ->
-                None
+                Error "timeout"
 
         let print (date : DateOnly) = function
-            | Some (time : float, solutions) ->
+            | Ok (time : float, solutions) ->
                 let solutions = Seq.toArray solutions
                 printfn $"{date}: Found {solutions.Length} solution(s) in {time} seconds"
                 printfn ""
                 printfn $"{printSolution solutions[0]}"
-            | None ->
-                printfn $"{date}: timeout"
+            | Error msg ->
+                printfn $"{date}: {msg}"
                 printfn ""
 
         let startDate = DateOnly.Parse("8/18/2025")
         let pairs =
-            [| 0 .. 87 |]
+            [| 0 .. 93 |]
                 |> Array.map (fun offset ->
                     let date = startDate.AddDays(offset)
                     let resultOpt =
-                        run 150000 (fun () -> solve date)
+                        run 150000 (fun () -> trySolve date)
                     print date resultOpt
                     Threading.Thread.Sleep(500)
                     date, resultOpt)
-        for (date, resultOpt) in pairs do
-            match resultOpt with
-                | Some (time, solutions) ->
+        for (date, result) in pairs do
+            match result with
+                | Ok (time, solutions) ->
                     printfn $"{date}, {time}, {Seq.length solutions}"
-                | None ->
-                    printfn $"{date}, timeout"
+                | Error msg ->
+                    printfn $"{date}, {msg}"
 
     let solveOne () =
 
@@ -360,4 +362,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveTwo ()
+    solveMany ()
