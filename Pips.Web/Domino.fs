@@ -30,7 +30,7 @@ module Domino =
             360.0 * float dominoMap[domino] / float dominoMap.Count
         $"hsl({hue}, 100%%, 80%%)"
 
-    let private drawPip (ctx : Context) x y radius =
+    let private drawPip (ctx : Context) radius x y =
         ctx.beginPath()
         ctx.arc(x, y, radius, 0, 2.0 * System.Math.PI)
         ctx.fillStyle <- !^"black"
@@ -39,56 +39,35 @@ module Domino =
     let private drawPipCount ctx cellSize x y (value : PipCount) =
         let radius = cellSize / 12.0
         let offset = cellSize / 4.0
+        let pip = drawPip ctx radius
         match value with
             | 0 -> ()
-            | 1 ->
-                drawPip
-                    ctx x y radius
+            | 1 -> pip x y
             | 2 ->
-                drawPip ctx
-                    (x - offset) (y - offset) radius
-                drawPip ctx
-                    (x + offset) (y + offset) radius
+                pip (x - offset) (y - offset)
+                pip (x + offset) (y + offset)
             | 3 ->
-                drawPip
-                    ctx x y radius
-                drawPip ctx
-                    (x - offset) (y - offset) radius
-                drawPip ctx
-                    (x + offset) (y + offset) radius
+                pip  x            y
+                pip (x - offset) (y - offset)
+                pip (x + offset) (y + offset)
             | 4 ->
-                drawPip ctx
-                    (x - offset) (y - offset) radius
-                drawPip ctx
-                    (x - offset) (y + offset) radius
-                drawPip ctx
-                    (x + offset) (y - offset) radius
-                drawPip ctx
-                    (x + offset) (y + offset) radius
+                pip (x - offset) (y - offset)
+                pip (x - offset) (y + offset)
+                pip (x + offset) (y - offset)
+                pip (x + offset) (y + offset)
             | 5 ->
-                drawPip
-                    ctx x y radius
-                drawPip ctx
-                    (x - offset) (y - offset) radius
-                drawPip ctx
-                    (x - offset) (y + offset) radius
-                drawPip ctx
-                    (x + offset) (y - offset) radius
-                drawPip ctx
-                    (x + offset) (y + offset) radius
+                pip  x            y
+                pip (x - offset) (y - offset)
+                pip (x - offset) (y + offset)
+                pip (x + offset) (y - offset)
+                pip (x + offset) (y + offset)
             | 6 ->
-                drawPip ctx
-                    (x - offset) (y - offset) radius
-                drawPip ctx
-                    (x - offset) (y + offset) radius
-                drawPip ctx
-                    x (y - offset) radius
-                drawPip ctx
-                    x (y + offset) radius
-                drawPip ctx
-                    (x + offset) (y - offset) radius
-                drawPip ctx
-                    (x + offset) (y + offset) radius
+                pip (x - offset) (y - offset)
+                pip (x - offset) (y + offset)
+                pip  x           (y - offset)
+                pip  x           (y + offset)
+                pip (x + offset) (y - offset)
+                pip (x + offset) (y + offset)
             | _ -> failwith "Unexpected"
 
     let cellSize = 40.0
