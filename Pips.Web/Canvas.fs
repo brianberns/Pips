@@ -9,17 +9,21 @@ type Context = CanvasRenderingContext2D
 
 module Canvas =
 
+    /// Clears the given canvas.
     let clear (ctx : Context) =
         ctx.clearRect(
             0.0, 0.0,
             ctx.canvas.width, ctx.canvas.height)
 
+    /// Current animation frame ID.
     let mutable private animationId = 0.0
-    
+
+    /// Cancels the current animation. 
     let cancelAnimation () =
         window.cancelAnimationFrame(animationId)
         animationId <- 0.0
 
+    /// Calls the given function in a loop to animate frames.
     let animate fps callback =
 
         cancelAnimation ()
@@ -47,6 +51,7 @@ module CanvasExtensions =
 
     type CanvasRenderingContext2D with
 
+        /// Round rectangle.
         [<Emit("($0).roundRect($1, $2, $3, $4, $5)")>]
         member _.roundRect(
             x : float, y : float,
