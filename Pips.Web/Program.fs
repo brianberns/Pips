@@ -11,6 +11,7 @@ open Thoth.Fetch
 
 open Pips
 
+/// Switches to a wait cursor temporarily.
 type WaitCursor() =
 
     do document.body?style?cursor <- "wait"

@@ -124,16 +124,11 @@ module Domino =
 
     /// Draws the given unplaced domino at the given position.
     let private drawUnplacedDomino (ctx : Context) x y domino =
-
-        ctx.save()
-
+        use _ = Canvas.save ctx
         ctx.translate(x, y)
         let scale = 2.0 / 3.0
         ctx.scale(scale, scale)
-
         drawDomino ctx cellSize domino
-
-        ctx.restore()
 
     /// Draws the given unplaced dominoes starting at the given
     /// Y position.
@@ -166,7 +161,7 @@ module Domino =
                 | _ -> failwith "Unexpected"
 
             // apply transformations
-        ctx.save()
+        use _ = Canvas.save ctx
         ctx.translate(
             float (cellA.Column + colDiff) * cellSize,
             float (cellA.Row + rowDiff) * cellSize)
@@ -174,6 +169,3 @@ module Domino =
 
             // draw domino
         drawDomino ctx cellSize domino
-
-            // restore previous state
-        ctx.restore()

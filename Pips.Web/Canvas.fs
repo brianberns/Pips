@@ -1,11 +1,22 @@
 ﻿namespace Pips.Web
 
+open System
+
 open Browser
 open Browser.Types
 
 open Fable.Core
 
 type Context = CanvasRenderingContext2D
+
+/// Saves and restores the given context's settings.
+type SaveContext(ctx : Context) =
+
+    do ctx.save()
+
+    interface IDisposable with
+        member this.Dispose() =
+            ctx.restore()
 
 module Canvas =
 
@@ -14,6 +25,10 @@ module Canvas =
         ctx.clearRect(
             0.0, 0.0,
             ctx.canvas.width, ctx.canvas.height)
+
+    /// Saves and restores the given canvas's settings.
+    let save (ctx : Context) =
+        new SaveContext(ctx)
 
     /// Current animation frame ID.
     let mutable private animationId = 0.0
