@@ -279,11 +279,11 @@ module Program =
             [| 0 .. 93 |]
                 |> Array.map (fun offset ->
                     let date = startDate.AddDays(offset)
-                    let resultOpt =
+                    let result =
                         run 150000 (fun () -> trySolve date)
-                    print date resultOpt
+                    print date result
                     Threading.Thread.Sleep(500)
-                    date, resultOpt)
+                    date, result)
         for (date, result) in pairs do
             match result with
                 | Ok (time, solutions) ->
