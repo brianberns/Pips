@@ -53,16 +53,18 @@ type DailyPuzzle =
 
 module DailyPuzzle =
 
-    let convert puzzle =
-        let dominoes =
-            puzzle.dominoes
-                |> Array.map (fun pair ->
-                    assert(pair.Length = 2)
-                    Domino.create pair[0] pair[1])
-        let regions =
-            puzzle.regions
-                |> Array.map DailyRegion.convert
-        Puzzle.create dominoes regions
+    let tryConvert puzzle =
+        if isNull puzzle.dominoes then None   // NY Times deletes puzzles sometimes?
+        else
+            let dominoes =
+                puzzle.dominoes
+                    |> Array.map (fun pair ->
+                        assert(pair.Length = 2)
+                        Domino.create pair[0] pair[1])
+            let regions =
+                puzzle.regions
+                    |> Array.map DailyRegion.convert
+            Some (Puzzle.create dominoes regions)
 
 type Daily =
     {
@@ -75,11 +77,16 @@ module Daily =
 
     /// Converts a daily to a map of puzzles.
     let convert daily =
-        Map [
+        [
             "easy", daily.easy
             "medium", daily.medium
             "hard", daily.hard
-        ] |> Map.map (fun _ puzzle -> DailyPuzzle.convert puzzle)
+        ]
+            |> Seq.choose (fun (name, puzzle) ->
+                DailyPuzzle.tryConvert puzzle
+                    |> Option.map (fun puzzle ->
+                        name, puzzle))
+            |> Map
 
 #if !FABLE_COMPILER
     /// Deserializes puzzles from the given JSON text.
