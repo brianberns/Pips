@@ -11,15 +11,6 @@ open Thoth.Fetch
 
 open Pips
 
-/// Switches to a wait cursor temporarily.
-type WaitCursor() =
-
-    do document.body?style?cursor <- "wait"
-
-    interface IDisposable with
-        member this.Dispose() =
-            document.body?style?cursor <- "default"
-
 module FetchError =
 
     let getMessage error =
@@ -37,6 +28,15 @@ module Program =
 
     let getTime () =
         box (window?performance?now()) :?> float
+
+    /// Switches to a wait cursor temporarily.
+    let waitCursor () =
+        document.body?style?cursor <- "wait"
+        {
+            new IDisposable with
+                member this.Dispose() =
+                    document.body?style?cursor <- "default"
+        }
 
         // initialize canvases
     let puzzleCanvas = getCanvas "puzzle-canvas"
@@ -67,7 +67,7 @@ module Program =
         promise {
 
                 // reset
-            use _ = new WaitCursor()
+            use _ = waitCursor ()
             Canvas.clear puzzleCtx
             Canvas.clear solutionCtx
             Canvas.cancelAnimation ()
@@ -101,7 +101,7 @@ module Program =
                 | Some puzzle ->
 
                         // reset
-                    use _ = new WaitCursor()   // doesn't work
+                    use _ = waitCursor ()   // doesn't work
                     Canvas.clear solutionCtx
                     Canvas.cancelAnimation ()
 
