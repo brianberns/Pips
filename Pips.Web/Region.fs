@@ -5,25 +5,32 @@ open Pips
 
 module Region =
 
-    let private inSameRegion regionMap c1 c2 =
-        Map.tryFind c1 regionMap = Map.tryFind c2 regionMap
+    /// Are the given cell's in the same region?
+    let private inSameRegion regionMap cellA cellB =
+        Map.tryFind cellA regionMap
+            = Map.tryFind cellB regionMap
 
+    /// Does the given cell have a left border?
     let private hasLeftBorder regionMap cell =
         let adj = { cell with Column = cell.Column - 1 }
         not (inSameRegion regionMap cell adj)
 
+    /// Does the given cell have a right border?
     let private hasRightBorder regionMap cell =
         let adj = { cell with Column = cell.Column + 1 }
         not (inSameRegion regionMap cell adj)
 
+    /// Does the given cell have a top border?
     let private hasTopBorder regionMap cell =
         let adj = { cell with Row = cell.Row - 1 }
         not (inSameRegion regionMap cell adj)
 
+    /// Does the given cell have a bottom border?
     let private hasBottomBorder regionMap cell =
         let adj = { cell with Row = cell.Row + 1 }
         not (inSameRegion regionMap cell adj)
 
+    /// Constraint display string.
     let private getConstraintString region =
         match region.Type with
             | RegionType.Any          -> ""
@@ -33,6 +40,7 @@ module Region =
             | RegionType.SumGreater n -> $">{n}"
             | RegionType.SumExact n   -> $"{n}"
 
+    /// Constraint color.
     let private getConstraintColor region =
         let level =
             match region.Type with
