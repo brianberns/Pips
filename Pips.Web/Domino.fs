@@ -6,8 +6,10 @@ open Pips
 
 module Domino =
 
+    /// Largest pip count.
     let private maxPipCount = 6
 
+    /// All dominoes sorted from smallest to largest.
     let private allDominoes =
         [|
             for sum in 0 .. maxPipCount * 2 do
@@ -16,6 +18,7 @@ module Domino =
                     yield Domino.create left right
         |]
 
+    /// Maps each domino to its index.
     let private dominoMap =
         Map [
             for i = 0 to allDominoes.Length - 1 do
@@ -27,17 +30,28 @@ module Domino =
                 yield domino, i
         ]
 
+    /// Determines color of the given domino.
     let private getDominoColor domino =
         let hue =
             360.0 * float dominoMap[domino] / float dominoMap.Count
         $"hsl({hue}, 100%%, 80%%)"
 
+    /// Draws a single pip at the given location.
     let private drawPip (ctx : Context) radius x y =
         ctx.beginPath()
         ctx.arc(x, y, radius, 0, 2.0 * Math.PI)
         ctx.fillStyle <- !^"black"
         ctx.fill()
 
+    /// Draws the pattern of the given pip count at the given
+    /// location.
+    (*
+     *  ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
+     *  │       │ │       │ │ ⬤     │ │ ⬤     │ │ ⬤   ⬤ │ │ ⬤   ⬤ │ │ ⬤ ⬤ ⬤ │
+     *  │       │ │   ⬤   │ │       │ │   ⬤   │ │       │ │   ⬤   │ │       │
+     *  │       │ │       │ │     ⬤ │ │     ⬤ │ │ ⬤   ⬤ │ │ ⬤   ⬤ │ │ ⬤ ⬤ ⬤ │
+     *  └───────┘ └───────┘ └───────┘ └───────┘ └───────┘ └───────┘ └───────┘
+     *)
     let private drawPipCount ctx cellSize x y (value : PipCount) =
 
         let radius = cellSize / 12.0
@@ -140,20 +154,26 @@ module Domino =
     let drawSolutionDomino
         (ctx : Context) domino ((cellA, cellB) : Edge) =
 
-        let row, col, nTwists =
-            match cellB.Row - cellA.Row, cellB.Column - cellA.Column with
-                |  0,  1 -> cellA.Row,     cellA.Column,     0   // horizontal
-                |  1,  0 -> cellA.Row,     cellA.Column + 1, 1   // vertical
-                |  0, -1 -> cellA.Row + 1, cellA.Column + 1, 2   // horizontal flipped
-                | -1,  0 -> cellA.Row + 1, cellA.Column,     3   // vertical flipped
+            // determine domino orientation
+        let rowDiff, colDiff, nTwists =
+            let rowDiff = cellB.Row - cellA.Row
+            let colDiff = cellB.Column - cellA.Column
+            match rowDiff, colDiff with
+                |  0,  1 -> 0, 0, 0   // horizontal
+                |  1,  0 -> 0, 1, 1   // vertical
+                |  0, -1 -> 1, 1, 2   // horizontal flipped
+                | -1,  0 -> 1, 0, 3   // vertical flipped
                 | _ -> failwith "Unexpected"
 
+            // apply transformations
         ctx.save()
         ctx.translate(
-            float col * cellSize,
-            float row * cellSize)
+            float (cellA.Column + colDiff) * cellSize,
+            float (cellA.Row + rowDiff) * cellSize)
         ctx.rotate(float nTwists * Math.PI / 2.0)
 
+            // draw domino
         drawDomino ctx cellSize domino
 
+            // restore previous state
         ctx.restore()
