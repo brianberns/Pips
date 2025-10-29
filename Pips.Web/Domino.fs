@@ -30,16 +30,68 @@ module Domino =
             360.0 * float dominoMap[domino] / float dominoMap.Count
         $"hsl({hue}, 100%%, 80%%)"
 
-    let cellSize = 40.0
-
-    let private drawPipCount (ctx : Context) (fontSize : string) x y (value : PipCount) =
+    let private drawPip (ctx : Context) x y radius =
+        ctx.beginPath()
+        ctx.arc(x, y, radius, 0, 2.0 * System.Math.PI)
         ctx.fillStyle <- !^"black"
-        ctx.font <- $"{fontSize} sans-serif"
-        ctx.textAlign <- "center"
-        ctx.textBaseline <- "middle"
+        ctx.fill()
 
-        ctx.fillText(string value, x, y)
+    let private drawPipCount ctx cellSize x y (value : PipCount) =
+        let radius = cellSize / 12.0
+        let offset = cellSize / 4.0
+        match value with
+            | 0 -> ()
+            | 1 ->
+                drawPip
+                    ctx x y radius
+            | 2 ->
+                drawPip ctx
+                    (x - offset) (y - offset) radius
+                drawPip ctx
+                    (x + offset) (y + offset) radius
+            | 3 ->
+                drawPip
+                    ctx x y radius
+                drawPip ctx
+                    (x - offset) (y - offset) radius
+                drawPip ctx
+                    (x + offset) (y + offset) radius
+            | 4 ->
+                drawPip ctx
+                    (x - offset) (y - offset) radius
+                drawPip ctx
+                    (x - offset) (y + offset) radius
+                drawPip ctx
+                    (x + offset) (y - offset) radius
+                drawPip ctx
+                    (x + offset) (y + offset) radius
+            | 5 ->
+                drawPip
+                    ctx x y radius
+                drawPip ctx
+                    (x - offset) (y - offset) radius
+                drawPip ctx
+                    (x - offset) (y + offset) radius
+                drawPip ctx
+                    (x + offset) (y - offset) radius
+                drawPip ctx
+                    (x + offset) (y + offset) radius
+            | 6 ->
+                drawPip ctx
+                    (x - offset) (y - offset) radius
+                drawPip ctx
+                    (x - offset) (y + offset) radius
+                drawPip ctx
+                    x (y - offset) radius
+                drawPip ctx
+                    x (y + offset) radius
+                drawPip ctx
+                    (x + offset) (y - offset) radius
+                drawPip ctx
+                    (x + offset) (y + offset) radius
+            | _ -> failwith "Unexpected"
 
+    let cellSize = 40.0
     let outerStyle = 2.0, "black"
     let innerStyle = 1.0, "gray"
 
@@ -70,8 +122,8 @@ module Domino =
         let leftX = x + (cellSize * 0.5)
         let rightX = x + (cellSize * 1.5)
         let centerY = y + (cellSize * 0.5)
-        drawPipCount ctx "18px" leftX centerY domino.Left
-        drawPipCount ctx "18px" rightX centerY domino.Right
+        drawPipCount ctx cellSize leftX centerY domino.Left
+        drawPipCount ctx cellSize rightX centerY domino.Right
 
     /// Draws the given unplaced dominoes starting at the given
     /// Y position.
@@ -91,7 +143,7 @@ module Domino =
     let private drawSolutionPipCount ctx cell pipCount =
         let x = (float cell.Column + 0.5) * cellSize
         let y = (float cell.Row + 0.5) * cellSize
-        drawPipCount ctx "24px" x y pipCount
+        drawPipCount ctx cellSize x y pipCount
 
     /// Draws the given placed domino at the given edge.
     let drawSolutionDomino
