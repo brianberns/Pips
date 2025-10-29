@@ -239,15 +239,16 @@ module Program =
     let solveMany () =
 
         let trySolve (date : DateOnly) =
-            try
-                let puzzle =
-                    let dateStr = date.ToString("yyyy-MM-dd")
-                    Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                        |> Map.find "hard"
-                let stopwatch = Stopwatch.StartNew()
-                let solutions = Backtrack.solveEager puzzle
-                Ok (stopwatch.Elapsed.TotalSeconds, solutions)
-            with ex -> Error ex.Message
+            let puzzleOpt =
+                let dateStr = date.ToString("yyyy-MM-dd")
+                Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+                    |> Map.tryFind "hard"
+            match puzzleOpt with
+                | Some puzzle ->
+                    let stopwatch = Stopwatch.StartNew()
+                    let solutions = Backtrack.solveEager puzzle
+                    Ok (stopwatch.Elapsed.TotalSeconds, solutions)
+                | None -> Error "Missing puzzle"
 
         let run timeout work =
             let work =
