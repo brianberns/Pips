@@ -9,15 +9,6 @@ open Fable.Core
 
 type Context = CanvasRenderingContext2D
 
-/// Saves and restores the given context's settings.
-type SaveContext(ctx : Context) =
-
-    do ctx.save()
-
-    interface IDisposable with
-        member this.Dispose() =
-            ctx.restore()
-
 module Canvas =
 
     /// Clears the given canvas.
@@ -26,9 +17,13 @@ module Canvas =
             0.0, 0.0,
             ctx.canvas.width, ctx.canvas.height)
 
-    /// Saves and restores the given canvas's settings.
+    /// Saves the given canvas's settings temporarily.
     let save (ctx : Context) =
-        new SaveContext(ctx)
+        ctx.save()
+        {
+            new IDisposable with
+                member this.Dispose() = ctx.restore()
+        }
 
     /// Current animation frame ID.
     let mutable private animationId = 0.0
