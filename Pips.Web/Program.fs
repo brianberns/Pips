@@ -22,9 +22,8 @@ module FetchError =
 
 module Program =
 
-    let getCanvas id =
-        document.getElementById id
-            :?> HTMLCanvasElement
+    let getElement<'t when 't :> HTMLElement> id =
+        document.getElementById id :?> 't
 
     let getTime () =
         box (window?performance?now()) :?> float
@@ -38,38 +37,32 @@ module Program =
                     document.body?style?cursor <- "default"
         }
 
-        // initialize canvases
-    let puzzleCanvas = getCanvas "puzzle-canvas"
-    let solutionCanvas = getCanvas "solution-canvas"
-
-        // initialize drawing contexts
-    let puzzleCtx = puzzleCanvas.getContext_2d()
-    let solutionCtx = solutionCanvas.getContext_2d()
+        // initialize canvas
+    let ctx =
+        let canvas : HTMLCanvasElement =
+            getElement "puzzle-canvas"
+        canvas.getContext_2d()
 
     let private dailyUrl =
         "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
 
     let mutable puzzleOpt = None
 
-    let puzzleDateInput =
-        document.getElementById "puzzle-date"
-            :?> HTMLInputElement
+    let puzzleDateInput : HTMLInputElement =
+        getElement "puzzle-date"
 
-    let solveButton =
-        document.getElementById "solve-button"
-            :?> HTMLButtonElement
+    let solveButton : HTMLButtonElement =
+        getElement "solve-button"
 
-    let timerLabel =
-        document.getElementById "timer-label"
-            :?> HTMLLabelElement
+    let timerLabel : HTMLLabelElement =
+        getElement "timer-label"
 
     puzzleDateInput.onchange <- (fun _ ->
         promise {
 
                 // reset
             use _ = waitCursor ()
-            Canvas.clear puzzleCtx
-            Canvas.clear solutionCtx
+            Canvas.clear ctx
             Canvas.cancelAnimation ()
             solveButton.disabled <- true
             timerLabel.textContent <- ""
@@ -85,7 +78,7 @@ module Program =
                         // convert and draw puzzle
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
-                    Puzzle.drawPuzzle puzzleCtx puzzle
+                    Puzzle.drawPuzzle ctx puzzle
 
                         // save state
                     puzzleOpt <- Some puzzle
@@ -102,7 +95,7 @@ module Program =
 
                         // reset
                     use _ = waitCursor ()   // doesn't work
-                    Canvas.clear solutionCtx
+                    Canvas.clear ctx
                     Canvas.cancelAnimation ()
 
                         // solve puzzle
@@ -124,7 +117,7 @@ module Program =
                         $"Found {solutions.Length}{countStr} solution{pluralStr} in %0.1f{duration} ms"
 
                         // draw solutions
-                    Puzzle.drawSolutions solutionCtx solutions
+                    Puzzle.drawSolutions ctx solutions
 
                 | None -> ()
         } |> ignore)

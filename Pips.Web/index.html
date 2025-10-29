@@ -7,19 +7,15 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div class="grid-container">
+    <div class="container">
         <div class="puzzle-date-div">
             <label for="puzzle-date">Puzzle date:</label>
             <input type="date" id="puzzle-date" min="2025-08-18" />
         </div>
-        <div class="puzzle-div">
+        <div id="puzzle-div">
             <canvas id="puzzle-canvas" width="500" height="500"></canvas>
             <br />
             <button type="button" id="solve-button" disabled>Solve</button>
-        </div>
-        <div class="solution-div">
-            <canvas id="solution-canvas" width="500" height="500"></canvas>
-            <br />
             <label id="timer-label"></label>
         </div>
     </div>

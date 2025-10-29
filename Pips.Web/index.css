@@ -3,30 +3,14 @@ body {
     background-color: lightgray;
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: auto auto;
-    grid-template-rows: auto auto;
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.puzzle-date-div {
-    margin: 10px;
-    grid-column: 1;
-    grid-row: 1;
-}
-
-.puzzle-div {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-.solution-div {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-#puzzle-canvas, #solution-canvas {
-    margin: 10px;
+#puzzle-canvas {
+    background-color: wheat;
 }
 
 #solve-button {

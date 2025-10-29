@@ -61,6 +61,11 @@ module CanvasExtensions =
 
     type CanvasRenderingContext2D with
 
+        /// Reset transform.
+        [<Emit("($0).resetTransform()")>]
+        member _.resetTransform() =
+            failwith "JS interop"
+
         /// Round rectangle.
         [<Emit("($0).roundRect($1, $2, $3, $4, $5)")>]
         member _.roundRect(

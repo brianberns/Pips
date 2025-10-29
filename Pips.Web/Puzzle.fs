@@ -28,7 +28,7 @@ module Puzzle =
         let startY = float (puzzle.Board.NumRows + 1) * cellSize
         Domino.drawUnplacedDominoes ctx startY puzzle.UnplacedDominoes
 
-        ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
+        ctx.resetTransform()
 
     /// Draws the given solutions.
     let drawSolutions (ctx : Context) (solutions : _[]) =
@@ -42,6 +42,6 @@ module Puzzle =
             for (domino, edge) in solution.Board.DominoPlaces do
                 Domino.drawSolutionDomino ctx domino edge
 
-            ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
+            ctx.resetTransform()
 
         Canvas.animate 10.0 callback
