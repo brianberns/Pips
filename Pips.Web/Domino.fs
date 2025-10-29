@@ -9,8 +9,9 @@ module Domino =
 
     let private allDominoes =
         [|
-            for left in 0 .. maxPipCount do
-                for right in left .. maxPipCount do
+            for sum in 0 .. (maxPipCount * 2) do
+                for left in 0 .. min sum maxPipCount do
+                    let right = sum - left
                     yield Domino.create left right
         |]
 
