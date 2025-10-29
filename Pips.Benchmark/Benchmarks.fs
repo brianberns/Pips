@@ -10,7 +10,7 @@ module Puzzle =
             |> Map.find "hard"
 
     let solveOne () =
-        Backtrack.solve puzzle
+        Backtrack.solveEager puzzle
             |> ignore
 
 [<MemoryDiagnoser>]

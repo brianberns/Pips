@@ -245,7 +245,7 @@ module Program =
                     Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                         |> Map.find "hard"
                 let stopwatch = Stopwatch.StartNew()
-                let solutions = Backtrack.solve puzzle
+                let solutions = Backtrack.solveEager puzzle
                 Ok (stopwatch.Elapsed.TotalSeconds, solutions)
             with ex -> Error ex.Message
 
@@ -303,7 +303,7 @@ module Program =
 
             // solve puzzle and print solutions
         let stopwatch = Stopwatch.StartNew()
-        let solutions = Backtrack.solve puzzle |> Seq.toArray
+        let solutions = Backtrack.solveEager puzzle
         stopwatch.Stop()
         printfn $"Found {solutions.Length} solution(s) in {stopwatch.Elapsed}:"
         printfn ""
@@ -355,8 +355,7 @@ module Program =
                 printfn $"{region.Type}: {region.Cells.Length} cells"
             printfn ""
 
-            let solutions =
-                Backtrack.solve solved.Puzzle |> Seq.toArray
+            let solutions = Backtrack.solveEager solved.Puzzle
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
             printfn $"{printSolution solutions[0]}"
