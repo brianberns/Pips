@@ -37,37 +37,36 @@ module Domino =
         ctx.fill()
 
     let private drawPipCount ctx cellSize x y (value : PipCount) =
+
         let radius = cellSize / 12.0
         let offset = cellSize / 4.0
+
         let pip = drawPip ctx radius
+
+        let pip1 () = pip x y
+
+        let pip2 () =
+            pip (x - offset) (y - offset)
+            pip (x + offset) (y + offset)
+
+        let pip4 () =
+            pip2 ()
+            pip (x - offset) (y + offset)
+            pip (x + offset) (y - offset)
+
+        let pip6 () =
+            pip4 ()
+            pip x (y - offset)
+            pip x (y + offset)
+
         match value with
             | 0 -> ()
-            | 1 -> pip x y
-            | 2 ->
-                pip (x - offset) (y - offset)
-                pip (x + offset) (y + offset)
-            | 3 ->
-                pip  x            y
-                pip (x - offset) (y - offset)
-                pip (x + offset) (y + offset)
-            | 4 ->
-                pip (x - offset) (y - offset)
-                pip (x - offset) (y + offset)
-                pip (x + offset) (y - offset)
-                pip (x + offset) (y + offset)
-            | 5 ->
-                pip  x            y
-                pip (x - offset) (y - offset)
-                pip (x - offset) (y + offset)
-                pip (x + offset) (y - offset)
-                pip (x + offset) (y + offset)
-            | 6 ->
-                pip (x - offset) (y - offset)
-                pip (x - offset) (y + offset)
-                pip  x           (y - offset)
-                pip  x           (y + offset)
-                pip (x + offset) (y - offset)
-                pip (x + offset) (y + offset)
+            | 1 -> pip1 ()
+            | 2 -> pip2 ()
+            | 3 -> pip1 (); pip2 ()
+            | 4 -> pip4 ()
+            | 5 -> pip1 (); pip4 ()
+            | 6 -> pip6 ()
             | _ -> failwith "Unexpected"
 
     let cellSize = 40.0
