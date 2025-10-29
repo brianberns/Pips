@@ -44,4 +44,4 @@ module Puzzle =
 
             ctx.setTransform(1, 0, 0, 1, 0, 0)   // resetTransform
 
-        Canvas.animate 2.0 callback
+        Canvas.animate 10.0 callback
