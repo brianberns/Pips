@@ -25,8 +25,11 @@ module Puzzle =
             let dominoChunk = dominoChunks[row]
             for col = 0 to dominoChunk.Length - 1 do
                 let domino = dominoChunk[col]
+                let col =
+                    let missing = chunkSize - dominoChunk.Length   // center last row
+                    float col + (float missing / 2.0)
                 let x = float col * Domino.cellSize * 2.0
-                let y = float row * Domino.cellSize
+                let y = float row * Domino.cellSize * 1.2
                 Domino.drawUnplacedDomino ctx x y domino
 
     /// Draws the given solutions.
