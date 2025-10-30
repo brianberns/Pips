@@ -151,8 +151,8 @@ module Program =
         promise {
 
                 // reset
-            Canvas.clear ctx
             Canvas.cancelAnimation ()
+            Canvas.clear ctx
 
                 // puzzle ready to be solved?
             match puzzleMode, puzzleOpt, solutionsOpt with
@@ -184,15 +184,15 @@ module Program =
                 // toggle mode
             puzzleMode <- not puzzleMode
 
-                // draw solutions
+                // draw puzzle or solutions
             match puzzleMode, puzzleOpt, solutionsOpt with
 
-                    // puzzle mode?
+                    // puzzle mode
                 | true, Some puzzle, _ ->
                     drawPuzzle ctx puzzle
                     solveButton.textContent <- "Show solution"
 
-                    // solution mode?
+                    // solution mode
                 | false, Some puzzle, Some solutions ->
                     drawSolutions ctx puzzle solutions
                     solveButton.textContent <- "Show puzzle"
@@ -205,6 +205,7 @@ module Program =
         puzzleDateInput.onchange <- onPuzzleDateChange
         solveButton.onclick <- onSolveButtonClick
 
+            // start with today's puzzle
         let today = DateTime.Now
         puzzleDateInput.value <- today.ToString("yyyy-MM-dd")
         Event.Create("change")
