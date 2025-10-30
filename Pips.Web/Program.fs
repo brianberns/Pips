@@ -46,6 +46,8 @@ module Program =
         // initialize elements
     let canvas : HTMLCanvasElement = getElement "puzzle-canvas"
     let puzzleDateInput : HTMLInputElement = getElement "puzzle-date"
+    let prevDateButton : HTMLButtonElement = getElement "previous-date-button"
+    let nextDateButton : HTMLButtonElement = getElement "next-date-button"
     let difficultySelect : HTMLSelectElement = getElement "difficulty-select"
     let solveButton : HTMLButtonElement = getElement "solve-button"
     let timerSpan : HTMLSpanElement = getElement "timer-span"
@@ -147,6 +149,25 @@ module Program =
 
         } |> ignore
 
+    /// Minimum date.
+    let minDate = DateTime.Parse puzzleDateInput.min
+
+    /// Increments the puzzle date.
+    let incrDate incr =
+        let date = DateTime.Parse puzzleDateInput.value
+        let date = date.AddDays(incr)
+        if date >= minDate then
+            puzzleDateInput.value <- date.ToString("yyyy-MM-dd")
+            Event.Create("change")
+                |> puzzleDateInput.dispatchEvent
+                |> ignore
+
+    /// Handles previous date button click event.
+    let onPrevDateButtonClick _ = incrDate -1.0
+
+    /// Handles next date button click event.
+    let onNextDateButtonClick _ = incrDate 1.0
+
     /// Handles solve button click event.
     let onSolveButtonClick _ =
         promise {
@@ -203,6 +224,8 @@ module Program =
         } |> ignore
 
     do
+        prevDateButton.onclick <- onPrevDateButtonClick
+        nextDateButton.onclick <- onNextDateButtonClick
         puzzleDateInput.onchange <- onPuzzleChange
         difficultySelect.onchange <- onPuzzleChange
         solveButton.onclick <- onSolveButtonClick
