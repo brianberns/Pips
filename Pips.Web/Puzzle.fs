@@ -33,7 +33,7 @@ module Puzzle =
                 Domino.drawUnplacedDomino ctx x y domino
 
     /// Draws the given solutions.
-    let drawSolutions ctx (solutions : _[]) =
+    let drawSolutions ctx animate (solutions : _[]) =
 
         let callback iFrame =
 
@@ -43,4 +43,8 @@ module Puzzle =
             for (domino, edge) in solution.Board.DominoPlaces do
                 Domino.drawSolutionDomino ctx domino edge
 
-        Canvas.animate 10.0 callback
+        if animate then
+            Canvas.animate 10.0 callback
+        else
+            callback 0
+

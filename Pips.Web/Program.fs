@@ -97,10 +97,10 @@ module Program =
             ctx unplacedChunkSize puzzle
 
     /// Draws the given solutions.
-    let drawSolutions (ctx : Context) puzzle solutions =
+    let drawSolutions (ctx : Context) puzzle animate solutions =
         ctx.resetTransform()
         centerPuzzle ctx puzzle
-        Puzzle.drawSolutions ctx solutions
+        Puzzle.drawSolutions ctx animate solutions
 
     /// Showing puzzle or solution?
     let mutable puzzleMode = true
@@ -226,14 +226,12 @@ module Program =
                 | true, Some puzzle, _ ->
                     drawPuzzle ctx puzzle
                     solveButton.textContent <- showSolutionStr
-                    pauseButton.textContent <- pauseStr
                     pauseButton.disabled <- true
 
                     // solution mode
                 | false, Some puzzle, Some solutions ->
-                    drawSolutions ctx puzzle solutions
+                    drawSolutions ctx puzzle (not animationPaused) solutions
                     solveButton.textContent <- showPuzzleStr
-                    pauseButton.textContent <- pauseStr
                     pauseButton.disabled <- false
 
                 | _ -> ()
@@ -252,7 +250,7 @@ module Program =
                 // restart animation?
             | true, Some puzzle, Some solutions ->
                 Canvas.clear ctx
-                drawSolutions ctx puzzle solutions
+                drawSolutions ctx puzzle true solutions
                 pauseButton.textContent <- pauseStr
 
             | _ -> ()
