@@ -230,9 +230,12 @@ module Program =
 
                     // solution mode
                 | false, Some puzzle, Some solutions ->
-                    drawSolutions ctx puzzle (not animationPaused) solutions
+                    let animate =
+                        not animationPaused && solutions.Length > 1
+                    drawSolutions ctx puzzle animate solutions
                     solveButton.textContent <- showPuzzleStr
-                    pauseButton.disabled <- false
+                    if solutions.Length > 1 then
+                        pauseButton.disabled <- false
 
                 | _ -> ()
 
