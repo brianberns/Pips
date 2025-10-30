@@ -50,6 +50,7 @@ module Program =
     let nextDateButton : HTMLButtonElement = getElement "next-date-button"
     let difficultySelect : HTMLSelectElement = getElement "difficulty-select"
     let solveButton : HTMLButtonElement = getElement "solve-button"
+    let pauseButton : HTMLButtonElement = getElement "pause-button"
     let timerSpan : HTMLSpanElement = getElement "timer-span"
     let ctx = canvas.getContext_2d()
 
@@ -110,6 +111,15 @@ module Program =
     /// Current solutions, if any.
     let mutable solutionsOpt = None
 
+    /// Animation has been paused?
+    let mutable animationPaused = false
+
+        // display strings
+    let showSolutionStr = "Show solution"
+    let showPuzzleStr = "Show puzzle"
+    let pauseStr = "⏸"
+    let playStr = "▶"
+
     /// Handles date or difficulty selection event.
     let onPuzzleChange _ =
         promise {
@@ -120,8 +130,11 @@ module Program =
             Canvas.clear ctx
             puzzleMode <- true
             solutionsOpt <- None
-            solveButton.textContent <- "Show solution"
+            animationPaused <- false
+            solveButton.textContent <- showSolutionStr
             solveButton.disabled <- true
+            pauseButton.textContent <- pauseStr
+            pauseButton.disabled <- true
             timerSpan.textContent <- ""
 
                 // format selected date
@@ -212,16 +225,40 @@ module Program =
                     // puzzle mode
                 | true, Some puzzle, _ ->
                     drawPuzzle ctx puzzle
-                    solveButton.textContent <- "Show solution"
+                    solveButton.textContent <- showSolutionStr
+                    pauseButton.textContent <- pauseStr
+                    pauseButton.disabled <- true
 
                     // solution mode
                 | false, Some puzzle, Some solutions ->
                     drawSolutions ctx puzzle solutions
-                    solveButton.textContent <- "Show puzzle"
+                    solveButton.textContent <- showPuzzleStr
+                    pauseButton.textContent <- pauseStr
+                    pauseButton.disabled <- false
 
                 | _ -> ()
 
         } |> ignore
+
+    /// Handles pause button click event.
+    let onPauseButtonClick _ =
+        match animationPaused, puzzleOpt, solutionsOpt with
+
+                // pause animation?
+            | false, _, _ ->
+                Canvas.cancelAnimation ()
+                pauseButton.textContent <- playStr
+
+                // restart animation?
+            | true, Some puzzle, Some solutions ->
+                Canvas.clear ctx
+                drawSolutions ctx puzzle solutions
+                pauseButton.textContent <- pauseStr
+
+            | _ -> ()
+
+            // toggle state
+        animationPaused <- not animationPaused
 
     do
         prevDateButton.onclick <- onPrevDateButtonClick
@@ -229,6 +266,7 @@ module Program =
         puzzleDateInput.onchange <- onPuzzleChange
         difficultySelect.onchange <- onPuzzleChange
         solveButton.onclick <- onSolveButtonClick
+        pauseButton.onclick <- onPauseButtonClick
 
             // start with today's puzzle
         let today = DateTime.Now
