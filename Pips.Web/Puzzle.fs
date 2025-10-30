@@ -4,29 +4,33 @@ open Pips
 
 module Puzzle =
 
-    let private getRegionMap puzzle =
-        Map [
-            for region in puzzle.Regions do
-                for cell in region.Cells do
-                    yield cell, region
-        ]
-
-    let private cellSize = Domino.cellSize
-
-    /// Draws the given puzzle by drawing its regions and unplaced
-    /// dominoes.
-    let drawPuzzle (ctx : Context) puzzle =
-
-        let regionMap = getRegionMap puzzle
-
+    /// Draws the given puzzle's regions.
+    let drawPuzzle ctx puzzle =
+        let regionMap =
+            Map [
+                for region in puzzle.Regions do
+                    for cell in region.Cells do
+                        yield cell, region
+            ]
         for region in puzzle.Regions do
             Region.drawRegion ctx regionMap region
 
-        let startY = float (puzzle.Board.NumRows + 1) * cellSize
-        Domino.drawUnplacedDominoes ctx startY puzzle.UnplacedDominoes
+    /// Draws the given puzzle's unplaced dominoes.
+    let drawUnplacedDominoes ctx chunkSize puzzle =
+        let dominoChunks =
+            puzzle.UnplacedDominoes
+                |> Seq.chunkBySize chunkSize
+                |> Seq.toArray
+        for row = 0 to dominoChunks.Length - 1 do
+            let dominoChunk = dominoChunks[row]
+            for col = 0 to dominoChunk.Length - 1 do
+                let domino = dominoChunk[col]
+                let x = float col * Domino.cellSize * 2.0
+                let y = float row * Domino.cellSize
+                Domino.drawUnplacedDomino ctx x y domino
 
     /// Draws the given solutions.
-    let drawSolutions (ctx : Context) (solutions : _[]) =
+    let drawSolutions ctx (solutions : _[]) =
 
         let callback iFrame =
 

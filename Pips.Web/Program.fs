@@ -64,6 +64,20 @@ module Program =
         let offsetY = 10.0
         ctx.translate(offsetX, offsetY)
 
+    /// Number of unplaced dominoes per row.
+    let unplacedChunkSize = 4
+
+    /// Translates the given canvas to center the given puzzle's
+    /// unplaced dominoes.
+    let centerUnplacedDominoes (ctx : Context) puzzle =
+        let dominoesWidth =
+            float unplacedChunkSize * (2.0 * Domino.cellSize)
+        let offsetX =
+            (canvas.width - dominoesWidth) / 2.0
+        let offsetY =
+            float (puzzle.Board.NumRows + 1) * Domino.cellSize
+        ctx.translate(offsetX, offsetY)
+
     puzzleDateInput.onchange <- (fun _ ->
         promise {
 
@@ -90,6 +104,12 @@ module Program =
                     ctx.resetTransform()
                     centerPuzzle ctx puzzle
                     Puzzle.drawPuzzle ctx puzzle
+
+                        // draw unplaced dominoes
+                    ctx.resetTransform()
+                    centerUnplacedDominoes ctx puzzle
+                    Puzzle.drawUnplacedDominoes
+                        ctx unplacedChunkSize puzzle
 
                         // save state
                     puzzleOpt <- Some puzzle

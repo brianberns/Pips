@@ -124,31 +124,15 @@ module Domino =
     let cellSize = 35.0
 
     /// Draws the given unplaced domino at the given position.
-    let private drawUnplacedDomino (ctx : Context) x y domino =
+    let drawUnplacedDomino ctx x y domino =
         use _ = Canvas.save ctx
         ctx.translate(x, y)
         let scale = 3.0 / 4.0
         ctx.scale(scale, scale)
         drawDomino ctx cellSize domino
 
-    /// Draws the given unplaced dominoes starting at the given
-    /// Y position.
-    let drawUnplacedDominoes (ctx : Context) startY dominoes =
-        let dominoChunks =
-            dominoes
-                |> Seq.chunkBySize 4 
-                |> Seq.toArray
-        for row = 0 to dominoChunks.Length - 1 do
-            let dominoChunk = dominoChunks[row]
-            for col = 0 to dominoChunk.Length - 1 do
-                let domino = dominoChunk[col]
-                let x = float col * cellSize * 2.0
-                let y = startY + (float row * cellSize)
-                drawUnplacedDomino ctx x y domino
-
     /// Draws the given placed domino at the given edge.
-    let drawSolutionDomino
-        (ctx : Context) domino ((cellA, cellB) : Edge) =
+    let drawSolutionDomino ctx domino ((cellA, cellB) : Edge) =
 
             // determine domino orientation
         let rowDiff, colDiff, nTwists =
