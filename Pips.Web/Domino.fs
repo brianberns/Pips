@@ -85,13 +85,16 @@ module Domino =
             | 6 -> pip6 ()
             | _ -> failwith "Unexpected"
 
+    /// Length of one side of a cell.
+    let cellSize = 35.0
+
     let outerStyle = 2.0, "black"
     let innerStyle = 1.0, "gray"
 
     /// Draws the given domino horizontally at the origin.
     /// Callers use rotation and translatation to modify the
     /// domino's location.
-    let private drawDomino (ctx : Context) cellSize domino =
+    let private drawDomino (ctx : Context) domino =
 
             // draw the domino rectangle
         ctx.beginPath()
@@ -120,16 +123,16 @@ module Domino =
         drawPipCount ctx cellSize leftX centerY domino.Left
         drawPipCount ctx cellSize rightX centerY domino.Right
 
-    /// Length of one side of a cell.
-    let cellSize = 35.0
+    /// Unplaced domino scale.
+    let unplacedDominoScale = 3.0 / 4.0
 
     /// Draws the given unplaced domino at the given position.
     let drawUnplacedDomino ctx x y domino =
+
         use _ = Canvas.save ctx
         ctx.translate(x, y)
-        let scale = 3.0 / 4.0
-        ctx.scale(scale, scale)
-        drawDomino ctx cellSize domino
+        ctx.scale(unplacedDominoScale, unplacedDominoScale)
+        drawDomino ctx domino
 
     /// Draws the given placed domino at the given edge.
     let drawSolutionDomino ctx domino ((cellA, cellB) : Edge) =

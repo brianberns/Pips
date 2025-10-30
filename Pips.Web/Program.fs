@@ -72,7 +72,10 @@ module Program =
     /// unplaced dominoes.
     let centerUnplacedDominoes (ctx : Context) puzzle =
         let dominoesWidth =
-            float unplacedChunkSize * (2.0 * Domino.cellSize)
+            let nDominoes =
+                float unplacedChunkSize
+                    - (1.0 - Domino.unplacedDominoScale)
+            nDominoes * (2.0 * Domino.cellSize)
         let offsetX =
             (canvas.width - dominoesWidth) / 2.0
         let offsetY =
