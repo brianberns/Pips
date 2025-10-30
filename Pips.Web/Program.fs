@@ -38,10 +38,9 @@ module Program =
         }
 
         // initialize canvas
-    let ctx =
-        let canvas : HTMLCanvasElement =
-            getElement "puzzle-canvas"
-        canvas.getContext_2d()
+    let canvas : HTMLCanvasElement =
+        getElement "puzzle-canvas"
+    let ctx = canvas.getContext_2d()
 
     let private dailyUrl =
         "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
@@ -54,8 +53,8 @@ module Program =
     let solveButton : HTMLButtonElement =
         getElement "solve-button"
 
-    let timerLabel : HTMLLabelElement =
-        getElement "timer-label"
+    let timerSpan : HTMLLabelElement =
+        getElement "timer-span"
 
     puzzleDateInput.onchange <- (fun _ ->
         promise {
@@ -65,7 +64,7 @@ module Program =
             Canvas.clear ctx
             Canvas.cancelAnimation ()
             solveButton.disabled <- true
-            timerLabel.textContent <- ""
+            timerSpan.textContent <- ""
 
                 // fetch puzzle for selected date
             let date =
@@ -113,7 +112,7 @@ module Program =
                         else ""
                     let pluralStr =
                         if solutions.Length = 1 then "" else "s"
-                    timerLabel.textContent <-
+                    timerSpan.textContent <-
                         $"Found {solutions.Length}{countStr} solution{pluralStr} in %0.1f{duration} ms"
 
                         // draw solutions
