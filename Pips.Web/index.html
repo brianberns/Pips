@@ -7,17 +7,15 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div class="container">
-        <div class="puzzle-date-div">
+    <div id="container">
+        <h2>Pips solver</h2>
+        <div id="puzzle-date-div">
             <label for="puzzle-date">Puzzle date:</label>
             <input type="date" id="puzzle-date" min="2025-08-18" />
         </div>
-        <div id="puzzle-div">
-            <canvas id="puzzle-canvas" width="390" height="500"></canvas>
-            <br />
-            <button type="button" id="solve-button" disabled>Solve</button>
-            <span id="timer-span"></span>
-        </div>
+        <button type="button" id="solve-button" disabled>Solve</button>
+        <canvas id="puzzle-canvas" width="390" height="600"></canvas>
+        <span id="timer-span"></span>
     </div>
     <script type="module" src="/Program.fs.js"></script>
 </body>

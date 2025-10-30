@@ -3,23 +3,26 @@ body {
     background-color: lightgray;
 }
 
-.container {
+#container {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+#puzzle-date-div {
+    font-size: large;
+}
+
 #puzzle-canvas {
-    background-color: wheat;
+    margin: 10px;
 }
 
 #solve-button {
     margin: 10px;
     width: 100px;
-    height: 40px;
     font-size: large;
 }
 
-#timer-label {
+#timer-span {
     margin: 10px;
 }
