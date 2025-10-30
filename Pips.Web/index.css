@@ -25,5 +25,8 @@ body {
 }
 
 #timer-span {
-    margin: 10px;
+}
+
+#footer {
+    font-size: small;
 }
