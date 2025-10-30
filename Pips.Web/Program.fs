@@ -153,6 +153,8 @@ module Program =
                         $"Found {solutions.Length}{countStr} solution{pluralStr} in %0.1f{duration} ms"
 
                         // draw solutions
+                    ctx.resetTransform()
+                    centerPuzzle ctx puzzle
                     Puzzle.drawSolutions ctx solutions
 
                 | None -> ()

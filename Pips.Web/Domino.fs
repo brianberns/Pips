@@ -156,4 +156,4 @@ module Domino =
         ctx.rotate(float nTwists * Math.PI / 2.0)
 
             // draw domino
-        drawDomino ctx cellSize domino
+        drawDomino ctx domino
