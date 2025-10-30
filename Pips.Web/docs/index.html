@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pips Solver</title>
+
+  <script type="module" crossorigin src="/index.js"></script>
+  <link rel="stylesheet" crossorigin href="/index.css">
+</head>
+<body>
+    <div id="container">
+        <h2>Pips solver</h2>
+        <div id="puzzle-date-div">
+            <button type="button" id="previous-date-button">◀</button>
+            <label for="puzzle-date">Puzzle date:</label>
+            <input type="date" id="puzzle-date" min="2025-08-18" />
+            <button type="button" id="next-date-button">▶</button>
+        </div>
+        <div id="difficulty-div">
+            <label for="">Difficulty:</label>
+            <select id="difficulty-select">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard" selected>Hard</option>
+            </select>
+        </div>
+        <button type="button" id="solve-button" disabled>Show solution</button>
+        <canvas id="puzzle-canvas" width="390" height="550"></canvas>
+        <p><span id="timer-span"></span></p>
+        <p id="footer">Pips is a game from the <a href="https://www.nytimes.com/games/pips">New York Times</a></p>
+    </div>
+
+</body>
+</html>
