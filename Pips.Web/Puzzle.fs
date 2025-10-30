@@ -12,7 +12,6 @@ module Puzzle =
         ]
 
     let private cellSize = Domino.cellSize
-    let private offset = 10.0
 
     /// Draws the given puzzle by drawing its regions and unplaced
     /// dominoes.
@@ -20,15 +19,11 @@ module Puzzle =
 
         let regionMap = getRegionMap puzzle
 
-        ctx.translate(offset, offset)
-
         for region in puzzle.Regions do
             Region.drawRegion ctx regionMap region
 
         let startY = float (puzzle.Board.NumRows + 1) * cellSize
         Domino.drawUnplacedDominoes ctx startY puzzle.UnplacedDominoes
-
-        ctx.resetTransform()
 
     /// Draws the given solutions.
     let drawSolutions (ctx : Context) (solutions : _[]) =
@@ -36,12 +31,9 @@ module Puzzle =
         let callback iFrame =
 
             Canvas.clear ctx
-            ctx.translate(offset, offset)
 
             let solution = solutions[iFrame % solutions.Length]
             for (domino, edge) in solution.Board.DominoPlaces do
                 Domino.drawSolutionDomino ctx domino edge
-
-            ctx.resetTransform()
 
         Canvas.animate 10.0 callback

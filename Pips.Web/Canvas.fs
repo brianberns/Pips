@@ -7,15 +7,36 @@ open Browser.Types
 
 open Fable.Core
 
+[<AutoOpen>]
+module CanvasExtensions =
+
+    type CanvasRenderingContext2D with
+
+        /// Reset transform.
+        [<Emit("($0).resetTransform()")>]
+        member _.resetTransform() =
+            failwith "JS interop"
+
+        /// Round rectangle.
+        [<Emit("($0).roundRect($1, $2, $3, $4, $5)")>]
+        member _.roundRect(
+            x : float, y : float,
+            width : float, height: float,
+            radius : float) : unit =
+            failwith "JS interop"
+
 type Context = CanvasRenderingContext2D
 
 module Canvas =
 
     /// Clears the given canvas.
     let clear (ctx : Context) =
+        ctx.save()
+        ctx.resetTransform()
         ctx.clearRect(
             0.0, 0.0,
             ctx.canvas.width, ctx.canvas.height)
+        ctx.restore()
 
     /// Saves the given canvas's settings temporarily.
     let save (ctx : Context) =
@@ -55,21 +76,3 @@ module Canvas =
                 window.requestAnimationFrame(loop iFrame)
 
         requestFrame 0
-
-[<AutoOpen>]
-module CanvasExtensions =
-
-    type CanvasRenderingContext2D with
-
-        /// Reset transform.
-        [<Emit("($0).resetTransform()")>]
-        member _.resetTransform() =
-            failwith "JS interop"
-
-        /// Round rectangle.
-        [<Emit("($0).roundRect($1, $2, $3, $4, $5)")>]
-        member _.roundRect(
-            x : float, y : float,
-            width : float, height: float,
-            radius : float) : unit =
-            failwith "JS interop"

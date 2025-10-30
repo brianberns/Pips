@@ -56,6 +56,14 @@ module Program =
     let timerSpan : HTMLLabelElement =
         getElement "timer-span"
 
+    /// Translates the given canvas to center the given puzzle.
+    let centerPuzzle (ctx : Context) puzzle =
+        let boardWidth =
+            float puzzle.Board.NumColumns * Domino.cellSize
+        let offsetX = (canvas.width - boardWidth) / 2.0
+        let offsetY = 10.0
+        ctx.translate(offsetX, offsetY)
+
     puzzleDateInput.onchange <- (fun _ ->
         promise {
 
@@ -74,9 +82,13 @@ module Program =
             match! Fetch.tryGet($"{dailyUrl}?date={dateStr}") with
                 | Ok daily ->
 
-                        // convert and draw puzzle
+                        // convert puzzle from daily format
                     let puzzleMap = Daily.convert daily
                     let puzzle = puzzleMap["hard"]
+
+                        // draw puzzle
+                    ctx.resetTransform()
+                    centerPuzzle ctx puzzle
                     Puzzle.drawPuzzle ctx puzzle
 
                         // save state

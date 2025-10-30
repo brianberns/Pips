@@ -120,13 +120,14 @@ module Domino =
         drawPipCount ctx cellSize leftX centerY domino.Left
         drawPipCount ctx cellSize rightX centerY domino.Right
 
-    let cellSize = 40.0
+    /// Length of one side of a cell.
+    let cellSize = 35.0
 
     /// Draws the given unplaced domino at the given position.
     let private drawUnplacedDomino (ctx : Context) x y domino =
         use _ = Canvas.save ctx
         ctx.translate(x, y)
-        let scale = 2.0 / 3.0
+        let scale = 3.0 / 4.0
         ctx.scale(scale, scale)
         drawDomino ctx cellSize domino
 
