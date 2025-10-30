@@ -107,6 +107,7 @@ module Program =
             Canvas.cancelAnimation ()
             puzzleMode <- true
             solutionsOpt <- None
+            solveButton.textContent <- "Show solution"
             solveButton.disabled <- true
             timerSpan.textContent <- ""
 
@@ -127,7 +128,6 @@ module Program =
 
                         // save state
                     puzzleOpt <- Some puzzle
-                    solveButton.textContent <- "Show solution"
                     solveButton.disabled <- false
 
                 | Error err ->
