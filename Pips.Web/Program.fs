@@ -56,12 +56,13 @@ module Program =
     let timerSpan : HTMLLabelElement =
         getElement "timer-span"
 
+    let offsetY = 10.0
+
     /// Translates the given canvas to center the given puzzle.
     let centerPuzzle (ctx : Context) puzzle =
         let boardWidth =
             float puzzle.Board.NumColumns * Domino.cellSize
         let offsetX = (canvas.width - boardWidth) / 2.0
-        let offsetY = 10.0
         ctx.translate(offsetX, offsetY)
 
     /// Number of unplaced dominoes per row.
@@ -76,6 +77,7 @@ module Program =
             (canvas.width - dominoesWidth) / 2.0
         let offsetY =
             float (puzzle.Board.NumRows + 1) * Domino.cellSize
+                + offsetY
         ctx.translate(offsetX, offsetY)
 
     puzzleDateInput.onchange <- (fun _ ->
