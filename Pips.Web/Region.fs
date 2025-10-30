@@ -79,8 +79,9 @@ module Region =
         let cell = Seq.max region.Cells
         let x = (float cell.Column + 0.5) * cellSize
         let y = (float cell.Row + 0.5) * cellSize
+        let fontSize = int (Domino.cellSize / 2.2)
         ctx.fillStyle <- !^"black"
-        ctx.font <- "20px sans-serif"
+        ctx.font <- $"{fontSize}px sans-serif"
         ctx.textAlign <- "center"
         ctx.textBaseline <- "middle"
         ctx.fillText(getConstraintString region, x, y)
