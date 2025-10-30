@@ -22,9 +22,11 @@ module FetchError =
 
 module Program =
 
+    /// Gets the element with the given ID.
     let getElement<'t when 't :> HTMLElement> id =
         document.getElementById id :?> 't
 
+    /// Gets the current time in milliseconds.
     let getTime () =
         box (window?performance?now()) :?> float
 
@@ -37,23 +39,18 @@ module Program =
                     document.body?style?cursor <- "default"
         }
 
-        // initialize canvas
-    let canvas : HTMLCanvasElement =
-        getElement "puzzle-canvas"
-    let ctx = canvas.getContext_2d()
-
-    let puzzleDateInput : HTMLInputElement =
-        getElement "puzzle-date"
-
-    let solveButton : HTMLButtonElement =
-        getElement "solve-button"
-
-    let timerSpan : HTMLSpanElement =
-        getElement "timer-span"
-
+    /// Proxy to NY Times daily puzzle to avoid CORS restriction.
     let private dailyUrl =
         "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
 
+        // initialize elements
+    let canvas : HTMLCanvasElement = getElement "puzzle-canvas"
+    let puzzleDateInput : HTMLInputElement = getElement "puzzle-date"
+    let solveButton : HTMLButtonElement = getElement "solve-button"
+    let timerSpan : HTMLSpanElement = getElement "timer-span"
+    let ctx = canvas.getContext_2d()
+
+    /// Vertical offset of puzzle from canvas top.
     let offsetY = 10.0
 
     /// Translates the given canvas to center the given puzzle.
@@ -81,10 +78,7 @@ module Program =
                 + offsetY
         ctx.translate(offsetX, offsetY)
 
-    let mutable puzzleMode = true
-    let mutable puzzleOpt = None
-    let mutable solutionsOpt = None
-
+    /// Draws the given puzzle.
     let drawPuzzle (ctx : Context) puzzle =
 
             // draw puzzle
@@ -98,24 +92,41 @@ module Program =
         Puzzle.drawUnplacedDominoes
             ctx unplacedChunkSize puzzle
 
-    puzzleDateInput.onchange <- (fun _ ->
+    /// Draws the given solutions.
+    let drawSolutions (ctx : Context) puzzle solutions =
+        ctx.resetTransform()
+        centerPuzzle ctx puzzle
+        Puzzle.drawSolutions ctx solutions
+
+    /// Showing puzzle or solution?
+    let mutable puzzleMode = true
+
+    /// Current puzzle, if any.
+    let mutable puzzleOpt = None
+
+    /// Current solutions, if any.
+    let mutable solutionsOpt = None
+
+    /// Handles date selection event.
+    let onPuzzleDateChange _ =
         promise {
 
                 // reset
             use _ = waitCursor ()
-            Canvas.clear ctx
             Canvas.cancelAnimation ()
+            Canvas.clear ctx
             puzzleMode <- true
             solutionsOpt <- None
             solveButton.textContent <- "Show solution"
             solveButton.disabled <- true
             timerSpan.textContent <- ""
 
+                // format selected date
+            let dateStr =
+                let date = DateTime.Parse puzzleDateInput.value
+                date.ToString("yyyy-MM-dd")
+
                 // fetch puzzle for selected date
-            let date =
-                puzzleDateInput.value
-                    |> DateTime.Parse
-            let dateStr = date.ToString("yyyy-MM-dd")
             match! Fetch.tryGet($"{dailyUrl}?date={dateStr}") with
                 | Ok daily ->
 
@@ -133,14 +144,10 @@ module Program =
                 | Error err ->
                     window.alert(FetchError.getMessage err)
 
-        } |> ignore)
+        } |> ignore
 
-    let drawSolutions (ctx : Context)  puzzle solutions =
-        ctx.resetTransform()
-        centerPuzzle ctx puzzle
-        Puzzle.drawSolutions ctx solutions
-
-    solveButton.onclick <- (fun _ ->
+    /// Handles solve button click event.
+    let onSolveButtonClick _ =
         promise {
 
                 // reset
@@ -192,10 +199,14 @@ module Program =
 
                 | _ -> ()
 
-        } |> ignore)
+        } |> ignore
 
-    let today = DateTime.Now
-    puzzleDateInput.value <- today.ToString("yyyy-MM-dd")
-    Event.Create("change")
-        |> puzzleDateInput.dispatchEvent
-        |> ignore
+    do
+        puzzleDateInput.onchange <- onPuzzleDateChange
+        solveButton.onclick <- onSolveButtonClick
+
+        let today = DateTime.Now
+        puzzleDateInput.value <- today.ToString("yyyy-MM-dd")
+        Event.Create("change")
+            |> puzzleDateInput.dispatchEvent
+            |> ignore
