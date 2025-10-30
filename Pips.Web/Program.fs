@@ -46,6 +46,7 @@ module Program =
         // initialize elements
     let canvas : HTMLCanvasElement = getElement "puzzle-canvas"
     let puzzleDateInput : HTMLInputElement = getElement "puzzle-date"
+    let difficultySelect : HTMLSelectElement = getElement "difficulty-select"
     let solveButton : HTMLButtonElement = getElement "solve-button"
     let timerSpan : HTMLSpanElement = getElement "timer-span"
     let ctx = canvas.getContext_2d()
@@ -107,8 +108,8 @@ module Program =
     /// Current solutions, if any.
     let mutable solutionsOpt = None
 
-    /// Handles date selection event.
-    let onPuzzleDateChange _ =
+    /// Handles date or difficulty selection event.
+    let onPuzzleChange _ =
         promise {
 
                 // reset
@@ -132,7 +133,7 @@ module Program =
 
                         // convert puzzle from daily format
                     let puzzleMap = Daily.convert daily
-                    let puzzle = puzzleMap["hard"]
+                    let puzzle = puzzleMap[difficultySelect.value]
 
                         // draw puzzle
                     drawPuzzle ctx puzzle
@@ -202,7 +203,8 @@ module Program =
         } |> ignore
 
     do
-        puzzleDateInput.onchange <- onPuzzleDateChange
+        puzzleDateInput.onchange <- onPuzzleChange
+        difficultySelect.onchange <- onPuzzleChange
         solveButton.onclick <- onSolveButtonClick
 
             // start with today's puzzle

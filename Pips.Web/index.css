@@ -11,10 +11,15 @@ body {
 
 #puzzle-date-div {
     font-size: large;
+    margin: 5px;
+}
+
+#difficulty-div {
+    font-size: large;
+    margin: 5px;
 }
 
 #puzzle-canvas {
-    margin: 10px;
 }
 
 #solve-button {

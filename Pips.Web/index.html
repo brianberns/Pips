@@ -13,6 +13,14 @@
             <label for="puzzle-date">Puzzle date:</label>
             <input type="date" id="puzzle-date" min="2025-08-18" />
         </div>
+        <div id="difficulty-div">
+            <label for="">Difficulty:</label>
+            <select id="difficulty-select">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard" selected>Hard</option>
+            </select>
+        </div>
         <button type="button" id="solve-button" disabled>Show solution</button>
         <canvas id="puzzle-canvas" width="390" height="550"></canvas>
         <p><span id="timer-span"></span></p>
