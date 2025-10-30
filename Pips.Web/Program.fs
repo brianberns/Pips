@@ -42,19 +42,17 @@ module Program =
         getElement "puzzle-canvas"
     let ctx = canvas.getContext_2d()
 
-    let private dailyUrl =
-        "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
-
-    let mutable puzzleOpt = None
-
     let puzzleDateInput : HTMLInputElement =
         getElement "puzzle-date"
 
     let solveButton : HTMLButtonElement =
         getElement "solve-button"
 
-    let timerSpan : HTMLLabelElement =
+    let timerSpan : HTMLSpanElement =
         getElement "timer-span"
+
+    let private dailyUrl =
+        "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
 
     let offsetY = 10.0
 
@@ -83,6 +81,23 @@ module Program =
                 + offsetY
         ctx.translate(offsetX, offsetY)
 
+    let mutable puzzleMode = true
+    let mutable puzzleOpt = None
+    let mutable solutionsOpt = None
+
+    let drawPuzzle (ctx : Context) puzzle =
+
+            // draw puzzle
+        ctx.resetTransform()
+        centerPuzzle ctx puzzle
+        Puzzle.drawPuzzle ctx puzzle
+
+            // draw unplaced dominoes
+        ctx.resetTransform()
+        centerUnplacedDominoes ctx puzzle
+        Puzzle.drawUnplacedDominoes
+            ctx unplacedChunkSize puzzle
+
     puzzleDateInput.onchange <- (fun _ ->
         promise {
 
@@ -90,6 +105,8 @@ module Program =
             use _ = waitCursor ()
             Canvas.clear ctx
             Canvas.cancelAnimation ()
+            puzzleMode <- true
+            solutionsOpt <- None
             solveButton.disabled <- true
             timerSpan.textContent <- ""
 
@@ -106,35 +123,36 @@ module Program =
                     let puzzle = puzzleMap["hard"]
 
                         // draw puzzle
-                    ctx.resetTransform()
-                    centerPuzzle ctx puzzle
-                    Puzzle.drawPuzzle ctx puzzle
-
-                        // draw unplaced dominoes
-                    ctx.resetTransform()
-                    centerUnplacedDominoes ctx puzzle
-                    Puzzle.drawUnplacedDominoes
-                        ctx unplacedChunkSize puzzle
+                    drawPuzzle ctx puzzle
 
                         // save state
                     puzzleOpt <- Some puzzle
+                    solveButton.textContent <- "Show solution"
                     solveButton.disabled <- false
 
                 | Error err ->
                     window.alert(FetchError.getMessage err)
+
         } |> ignore)
+
+    let drawSolutions (ctx : Context)  puzzle solutions =
+        ctx.resetTransform()
+        centerPuzzle ctx puzzle
+        Puzzle.drawSolutions ctx solutions
 
     solveButton.onclick <- (fun _ ->
         promise {
-            match puzzleOpt with
-                | Some puzzle ->
 
-                        // reset
-                    use _ = waitCursor ()   // doesn't work
-                    Canvas.clear ctx
-                    Canvas.cancelAnimation ()
+                // reset
+            Canvas.clear ctx
+            Canvas.cancelAnimation ()
+
+                // puzzle ready to be solved?
+            match puzzleMode, puzzleOpt, solutionsOpt with
+                | true, Some puzzle, None ->
 
                         // solve puzzle
+                    use _ = waitCursor ()   // doesn't work
                     let maxSolutions = 100
                     let timeStart = getTime ()
                     let solutions =
@@ -142,7 +160,7 @@ module Program =
                             |> Seq.truncate maxSolutions
                             |> Seq.toArray
 
-                        // update timer label
+                        // update timer span
                     let duration = getTime () - timeStart
                     let countStr =
                         if solutions.Length >= maxSolutions then "+"
@@ -152,12 +170,28 @@ module Program =
                     timerSpan.textContent <-
                         $"Found {solutions.Length}{countStr} solution{pluralStr} in %0.1f{duration} ms"
 
-                        // draw solutions
-                    ctx.resetTransform()
-                    centerPuzzle ctx puzzle
-                    Puzzle.drawSolutions ctx solutions
+                        // save state
+                    solutionsOpt <- Some solutions
+                | _ -> ()
 
-                | None -> ()
+                // toggle mode
+            puzzleMode <- not puzzleMode
+
+                // draw solutions
+            match puzzleMode, puzzleOpt, solutionsOpt with
+
+                    // puzzle mode?
+                | true, Some puzzle, _ ->
+                    drawPuzzle ctx puzzle
+                    solveButton.textContent <- "Show solution(s)"
+
+                    // solution mode?
+                | false, Some puzzle, Some solutions ->
+                    drawSolutions ctx puzzle solutions
+                    solveButton.textContent <- "Show puzzle"
+
+                | _ -> ()
+
         } |> ignore)
 
     let today = DateTime.Now
