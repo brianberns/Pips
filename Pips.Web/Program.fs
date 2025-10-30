@@ -183,7 +183,7 @@ module Program =
                     // puzzle mode?
                 | true, Some puzzle, _ ->
                     drawPuzzle ctx puzzle
-                    solveButton.textContent <- "Show solution(s)"
+                    solveButton.textContent <- "Show solution"
 
                     // solution mode?
                 | false, Some puzzle, Some solutions ->
