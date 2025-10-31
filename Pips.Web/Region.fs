@@ -52,6 +52,7 @@ module Region =
                 | RegionType.SumExact _   -> 175
         $"rgb({level}, {level}, {level})"
 
+    /// Length of one side of a cell.
     let private cellSize = Domino.cellSize
 
     /// Draws a border line for the given cell.
@@ -86,7 +87,10 @@ module Region =
         ctx.textBaseline <- "middle"
         ctx.fillText(getConstraintString region, x, y)
 
+    /// Outer border of a region.
     let outerStyle = Domino.outerStyle
+
+    /// Inner cell divider in a region.
     let innerStyle = Domino.innerStyle
 
     /// Draws the given cell, including its borders.

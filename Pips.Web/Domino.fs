@@ -88,7 +88,10 @@ module Domino =
     /// Length of one side of a cell.
     let cellSize = 35.0
 
+    /// Outer border of a domino.
     let outerStyle = 2.0, "black"
+
+    /// Inner divider of a domino.
     let innerStyle = 1.0, "gray"
 
     /// Draws the given domino horizontally at the origin.
