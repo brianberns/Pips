@@ -28,13 +28,15 @@ body {
     width: 200px;
     height: 35px;
     font-size: large;
+    vertical-align: bottom;
 }
 
 #pause-button {
     margin-top: 10px;
     margin-bottom: 10px;
-    width: 35px;
     height: 35px;
+    font-size: large;
+    vertical-align: bottom;
 }
 
 #timer-span {
