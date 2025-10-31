@@ -449,20 +449,15 @@ type Puzzle =
 
 ## Backtrack
 
-We can use our backtracking algorithm to find all solutions to a Pips puzzle, or stop after finding one solution:
+We can use our backtracking algorithm to find the solutions to a Pips puzzle:
 
 ```fsharp
 module Backtrack =
 
     /// Finds all solutions for the given puzzle by back-
-    /// tracking.
-    let solve (puzzle : Puzzle) : Puzzle[] =
-        ...   // implementation omitted for brevity
-
-    /// Finds an arbitrary solution for the given puzzle by
-    /// backtracking, if at least one exists.
-    let trySolve (puzzle : Puzzle) : Option<Puzzle> =
+    /// tracking lazily.
+    let solve (puzzle : Puzzle) : seq<Puzzle> =
         ...   // implementation omitted for brevity
 ```
 
-The implementations of these functions are essentially the same, except that `solve` uses an array comprehension to collect all the solutions, while `trySolve` uses `Seq.tryPick` to stop after finding the first solution.
+The backtracker is lazy, so the caller can stop after finding the first solution, if desired.
