@@ -117,8 +117,8 @@ module Program =
         // display strings
     let showSolutionStr = "Show solution"
     let showPuzzleStr = "Show puzzle"
-    let pauseStr = "⏯️"
-    let playStr = "⏯️"
+    let pauseStr = "⏸️"
+    let playStr = "▶️"
 
     /// Handles date or difficulty selection event.
     let onPuzzleChange _ =
