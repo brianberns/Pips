@@ -14,9 +14,25 @@ body {
     margin: 5px;
 }
 
+#puzzle-date {
+    font-size: large;
+}
+
 #difficulty-div {
     font-size: large;
     margin: 5px;
+}
+
+#difficulty-select {
+    font-size: large;
+}
+
+#previous-date-button {
+    font-size: large;
+}
+
+#next-date-button {
+    font-size: large;
 }
 
 #puzzle-canvas {
