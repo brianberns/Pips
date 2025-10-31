@@ -13,12 +13,12 @@ open Pips
 
 module FetchError =
 
-    let getMessage error =
-        match error with
-            | PreparingRequestFailed exn -> exn.Message
-            | DecodingFailed msg -> msg
-            | FetchFailed response -> response.StatusText
-            | NetworkError exn -> exn.Message
+    /// Extracts error message.
+    let getMessage = function
+        | PreparingRequestFailed exn -> exn.Message
+        | DecodingFailed msg -> msg
+        | FetchFailed response -> response.StatusText
+        | NetworkError exn -> exn.Message
 
 module Program =
 
@@ -165,15 +165,19 @@ module Program =
     /// Minimum date.
     let minDate = DateTime.Parse puzzleDateInput.min
 
+    /// Triggers a date change event.
+    let triggerDateChangeEvent () =
+        Event.Create("change")
+            |> puzzleDateInput.dispatchEvent
+            |> ignore
+
     /// Increments the puzzle date.
     let incrDate incr =
         let date = DateTime.Parse puzzleDateInput.value
         let date = date.AddDays(incr)
         if date >= minDate then
             puzzleDateInput.value <- date.ToString("yyyy-MM-dd")
-            Event.Create("change")
-                |> puzzleDateInput.dispatchEvent
-                |> ignore
+            triggerDateChangeEvent ()
 
     /// Handles previous date button click event.
     let onPrevDateButtonClick _ = incrDate -1.0
@@ -195,7 +199,7 @@ module Program =
 
                         // solve puzzle
                     use _ = waitCursor ()   // doesn't work
-                    let maxSolutions = 100
+                    let maxSolutions = 1000
                     let timeStart = getTime ()
                     let solutions =
                         Backtrack.solve puzzleOpt.Value
@@ -262,6 +266,7 @@ module Program =
         animationPaused <- not animationPaused
 
     do
+            // setup event handlers
         prevDateButton.onclick <- onPrevDateButtonClick
         nextDateButton.onclick <- onNextDateButtonClick
         puzzleDateInput.onchange <- onPuzzleChange
@@ -272,6 +277,4 @@ module Program =
             // start with today's puzzle
         let today = DateTime.Now
         puzzleDateInput.value <- today.ToString("yyyy-MM-dd")
-        Event.Create("change")
-            |> puzzleDateInput.dispatchEvent
-            |> ignore
+        triggerDateChangeEvent ()
