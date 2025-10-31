@@ -9,9 +9,23 @@ body {
     align-items: center
 }
 
-#puzzle-date-div, #difficulty-div {
+#puzzle-date-div {
     font-size: large;
     margin: 5px
+}
+
+#puzzle-date {
+    font-size: large;
+    margin: 5px
+}
+
+#difficulty-div {
+    font-size: large;
+    margin: 5px
+}
+
+#difficulty-select, #previous-date-button, #next-date-button {
+    font-size: large
 }
 
 #solve-button {
@@ -19,14 +33,16 @@ body {
     margin-bottom: 10px;
     width: 200px;
     height: 35px;
-    font-size: large
+    font-size: large;
+    vertical-align: bottom
 }
 
 #pause-button {
     margin-top: 10px;
     margin-bottom: 10px;
-    width: 35px;
-    height: 35px
+    height: 35px;
+    font-size: large;
+    vertical-align: bottom
 }
 
 #footer {
