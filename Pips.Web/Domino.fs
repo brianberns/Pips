@@ -128,7 +128,6 @@ module Domino =
 
     /// Draws the given unplaced domino at the given position.
     let drawUnplacedDomino ctx x y domino =
-
         use _ = Canvas.save ctx
         ctx.translate(x, y)
         ctx.scale(unplacedDominoScale, unplacedDominoScale)
