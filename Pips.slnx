@@ -8,4 +8,5 @@
   <Project Path="Pips.Test/Pips.Test.fsproj" />
   <Project Path="Pips.Web/Pips.Web.fsproj" />
   <Project Path="Pips/Pips.fsproj" />
+  <Project Path="PipsCsharp/PipsCsharp.csproj" Id="0e568ed1-af40-490e-be3b-504a52b3c34a" />
 </Solution>
