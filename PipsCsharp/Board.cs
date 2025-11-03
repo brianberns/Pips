@@ -17,7 +17,7 @@ public class Board
         {
             for (int col = 0; col < numColumns; col++)
             {
-                _cells[row, col] = emptyCell;
+                _cells[row, col] = EmptyCell;
             }
         }
     }
@@ -36,7 +36,7 @@ public class Board
     private readonly PipCount[,] _cells;
 
     /// Special pip count for an uncovered cell.
-    private static PipCount emptyCell = new PipCount(-1);
+    public static PipCount EmptyCell = new PipCount(-1);
 
     /// Number of rows in the board.
     public int NumRows => _cells.GetLength(0);
@@ -55,7 +55,7 @@ public class Board
 
     /// Is the given cell empty (i.e. not covered by a domino)?
     public bool IsEmpty(Cell cell) =>
-        this[cell] == emptyCell;
+        this[cell] == EmptyCell;
 
     /// Places the given domino in the given location on the
     /// board. The left side of the domino is placed on the left
