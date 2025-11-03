@@ -7,8 +7,8 @@ public record Cell(int Row, int Column)
     public override string ToString() =>
         $"({Row}, {Column})";
 
-    /// Gets all possible cells adjacent to the given cell.
-    /// Some of these cells might not actually exist, though.
+    /// Gets all possible cells adjacent to this cell. Some
+    /// of these cells might not actually exist, though.
     public IEnumerable<Cell> Adjacent
     {
         get {
