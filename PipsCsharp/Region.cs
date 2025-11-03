@@ -5,15 +5,28 @@ public abstract class RegionType
     public abstract bool IsValid(Region region, Board board, PipCount[] unplacedPipCounts);
 }
 
-public class AnyRegionType : RegionType
+public static class EnumerableExt
 {
     /// Determines whether the given sequence contains at
     /// least the given number of elements.
-    private bool IsLengthAtLeast<T>(IEnumerable<T> source, int n) =>
+    public static bool IsLengthAtLeast<T>(this IEnumerable<T> source, int n) =>
         source
             .Take(n)
             .Count() == n;
+}
 
+/// Cells in the region can have any value.
+public class AnyRegionType : RegionType
+{
+    public override bool IsValid(Region region, Board board, PipCount[] unplacedPipCounts)
+    {
+        return true;
+    }
+}
+
+/// All cells in the region must have the same value.
+public class EqualRegionType : RegionType
+{
     public override bool IsValid(Region region, Board board, PipCount[] unplacedPipCounts)
     {
         var pipCounts = region.GetPipCounts(board);
@@ -25,7 +38,20 @@ public class AnyRegionType : RegionType
                 : pipCounts[1..]
                     .All(pipCount => pipCount == pipCounts[0]);
 
-        return true;
+            // are there enough matching values available?
+        if (equal && pipCounts.Length > 0)
+        {
+            var value = pipCounts[0];
+            var nNeeded =
+                region.Cells.Length - pipCounts.Length;
+            return unplacedPipCounts
+                .Where(pipCount => pipCount == value)
+                .IsLengthAtLeast(nNeeded);
+        }
+        else
+        {
+            return equal;
+        }
     }
 }
 
