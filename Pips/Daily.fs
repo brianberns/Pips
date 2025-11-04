@@ -46,7 +46,7 @@ type DailyPuzzle =
         constructors : string
         dominoes : int[][]
         regions : DailyRegion[]
-        solution : int[][][]
+        // solution : int[][][]
     }
 
 module DailyPuzzle =
