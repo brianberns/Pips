@@ -275,8 +275,10 @@ module Program =
                 printfn ""
 
         let startDate = DateOnly.Parse("8/18/2025")
+        let endDate = DateOnly.Parse("11/25/2025")
+        let lastOffset = endDate.DayNumber - startDate.DayNumber
         let pairs =
-            [| 0 .. 93 |]
+            [| 0 .. lastOffset |]
                 |> Array.map (fun offset ->
                     let date = startDate.AddDays(offset)
                     let result =
