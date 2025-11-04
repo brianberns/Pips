@@ -6,9 +6,7 @@
 
 open System
 open System.IO
-#if FABLE_COMPILER
-open Thoth.Json
-#else
+#if !FABLE_COMPILER
 open System.Net.Http
 open System.Text.Json
 #endif
