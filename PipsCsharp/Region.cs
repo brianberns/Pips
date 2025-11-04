@@ -27,6 +27,7 @@ public class AnyRegionType : RegionType
 /// All cells in the region must have the same value.
 public class EqualRegionType : RegionType
 {
+    /// Validates an Equal region.
     public override bool IsValid(Region region, Board board, PipCount[] unplacedPipCounts)
     {
         var pipCounts = region.GetPipCounts(board);
