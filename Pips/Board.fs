@@ -62,11 +62,14 @@ type Board =
         member board.CompareTo(other) =
             board.CompareTo(other :?> Board)
 
+// avoid JS name collision
+#if !FABLE_COMPILER
     interface IComparable<Board> with
 
         /// Domino placement order doesn't matter for comparison.
         member board.CompareTo(other) =
             board.CompareTo(other)
+#endif
 
 module Board =
 
