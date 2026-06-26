@@ -297,7 +297,7 @@ module Program =
 
             // download and print puzzle
         let puzzle =
-            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-10-14.json"
+            Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-11-13.json"
                 |> Map.find "hard"
         printfn "Puzzle:"
         printfn ""
@@ -364,4 +364,4 @@ module Program =
             printfn $"{printSolution solutions[0]}"
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    solveMany ()
+    printfn "%A" (solveOne ())
