@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
-    <PackageReference Include="Fable.Core" Version="4.5.0" />
+    <PackageReference Include="Fable.Core" Version="5.2.0" />
     <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
   </ItemGroup>
 

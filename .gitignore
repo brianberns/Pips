@@ -365,3 +365,7 @@ FodyWeavers.xsd
 # Fable
 *.fs.js
 *.js.map
+
+# Deployment artifacts
+/Pips.Server/Properties
+/Pips.Web/dist
