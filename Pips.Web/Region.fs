@@ -46,7 +46,27 @@ module Region =
             | RegionType.SumGreater _ -> 4
             | RegionType.SumExact _   -> 5
 
-    /// Renders the given cell.
+    /// Renders a line along one edge of a cell. Lines are
+    /// centered on the grid and overhang each end by half their
+    /// width, so that two of them meeting at a corner always
+    /// overlap.
+    let private renderBorder isOuter isHorizontal row col =
+        Html.div [
+            prop.key $"""{if isHorizontal then "h" else "v"}{row},{col}"""
+            prop.classes [
+                "border"
+                if isHorizontal then "border-horizontal"
+                else "border-vertical"
+                if isOuter then "border-outer"
+            ]
+            prop.style [
+                style.custom ("--row", $"{row}")
+                style.custom ("--col", $"{col}")
+            ]
+        ]
+
+    /// Renders the given cell, along with the lines it is
+    /// responsible for drawing.
     ///
     /// Each cell draws its own left and top borders, so every
     /// line between two cells is drawn exactly once. Cells on
@@ -55,29 +75,37 @@ module Region =
     let private renderCell regionMap region constraintStr cell =
         let toRight = { cell with Column = cell.Column + 1 }
         let below = { cell with Row = cell.Row + 1 }
-        Html.div [
-            prop.key $"{cell}"
-            prop.classes [
-                "cell"
-                if hasLeftBorder regionMap cell then "cell-left-outer"
-                else "cell-left-inner"
-                if hasTopBorder regionMap cell then "cell-top-outer"
-                else "cell-top-inner"
-                if not (exists regionMap toRight) then "cell-right-outer"
-                if not (exists regionMap below) then "cell-bottom-outer"
+        [
+            Html.div [
+                prop.key $"{cell}"
+                prop.className "cell"
+                prop.style [
+                    style.gridRowStart (cell.Row + 1)
+                    style.gridColumnStart (cell.Column + 1)
+                    style.custom ("--shade", $"{getShadeLevel region}")
+                ]
+                prop.children [
+                    if constraintStr <> "" then
+                        Html.span [
+                            prop.className "constraint"
+                            prop.text (constraintStr : string)
+                        ]
+                ]
             ]
-            prop.style [
-                style.gridRowStart (cell.Row + 1)
-                style.gridColumnStart (cell.Column + 1)
-                style.custom ("--shade", $"{getShadeLevel region}")
-            ]
-            prop.children [
-                if constraintStr <> "" then
-                    Html.span [
-                        prop.className "constraint"
-                        prop.text (constraintStr : string)
-                    ]
-            ]
+
+            renderBorder
+                (hasLeftBorder regionMap cell) false
+                cell.Row cell.Column
+            renderBorder
+                (hasTopBorder regionMap cell) true
+                cell.Row cell.Column
+
+            if not (exists regionMap toRight) then
+                renderBorder true false
+                    cell.Row (cell.Column + 1)
+            if not (exists regionMap below) then
+                renderBorder true true
+                    (cell.Row + 1) cell.Column
         ]
 
     /// Renders the cells of the given region. The region's
@@ -90,5 +118,5 @@ module Region =
                     if cell = constraintCell then
                         getConstraintString region
                     else ""
-                renderCell regionMap region constraintStr cell
+                yield! renderCell regionMap region constraintStr cell
         ]

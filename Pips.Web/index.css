@@ -231,28 +231,37 @@ button:disabled {
                 + var(--shade) * var(--cell-shade-step)));
 }
 
-.cell-left-outer {
-    border-left: var(--outer-width) solid var(--grid-outer);
+/*
+ * Lines are centered on the grid rather than drawn inside a
+ * cell, and overhang each end by half their width, so two lines
+ * meeting at a corner overlap instead of leaving a notch.
+ */
+.border {
+    --width: var(--inner-width);
+
+    position: absolute;
+    left: calc(
+        var(--col) * var(--cell-size) - var(--width) / 2);
+    top: calc(
+        var(--row) * var(--cell-size) - var(--width) / 2);
+    background-color: var(--grid-inner);
 }
 
-.cell-left-inner {
-    border-left: var(--inner-width) solid var(--grid-inner);
+.border-outer {
+    --width: var(--outer-width);
+
+    background-color: var(--grid-outer);
+    z-index: 1;   /* region boundaries cover cell dividers */
 }
 
-.cell-top-outer {
-    border-top: var(--outer-width) solid var(--grid-outer);
+.border-horizontal {
+    width: calc(var(--cell-size) + var(--width));
+    height: var(--width);
 }
 
-.cell-top-inner {
-    border-top: var(--inner-width) solid var(--grid-inner);
-}
-
-.cell-right-outer {
-    border-right: var(--outer-width) solid var(--grid-outer);
-}
-
-.cell-bottom-outer {
-    border-bottom: var(--outer-width) solid var(--grid-outer);
+.border-vertical {
+    width: var(--width);
+    height: calc(var(--cell-size) + var(--width));
 }
 
 .constraint {
@@ -262,7 +271,8 @@ button:disabled {
 }
 
 /* The dominoes of a solution cover the board's regions. */
-.board-solved .cell {
+.board-solved .cell,
+.board-solved .border {
     visibility: hidden;
 }
 
@@ -310,6 +320,7 @@ button:disabled {
     top: calc(var(--row) * var(--cell-size));
     transform: rotate(calc(var(--twists) * 90deg));
     transform-origin: 0 0;
+    z-index: 2;   /* above the board's lines */
 }
 
 /* Unplaced dominoes, four to a row. */

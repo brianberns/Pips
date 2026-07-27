@@ -55,10 +55,14 @@ Views are written with [Feliz](https://fable-hub.github.io/Feliz/), which
 produces React elements from F#. There's no canvas: the board is real
 HTML, styled by `index.css`.
 
-* `Region.fs` renders each cell as a CSS grid item. A cell draws its own
-  left and top borders, so the line between two cells is drawn exactly
+* `Region.fs` renders each cell as a CSS grid item, and the lines around
+  it as separate elements centered on the grid. A cell draws its own
+  left and top lines, so the line between two cells is drawn exactly
   once; cells with no neighbor to the right or below draw those edges
-  themselves. Region constraints are shaded by how tight they are.
+  themselves. Each line overhangs its ends by half its width, so lines
+  meeting at a corner overlap rather than leaving a notch — which is why
+  they aren't just CSS borders on the cells. Region constraints are
+  shaded by how tight they are.
 * `Domino.fs` renders a domino as two halves, each a 3x3 grid holding up
   to six pips. Dominoes are always laid out horizontally, then rotated a
   quarter turn at a time into place, so a vertical domino is a rotated
