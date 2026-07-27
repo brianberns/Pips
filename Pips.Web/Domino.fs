@@ -1,7 +1,7 @@
-﻿namespace Pips.Web
+namespace Pips.Web
 
-open System
-open Fable.Core.JsInterop
+open Feliz
+
 open Pips
 
 module Domino =
@@ -30,21 +30,12 @@ module Domino =
                 yield domino, i
         ]
 
-    /// Determines color of the given domino.
-    let private getDominoColor domino =
-        let hue =
-            360.0 * float dominoMap[domino] / float dominoMap.Count
-        $"hsl({hue}, 100%%, 80%%)"
+    /// Determines the hue of the given domino, in degrees.
+    let private getHue domino =
+        360.0 * float dominoMap[domino] / float dominoMap.Count
 
-    /// Draws a single pip at the given location.
-    let private drawPip (ctx : Context) radius x y =
-        ctx.beginPath()
-        ctx.arc(x, y, radius, 0, 2.0 * Math.PI)
-        ctx.fillStyle <- !^"black"
-        ctx.fill()
-
-    /// Draws the pattern of the given pip count at the given
-    /// location.
+    /// Pips of each pip count, as indexes into a 3x3 grid,
+    /// numbered in reading order.
     (*
      *  ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
      *  │       │ │       │ │ ⬤     │ │ ⬤     │ │ ⬤   ⬤ │ │ ⬤   ⬤ │ │ ⬤ ⬤ ⬤ │
@@ -52,92 +43,62 @@ module Domino =
      *  │       │ │       │ │     ⬤ │ │     ⬤ │ │ ⬤   ⬤ │ │ ⬤   ⬤ │ │ ⬤ ⬤ ⬤ │
      *  └───────┘ └───────┘ └───────┘ └───────┘ └───────┘ └───────┘ └───────┘
      *)
-    let private drawPipCount ctx cellSize x y (value : PipCount) =
+    let private pipGrids =
+        [|
+            []                       // 0
+            [4]                      // 1
+            [0; 8]                   // 2
+            [0; 4; 8]                // 3
+            [0; 2; 6; 8]             // 4
+            [0; 2; 4; 6; 8]          // 5
+            [0; 1; 2; 6; 7; 8]       // 6
+        |]
 
-        let radius = cellSize / 12.0
-        let offset = cellSize / 4.0
+    /// Renders one half of a domino.
+    let private renderHalf (pipCount : PipCount) =
+        Html.div [
+            prop.className "domino-half"
+            prop.children [
+                for iPip in pipGrids[pipCount] do
+                    Html.div [
+                        prop.key iPip
+                        prop.className "pip"
+                        prop.style [
+                            style.gridRowStart (iPip / 3 + 1)
+                            style.gridColumnStart (iPip % 3 + 1)
+                        ]
+                    ]
+            ]
+        ]
 
-        let pip = drawPip ctx radius
+    /// Renders the given domino with the given additional
+    /// classes and styles.
+    let private renderDomino key classes styles domino =
+        Html.div [
+            prop.key (key : string)
+            prop.classes [
+                yield "domino"
+                yield! classes
+            ]
+            prop.style [
+                yield style.custom ("--hue", $"{getHue domino}")
+                yield! styles
+            ]
+            prop.children [
+                renderHalf domino.Left
+                renderHalf domino.Right
+            ]
+        ]
 
-        let pip1 () = pip x y
+    /// Renders the given domino as one that has not yet been
+    /// placed on a board.
+    let renderUnplaced domino =
+        renderDomino $"{domino}" [] [] domino
 
-        let pip2 () =
-            pip (x - offset) (y - offset)
-            pip (x + offset) (y + offset)
-
-        let pip4 () =
-            pip2 ()
-            pip (x - offset) (y + offset)
-            pip (x + offset) (y - offset)
-
-        let pip6 () =
-            pip4 ()
-            pip x (y - offset)
-            pip x (y + offset)
-
-        match value with
-            | 0 -> ()
-            | 1 -> pip1 ()
-            | 2 -> pip2 ()
-            | 3 -> pip1 (); pip2 ()
-            | 4 -> pip4 ()
-            | 5 -> pip1 (); pip4 ()
-            | 6 -> pip6 ()
-            | _ -> failwith "Unexpected"
-
-    /// Length of one side of a cell.
-    let cellSize = 35.0
-
-    /// Outer border of a domino.
-    let outerStyle = 2.0, "black"
-
-    /// Inner divider of a domino.
-    let innerStyle = 1.0, "gray"
-
-    /// Draws the given domino horizontally at the origin.
-    /// Callers use rotation and translatation to modify the
-    /// domino's location.
-    let private drawDomino (ctx : Context) domino =
-
-            // draw the domino rectangle
-        ctx.beginPath()
-        ctx.roundRect(
-            0, 0,
-            cellSize * 2.0, cellSize,
-            cellSize / 8.0)
-        ctx.fillStyle <- !^(getDominoColor domino)
-        ctx.fill()
-        ctx.lineWidth <- fst outerStyle
-        ctx.strokeStyle <- !^(snd outerStyle)
-        ctx.stroke()
-
-            // draw the dividing line
-        ctx.beginPath()
-        ctx.moveTo(cellSize, 0)
-        ctx.lineTo(cellSize, cellSize)
-        ctx.lineWidth <- fst innerStyle
-        ctx.strokeStyle <- !^(snd innerStyle)
-        ctx.stroke()
-
-            // draw the pips
-        let leftX = cellSize * 0.5
-        let rightX = cellSize * 1.5
-        let centerY = cellSize * 0.5
-        drawPipCount ctx cellSize leftX centerY domino.Left
-        drawPipCount ctx cellSize rightX centerY domino.Right
-
-    /// Unplaced domino scale.
-    let unplacedDominoScale = 3.0 / 4.0
-
-    /// Draws the given unplaced domino at the given position.
-    let drawUnplacedDomino ctx x y domino =
-        use _ = Canvas.save ctx
-        ctx.translate(x, y)
-        ctx.scale(unplacedDominoScale, unplacedDominoScale)
-        drawDomino ctx domino
-
-    /// Draws the given placed domino at the given edge.
-    let drawSolutionDomino ctx domino ((cellA, cellB) : Edge) =
+    /// Renders the given domino placed at the given edge. The
+    /// domino is laid out horizontally, then rotated a quarter
+    /// turn at a time into position.
+    let renderPlaced domino ((cellA, cellB) : Edge) =
 
             // determine domino orientation
         let rowDiff, colDiff, nTwists =
@@ -150,12 +111,12 @@ module Domino =
                 | -1,  0 -> 1, 0, 3   // vertical flipped
                 | _ -> failwith "Unexpected"
 
-            // apply transformations
-        use _ = Canvas.save ctx
-        ctx.translate(
-            float (cellA.Column + colDiff) * cellSize,
-            float (cellA.Row + rowDiff) * cellSize)
-        ctx.rotate(float nTwists * Math.PI / 2.0)
-
-            // draw domino
-        drawDomino ctx domino
+        renderDomino
+            $"{cellA}-{cellB}"
+            [ "domino-placed" ]
+            [
+                style.custom ("--row", $"{cellA.Row + rowDiff}")
+                style.custom ("--col", $"{cellA.Column + colDiff}")
+                style.custom ("--twists", $"{nTwists}")
+            ]
+            domino

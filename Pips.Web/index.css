@@ -1,63 +1,333 @@
-body {
-    font-family: sans-serif;
-    background-color: lightgray;
+/*
+ * Theme. Sizes of everything on the board derive from the cell
+ * size, so the whole puzzle scales with the viewport.
+ */
+:root {
+    color-scheme: light dark;
+
+    --base-cell-size: clamp(26px, 7.5vmin, 38px);
+    --cell-size: var(--base-cell-size);
+    --outer-width: 2px;
+    --inner-width: 1px;
+
+    --page-bg: #eef0f4;
+    --panel-bg: #fbfcfe;
+    --text: #1a1c21;
+    --muted: #626a78;
+    --border: #cfd4dd;
+    --accent: #2f6fed;
+    --accent-hover: #2560d8;
+    --accent-text: #ffffff;
+    --danger: #b3261e;
+    --shadow:
+        0 1px 2px rgb(16 20 30 / 8%),
+        0 6px 16px rgb(16 20 30 / 8%);
+
+    --grid-outer: #14161a;
+    --grid-inner: #aeb4bf;
+    --cell-hue: 220;
+    --cell-saturation: 10%;
+    --cell-lightness: 97%;
+    --cell-shade-step: -5%;
+
+    --domino-saturation: 100%;
+    --domino-lightness: 80%;
+    --domino-border: #14161a;
+    --domino-divider: #9aa0ab;
+    --pip: #101215;
 }
 
-#container {
+@media (prefers-color-scheme: dark) {
+    :root {
+        --page-bg: #14161b;
+        --panel-bg: #1c1f26;
+        --text: #e8eaee;
+        --muted: #99a1af;
+        --border: #333945;
+        --accent: #5b8cff;
+        --accent-hover: #7aa1ff;
+        --accent-text: #0d1017;
+        --danger: #ff6b61;
+        --shadow:
+            0 1px 2px rgb(0 0 0 / 40%),
+            0 8px 24px rgb(0 0 0 / 35%);
+
+        --grid-outer: #e8eaee;
+        --grid-inner: #4a515f;
+        --cell-lightness: 23%;
+        --cell-shade-step: 4%;
+
+        --domino-saturation: 55%;
+        --domino-lightness: 60%;
+        --domino-border: #0b0d11;
+        --domino-divider: #3a3f49;
+        --pip: #0b0d11;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 1.5rem 1rem 3rem;
+    font-family:
+        system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background-color: var(--page-bg);
+}
+
+.app {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1rem;
+    max-width: 40rem;
+    margin: 0 auto;
 }
 
-#puzzle-date-div {
-    font-size: large;
-    margin: 5px;
+.app.solving,
+.app.solving button {
+    cursor: progress;
 }
 
-#puzzle-date {
-    font-size: large;
+h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
-#difficulty-div {
-    font-size: large;
-    margin: 5px;
+/* Controls */
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1.5rem;
+    padding: 0.875rem 1.25rem;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow);
 }
 
-#difficulty-select {
-    font-size: large;
+.control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
 }
 
-#previous-date-button {
-    font-size: large;
+.control > label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
 }
 
-#next-date-button {
-    font-size: large;
+.control-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
-#puzzle-canvas {
+input[type="date"],
+select,
+button {
+    font: inherit;
+    padding: 0.4rem 0.6rem;
+    color: var(--text);
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
 }
 
-#solve-button {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    width: 200px;
-    height: 35px;
-    font-size: large;
-    vertical-align: bottom;
+button {
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.05s ease;
 }
 
-#pause-button {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    height: 35px;
-    font-size: large;
-    vertical-align: bottom;
+button:hover:not(:disabled) {
+    border-color: var(--accent);
 }
 
-#timer-span {
+button:active:not(:disabled) {
+    transform: translateY(1px);
 }
 
-#footer {
-    font-size: small;
+button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+:where(input, select, button):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.step-button {
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.primary-button {
+    min-width: 11rem;
+    font-weight: 600;
+    color: var(--accent-text);
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.primary-button:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+.actions {
+    gap: 0.5rem;
+}
+
+.status {
+    min-height: 1.25rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
+.status-error {
+    color: var(--danger);
+}
+
+/* Board */
+
+.board-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.board {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), var(--cell-size));
+    grid-template-rows: repeat(var(--rows), var(--cell-size));
+}
+
+.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: hsl(
+        var(--cell-hue)
+        var(--cell-saturation)
+        calc(
+            var(--cell-lightness)
+                + var(--shade) * var(--cell-shade-step)));
+}
+
+.cell-left-outer {
+    border-left: var(--outer-width) solid var(--grid-outer);
+}
+
+.cell-left-inner {
+    border-left: var(--inner-width) solid var(--grid-inner);
+}
+
+.cell-top-outer {
+    border-top: var(--outer-width) solid var(--grid-outer);
+}
+
+.cell-top-inner {
+    border-top: var(--inner-width) solid var(--grid-inner);
+}
+
+.cell-right-outer {
+    border-right: var(--outer-width) solid var(--grid-outer);
+}
+
+.cell-bottom-outer {
+    border-bottom: var(--outer-width) solid var(--grid-outer);
+}
+
+.constraint {
+    font-size: calc(var(--cell-size) / 2.2);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+/* The dominoes of a solution cover the board's regions. */
+.board-solved .cell {
+    visibility: hidden;
+}
+
+/* Dominoes */
+
+.domino {
+    display: flex;
+    width: calc(var(--cell-size) * 2);
+    height: var(--cell-size);
+    background-color: hsl(
+        var(--hue)
+        var(--domino-saturation)
+        var(--domino-lightness));
+    border: var(--outer-width) solid var(--domino-border);
+    border-radius: calc(var(--cell-size) / 8);
+}
+
+.domino-half {
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    place-items: center;
+    padding: calc(var(--cell-size) / 8);
+}
+
+.domino-half + .domino-half {
+    border-left: var(--inner-width) solid var(--domino-divider);
+}
+
+.pip {
+    width: calc(var(--cell-size) / 6);
+    height: calc(var(--cell-size) / 6);
+    background-color: var(--pip);
+    border-radius: 50%;
+}
+
+/*
+ * A placed domino is laid out horizontally, then rotated a
+ * quarter turn at a time about its top left corner.
+ */
+.domino-placed {
+    position: absolute;
+    left: calc(var(--col) * var(--cell-size));
+    top: calc(var(--row) * var(--cell-size));
+    transform: rotate(calc(var(--twists) * 90deg));
+    transform-origin: 0 0;
+}
+
+/* Unplaced dominoes, four to a row. */
+.tray {
+    --cell-size: calc(var(--base-cell-size) * 0.75);
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: calc(var(--cell-size) / 4);
+    max-width: calc(var(--cell-size) * 9);
+}
+
+footer {
+    font-size: 0.8125rem;
+    color: var(--muted);
+}
+
+footer a {
+    color: var(--accent);
 }

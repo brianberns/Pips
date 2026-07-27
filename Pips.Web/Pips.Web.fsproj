@@ -24,16 +24,19 @@
     <Compile Include="..\Pips\Daily.fs" Link="Model/Daily.fs" />
     <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
     <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
-    <Compile Include="Canvas.fs" />
     <Compile Include="Domino.fs" />
     <Compile Include="Region.fs" />
     <Compile Include="Puzzle.fs" />
+    <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
     <PackageReference Include="Fable.Core" Version="5.2.0" />
+    <PackageReference Include="Fable.Elmish" Version="5.0.2" />
+    <PackageReference Include="Feliz" Version="3.3.3" />
+    <PackageReference Include="Feliz.UseElmish" Version="5.0.0" />
     <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
   </ItemGroup>
 

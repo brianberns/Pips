@@ -1,280 +1,240 @@
-﻿namespace Pips.Web
+namespace Pips.Web
 
 open System
 
 open Browser
-open Browser.Types
 
-open Fable.Core.JsInterop
+open Elmish
 
-open Thoth.Fetch
+open Feliz
+open Feliz.UseElmish
 
-open Pips
+module View =
 
-module FetchError =
+    /// Formats the given date the way an HTML date input
+    /// expects it.
+    let private toDateString (date : DateTime) =
+        date.ToString("yyyy-MM-dd")
 
-    /// Extracts error message.
-    let getMessage = function
-        | PreparingRequestFailed exn -> exn.Message
-        | DecodingFailed msg -> msg
-        | FetchFailed response -> response.StatusText
-        | NetworkError exn -> exn.Message
+    /// Renders the puzzle date controls.
+    let private renderDateControls model dispatch =
+        Html.div [
+            prop.className "control"
+            prop.children [
+                Html.label [
+                    prop.htmlFor "puzzle-date"
+                    prop.text "Puzzle date"
+                ]
+                Html.div [
+                    prop.className "control-row"
+                    prop.children [
+                        Html.button [
+                            prop.className "step-button"
+                            prop.type' "button"
+                            prop.ariaLabel "Previous puzzle"
+                            prop.disabled (
+                                model.Date <= App.minDate)
+                            prop.onClick (fun _ ->
+                                dispatch (OffsetDate -1.0))
+                            prop.text "◀"
+                        ]
+                        Html.input [
+                            prop.id "puzzle-date"
+                            prop.type' "date"
+                            prop.value (toDateString model.Date)
+                            prop.custom (
+                                "min", toDateString App.minDate)
+                            prop.onChange (fun (value : string) ->
+                                match DateTime.TryParse value with
+                                    | true, date ->
+                                        dispatch (SetDate date)
+                                    | _ -> ())
+                        ]
+                        Html.button [
+                            prop.className "step-button"
+                            prop.type' "button"
+                            prop.ariaLabel "Next puzzle"
+                            prop.onClick (fun _ ->
+                                dispatch (OffsetDate 1.0))
+                            prop.text "▶"
+                        ]
+                    ]
+                ]
+            ]
+        ]
 
-module Program =
+    /// Renders the difficulty control.
+    let private renderDifficultyControl model dispatch =
+        Html.div [
+            prop.className "control"
+            prop.children [
+                Html.label [
+                    prop.htmlFor "difficulty"
+                    prop.text "Difficulty"
+                ]
+                Html.select [
+                    prop.id "difficulty"
+                    prop.value (
+                        Difficulty.toKey model.Difficulty)
+                    prop.onChange (fun (value : string) ->
+                        Difficulty.tryOfKey value
+                            |> Option.iter (
+                                SetDifficulty >> dispatch))
+                    prop.children [
+                        for difficulty in Difficulty.all do
+                            Html.option [
+                                prop.key (
+                                    Difficulty.toKey difficulty)
+                                prop.value (
+                                    Difficulty.toKey difficulty)
+                                prop.text (
+                                    Difficulty.toString difficulty)
+                            ]
+                    ]
+                ]
+            ]
+        ]
 
-    /// Gets the element with the given ID.
-    let getElement<'t when 't :> HTMLElement> id =
-        document.getElementById id :?> 't
+    /// Renders the solve and pause buttons.
+    let private renderActions model dispatch =
 
-    /// Gets the current time in milliseconds.
-    let getTime () =
-        box (window?performance?now()) :?> float
+        let solveText =
+            match model.View with
+                | PuzzleView ->
+                    if model.Solving then "Solving…"
+                    else "Show solution"
+                | SolutionView -> "Show puzzle"
 
-    /// Switches to a wait cursor temporarily.
-    let waitCursor () =
-        document.body?style?cursor <- "wait"
-        {
-            new IDisposable with
-                member this.Dispose() =
-                    document.body?style?cursor <- "default"
-        }
+        Html.div [
+            prop.className "control-row actions"
+            prop.children [
+                Html.button [
+                    prop.className "primary-button"
+                    prop.type' "button"
+                    prop.disabled (
+                        model.Solving
+                            || (Model.tryGetPuzzle model)
+                                .IsNone)
+                    prop.onClick (fun _ -> dispatch ToggleView)
+                    prop.text solveText
+                ]
+                Html.button [
+                    prop.className "step-button"
+                    prop.type' "button"
+                    prop.ariaLabel (
+                        if model.Paused then "Resume"
+                        else "Pause")
+                    prop.disabled (
+                        model.View <> SolutionView
+                            || Model.getNumSolutions model <= 1)
+                    prop.onClick (fun _ -> dispatch TogglePause)
+                    prop.text (
+                        if model.Paused then "▶️" else "⏸️")
+                ]
+            ]
+        ]
 
-    /// Proxy to NY Times daily puzzle to avoid CORS restriction.
-    let private dailyUrl =
-        "https://pips-dsa2dqawe8hrahf7.eastus-01.azurewebsites.net/api/daily"
+    /// Renders the status line.
+    let private renderStatus model =
 
-        // initialize elements
-    let canvas : HTMLCanvasElement = getElement "puzzle-canvas"
-    let puzzleDateInput : HTMLInputElement = getElement "puzzle-date"
-    let prevDateButton : HTMLButtonElement = getElement "previous-date-button"
-    let nextDateButton : HTMLButtonElement = getElement "next-date-button"
-    let difficultySelect : HTMLSelectElement = getElement "difficulty-select"
-    let solveButton : HTMLButtonElement = getElement "solve-button"
-    let pauseButton : HTMLButtonElement = getElement "pause-button"
-    let timerSpan : HTMLSpanElement = getElement "timer-span"
-    let ctx = canvas.getContext_2d()
+        let summarize solutions =
+            let countStr =
+                if solutions.Truncated then "+" else ""
+            let pluralStr =
+                if solutions.Puzzles.Length = 1 then ""
+                else "s"
+            let foundStr =
+                $"Found {solutions.Puzzles.Length}{countStr} \
+                    solution{pluralStr} in \
+                    %0.1f{solutions.Duration} ms"
+            match Model.tryGetSolution model with
+                | Some _ when solutions.Puzzles.Length > 1 ->
+                    let iSolution =
+                        model.Frame % solutions.Puzzles.Length
+                    $"{foundStr} · showing #{iSolution + 1}"
+                | _ -> foundStr
 
-    /// Vertical offset of puzzle from canvas top.
-    let offsetY = 10.0
+        match model.Error, model.Loading, model.Solutions with
+            | Some message, _, _ ->
+                Html.p [
+                    prop.className "status status-error"
+                    prop.text message
+                ]
+            | None, true, _ ->
+                Html.p [
+                    prop.className "status"
+                    prop.text "Loading puzzle…"
+                ]
+            | None, false, Some solutions ->
+                Html.p [
+                    prop.className "status"
+                    prop.text (summarize solutions)
+                ]
+            | None, false, None ->
+                Html.p [
+                    prop.className "status"
+                    prop.text ""
+                ]
 
-    /// Translates the given canvas to center the given puzzle.
-    let centerPuzzle (ctx : Context) puzzle =
-        let boardWidth =
-            float puzzle.Board.NumColumns * Domino.cellSize
-        let offsetX = (canvas.width - boardWidth) / 2.0
-        ctx.translate(offsetX, offsetY)
+    /// Renders the board and any dominoes not yet placed on it.
+    let private renderBoard model =
+        match Model.tryGetPuzzle model with
+            | Some puzzle ->
+                let solutionOpt = Model.tryGetSolution model
+                Html.div [
+                    prop.className "board-area"
+                    prop.children [
+                        Puzzle.renderBoard puzzle solutionOpt
+                        if solutionOpt.IsNone then
+                            Puzzle.renderUnplacedDominoes puzzle
+                    ]
+                ]
+            | None ->
+                Html.div [ prop.className "board-area" ]
 
-    /// Number of unplaced dominoes per row.
-    let unplacedChunkSize = 4
+    /// Renders the application.
+    [<ReactComponent>]
+    let App () =
 
-    /// Translates the given canvas to center the given puzzle's
-    /// unplaced dominoes.
-    let centerUnplacedDominoes (ctx : Context) puzzle =
-        let dominoesWidth =
-            let nDominoes =
-                float unplacedChunkSize
-                    - (1.0 - Domino.unplacedDominoScale)
-            nDominoes * (2.0 * Domino.cellSize)
-        let offsetX =
-            (canvas.width - dominoesWidth) / 2.0
-        let offsetY =
-            float (puzzle.Board.NumRows + 1) * Domino.cellSize
-                + offsetY
-        ctx.translate(offsetX, offsetY)
+        let model, dispatch =
+            React.useElmish(fun () ->
+                Program.mkProgram App.init App.update
+                    (fun _ _ -> ())
+                    |> Program.withSubscription App.subscribe)
 
-    /// Draws the given puzzle.
-    let drawPuzzle (ctx : Context) puzzle =
+        Html.div [
+            prop.classes [
+                "app"
+                if model.Solving then "solving"
+            ]
+            prop.children [
+                Html.h1 "Pips solver"
+                Html.div [
+                    prop.className "controls"
+                    prop.children [
+                        renderDateControls model dispatch
+                        renderDifficultyControl model dispatch
+                    ]
+                ]
+                renderActions model dispatch
+                renderStatus model
+                renderBoard model
+                Html.footer [
+                    Html.text "Pips is a game from the "
+                    Html.a [
+                        prop.href
+                            "https://www.nytimes.com/games/pips"
+                        prop.text "New York Times"
+                    ]
+                ]
+            ]
+        ]
 
-            // draw puzzle
-        ctx.resetTransform()
-        centerPuzzle ctx puzzle
-        Puzzle.drawPuzzle ctx puzzle
+module Main =
 
-            // draw unplaced dominoes
-        ctx.resetTransform()
-        centerUnplacedDominoes ctx puzzle
-        Puzzle.drawUnplacedDominoes
-            ctx unplacedChunkSize puzzle
+    /// Mounts the application.
+    let private root =
+        ReactDOM.createRoot(
+            document.getElementById "root")
 
-    /// Draws the given solutions.
-    let drawSolutions (ctx : Context) puzzle animate solutions =
-        ctx.resetTransform()
-        centerPuzzle ctx puzzle
-        Puzzle.drawSolutions ctx animate solutions
-
-    /// Showing puzzle or solution?
-    let mutable puzzleMode = true
-
-    /// Current puzzle, if any.
-    let mutable puzzleOpt = None
-
-    /// Current solutions, if any.
-    let mutable solutionsOpt = None
-
-    /// Animation has been paused?
-    let mutable animationPaused = false
-
-        // display strings
-    let showSolutionStr = "Show solution"
-    let showPuzzleStr = "Show puzzle"
-    let pauseStr = "⏸️"
-    let playStr = "▶️"
-
-    /// Handles date or difficulty selection event.
-    let onPuzzleChange _ =
-        promise {
-
-                // reset
-            use _ = waitCursor ()
-            Canvas.cancelAnimation ()
-            Canvas.clear ctx
-            puzzleMode <- true
-            solutionsOpt <- None
-            animationPaused <- false
-            solveButton.textContent <- showSolutionStr
-            solveButton.disabled <- true
-            pauseButton.textContent <- pauseStr
-            pauseButton.disabled <- true
-            timerSpan.textContent <- ""
-
-                // format selected date
-            let dateStr =
-                let date = DateTime.Parse puzzleDateInput.value
-                date.ToString("yyyy-MM-dd")
-
-                // fetch puzzle for selected date
-            match! Fetch.tryGet($"{dailyUrl}?date={dateStr}") with
-                | Ok daily ->
-
-                        // convert puzzle from daily format
-                    let puzzleMap = Daily.convert daily
-                    let puzzle = puzzleMap[difficultySelect.value]
-
-                        // draw puzzle
-                    drawPuzzle ctx puzzle
-
-                        // save state
-                    puzzleOpt <- Some puzzle
-                    solveButton.disabled <- false
-
-                | Error err ->
-                    window.alert(FetchError.getMessage err)
-
-        } |> ignore
-
-    /// Minimum date.
-    let minDate = DateTime.Parse puzzleDateInput.min
-
-    /// Triggers a date change event.
-    let triggerDateChangeEvent () =
-        Event.Create("change")
-            |> puzzleDateInput.dispatchEvent
-            |> ignore
-
-    /// Increments the puzzle date.
-    let incrDate incr =
-        let date = DateTime.Parse puzzleDateInput.value
-        let date = date.AddDays(incr)
-        if date >= minDate then
-            puzzleDateInput.value <- date.ToString("yyyy-MM-dd")
-            triggerDateChangeEvent ()
-
-    /// Handles previous date button click event.
-    let onPrevDateButtonClick _ = incrDate -1.0
-
-    /// Handles next date button click event.
-    let onNextDateButtonClick _ = incrDate 1.0
-
-    /// Handles solve button click event.
-    let onSolveButtonClick _ =
-        promise {
-
-                // reset
-            Canvas.cancelAnimation ()
-            Canvas.clear ctx
-
-                // puzzle ready to be solved?
-            match puzzleMode, puzzleOpt, solutionsOpt with
-                | true, Some puzzle, None ->
-
-                        // solve puzzle
-                    use _ = waitCursor ()   // doesn't work
-                    let maxSolutions = 1000
-                    let timeStart = getTime ()
-                    let solutions =
-                        Backtrack.solve puzzleOpt.Value
-                            |> Seq.truncate maxSolutions
-                            |> Seq.toArray
-
-                        // update timer span
-                    let duration = getTime () - timeStart
-                    let countStr =
-                        if solutions.Length >= maxSolutions then "+"
-                        else ""
-                    let pluralStr =
-                        if solutions.Length = 1 then "" else "s"
-                    timerSpan.textContent <-
-                        $"Found {solutions.Length}{countStr} solution{pluralStr} in %0.1f{duration} ms"
-
-                        // save state
-                    solutionsOpt <- Some solutions
-                | _ -> ()
-
-                // toggle mode
-            puzzleMode <- not puzzleMode
-
-                // draw puzzle or solutions
-            match puzzleMode, puzzleOpt, solutionsOpt with
-
-                    // puzzle mode
-                | true, Some puzzle, _ ->
-                    drawPuzzle ctx puzzle
-                    solveButton.textContent <- showSolutionStr
-                    pauseButton.disabled <- true
-
-                    // solution mode
-                | false, Some puzzle, Some solutions ->
-                    let animate =
-                        not animationPaused && solutions.Length > 1
-                    drawSolutions ctx puzzle animate solutions
-                    solveButton.textContent <- showPuzzleStr
-                    if solutions.Length > 1 then
-                        pauseButton.disabled <- false
-
-                | _ -> ()
-
-        } |> ignore
-
-    /// Handles pause button click event.
-    let onPauseButtonClick _ =
-        match animationPaused, puzzleOpt, solutionsOpt with
-
-                // pause animation?
-            | false, _, _ ->
-                Canvas.cancelAnimation ()
-                pauseButton.textContent <- playStr
-
-                // restart animation?
-            | true, Some puzzle, Some solutions ->
-                Canvas.clear ctx
-                drawSolutions ctx puzzle true solutions
-                pauseButton.textContent <- pauseStr
-
-            | _ -> ()
-
-            // toggle state
-        animationPaused <- not animationPaused
-
-    do
-            // setup event handlers
-        prevDateButton.onclick <- onPrevDateButtonClick
-        nextDateButton.onclick <- onNextDateButtonClick
-        puzzleDateInput.onchange <- onPuzzleChange
-        difficultySelect.onchange <- onPuzzleChange
-        solveButton.onclick <- onSolveButtonClick
-        pauseButton.onclick <- onPauseButtonClick
-
-            // start with today's puzzle
-        let today = DateTime.Now
-        puzzleDateInput.value <- today.ToString("yyyy-MM-dd")
-        triggerDateChangeEvent ()
+    root.render(View.App())

@@ -1,50 +1,54 @@
-﻿namespace Pips.Web
+namespace Pips.Web
+
+open Feliz
 
 open Pips
 
 module Puzzle =
 
-    /// Draws the given puzzle's regions.
-    let drawPuzzle ctx puzzle =
-        let regionMap =
-            Map [
-                for region in puzzle.Regions do
-                    for cell in region.Cells do
-                        yield cell, region
+    /// Maps each of the given puzzle's cells to its region.
+    let private getRegionMap puzzle =
+        Map [
+            for region in puzzle.Regions do
+                for cell in region.Cells do
+                    yield cell, region
+        ]
+
+    /// Renders the given puzzle's board. If a solution is given,
+    /// its dominoes are laid over the board instead of the
+    /// board's regions.
+    let renderBoard puzzle solutionOpt =
+        let regionMap = getRegionMap puzzle
+        Html.div [
+            prop.classes [
+                "board"
+                if Option.isSome solutionOpt then "board-solved"
             ]
-        for region in puzzle.Regions do
-            Region.drawRegion ctx regionMap region
+            prop.style [
+                style.custom ("--rows", $"{puzzle.Board.NumRows}")
+                style.custom ("--cols", $"{puzzle.Board.NumColumns}")
+            ]
+            prop.children [
 
-    /// Draws the given puzzle's unplaced dominoes.
-    let drawUnplacedDominoes ctx chunkSize puzzle =
-        let dominoChunks =
-            puzzle.UnplacedDominoes
-                |> Seq.chunkBySize chunkSize
-                |> Seq.toArray
-        for row = 0 to dominoChunks.Length - 1 do
-            let dominoChunk = dominoChunks[row]
-            for col = 0 to dominoChunk.Length - 1 do
-                let domino = dominoChunk[col]
-                let col =
-                    let missing = chunkSize - dominoChunk.Length   // center last row
-                    float col + (float missing / 2.0)
-                let x = float col * Domino.cellSize * 2.0
-                let y = float row * Domino.cellSize * 1.2
-                Domino.drawUnplacedDomino ctx x y domino
+                    // regions of the board
+                for region in puzzle.Regions do
+                    yield! Region.render regionMap region
 
-    /// Draws the given solutions.
-    let drawSolutions ctx animate (solutions : _[]) =
+                    // dominoes of the solution, if any
+                match solutionOpt with
+                    | Some (solution : Puzzle) ->
+                        for (domino, edge) in solution.Board.DominoPlaces do
+                            Domino.renderPlaced domino edge
+                    | None -> ()
+            ]
+        ]
 
-        let callback iFrame =
-
-            Canvas.clear ctx
-
-            let solution = solutions[iFrame % solutions.Length]
-            for (domino, edge) in solution.Board.DominoPlaces do
-                Domino.drawSolutionDomino ctx domino edge
-
-        if animate then
-            Canvas.animate 10.0 callback
-        else
-            callback 0
-
+    /// Renders the given puzzle's unplaced dominoes.
+    let renderUnplacedDominoes puzzle =
+        Html.div [
+            prop.className "tray"
+            prop.children [
+                for domino in puzzle.UnplacedDominoes do
+                    Domino.renderUnplaced domino
+            ]
+        ]

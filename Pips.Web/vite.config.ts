@@ -6,7 +6,8 @@ export default defineConfig({
     server: {
         watch: {
             ignored: [
-                "**/*.fs" // Don't watch F# files
+                "**/*.fs",             // Don't watch F# files
+                "**/fable_modules/**"  // Fable's package cache changes only when packages do
             ]
         }
     }

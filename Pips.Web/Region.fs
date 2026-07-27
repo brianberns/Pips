@@ -1,33 +1,28 @@
-﻿namespace Pips.Web
+namespace Pips.Web
 
-open Fable.Core.JsInterop
+open Feliz
+
 open Pips
 
 module Region =
 
-    /// Are the given cell's in the same region?
+    /// Are the given cells in the same region?
     let private inSameRegion regionMap cellA cellB =
         Map.tryFind cellA regionMap
             = Map.tryFind cellB regionMap
+
+    /// Is the given cell part of any region?
+    let private exists regionMap cell =
+        Map.containsKey cell regionMap
 
     /// Does the given cell have a left border?
     let private hasLeftBorder regionMap cell =
         let adj = { cell with Column = cell.Column - 1 }
         not (inSameRegion regionMap cell adj)
 
-    /// Does the given cell have a right border?
-    let private hasRightBorder regionMap cell =
-        let adj = { cell with Column = cell.Column + 1 }
-        not (inSameRegion regionMap cell adj)
-
     /// Does the given cell have a top border?
     let private hasTopBorder regionMap cell =
         let adj = { cell with Row = cell.Row - 1 }
-        not (inSameRegion regionMap cell adj)
-
-    /// Does the given cell have a bottom border?
-    let private hasBottomBorder regionMap cell =
-        let adj = { cell with Row = cell.Row + 1 }
         not (inSameRegion regionMap cell adj)
 
     /// Constraint display string.
@@ -40,94 +35,60 @@ module Region =
             | RegionType.SumGreater n -> $">{n}"
             | RegionType.SumExact n   -> $"{n}"
 
-    /// Constraint color.
-    let private getConstraintColor region =
-        let level =
-            match region.Type with
-                | RegionType.Any          -> 250
-                | RegionType.Equal        -> 235
-                | RegionType.Unequal      -> 220
-                | RegionType.SumLess _    -> 205
-                | RegionType.SumGreater _ -> 190
-                | RegionType.SumExact _   -> 175
-        $"rgb({level}, {level}, {level})"
+    /// Relative darkness of a region's cells. Regions with
+    /// tighter constraints are shaded more heavily.
+    let private getShadeLevel region =
+        match region.Type with
+            | RegionType.Any          -> 0
+            | RegionType.Equal        -> 1
+            | RegionType.Unequal      -> 2
+            | RegionType.SumLess _    -> 3
+            | RegionType.SumGreater _ -> 4
+            | RegionType.SumExact _   -> 5
 
-    /// Length of one side of a cell.
-    let private cellSize = Domino.cellSize
+    /// Renders the given cell.
+    ///
+    /// Each cell draws its own left and top borders, so every
+    /// line between two cells is drawn exactly once. Cells on
+    /// the right or bottom edge of the board have no neighbor
+    /// to draw those lines, so they draw them instead.
+    let private renderCell regionMap region constraintStr cell =
+        let toRight = { cell with Column = cell.Column + 1 }
+        let below = { cell with Row = cell.Row + 1 }
+        Html.div [
+            prop.key $"{cell}"
+            prop.classes [
+                "cell"
+                if hasLeftBorder regionMap cell then "cell-left-outer"
+                else "cell-left-inner"
+                if hasTopBorder regionMap cell then "cell-top-outer"
+                else "cell-top-inner"
+                if not (exists regionMap toRight) then "cell-right-outer"
+                if not (exists regionMap below) then "cell-bottom-outer"
+            ]
+            prop.style [
+                style.gridRowStart (cell.Row + 1)
+                style.gridColumnStart (cell.Column + 1)
+                style.custom ("--shade", $"{getShadeLevel region}")
+            ]
+            prop.children [
+                if constraintStr <> "" then
+                    Html.span [
+                        prop.className "constraint"
+                        prop.text (constraintStr : string)
+                    ]
+            ]
+        ]
 
-    /// Draws a border line for the given cell.
-    let private drawBorder
-        (ctx : Context)
-        cell
-        (rowFrom, colFrom)
-        (rowTo, colTo)
-        (lineWidth, strokeStyle : string) =
-
-        let xFrom = float (cell.Column + colFrom) * cellSize
-        let yFrom = float (cell.Row + rowFrom) * cellSize
-        let xTo = float (cell.Column + colTo) * cellSize
-        let yTo = float (cell.Row + rowTo) * cellSize
-
-        ctx.beginPath()
-        ctx.moveTo(xFrom, yFrom)
-        ctx.lineTo(xTo, yTo)
-        ctx.lineWidth <- lineWidth
-        ctx.strokeStyle <- !^strokeStyle
-        ctx.stroke()
-
-    /// Draws the constraint string for the given region.
-    let private drawConstraint (ctx : Context) region =
-        let cell = Seq.max region.Cells
-        let x = (float cell.Column + 0.5) * cellSize
-        let y = (float cell.Row + 0.5) * cellSize
-        let fontSize = int (Domino.cellSize / 2.2)
-        ctx.fillStyle <- !^"black"
-        ctx.font <- $"{fontSize}px sans-serif"
-        ctx.textAlign <- "center"
-        ctx.textBaseline <- "middle"
-        ctx.fillText(getConstraintString region, x, y)
-
-    /// Outer border of a region.
-    let outerStyle = Domino.outerStyle
-
-    /// Inner cell divider in a region.
-    let innerStyle = Domino.innerStyle
-
-    /// Draws the given cell, including its borders.
-    let private drawCell (ctx : Context) regionMap fillStyle cell =
-
-            // fill cell
-        ctx.fillStyle <- !^fillStyle
-        ctx.fillRect(
-            float cell.Column * cellSize,
-            float cell.Row * cellSize,
-            cellSize,
-            cellSize)
-
-            // draw left border?
-        if hasLeftBorder regionMap cell then
-            drawBorder ctx cell (0, 0) (1, 0) outerStyle
-
-            // draw right border
-        let style =
-            if hasRightBorder regionMap cell then outerStyle
-            else innerStyle
-        drawBorder ctx cell (0, 1) (1, 1) style
-
-            // draw top border?
-        if hasTopBorder regionMap cell then
-            drawBorder ctx cell (0, 0) (0, 1) outerStyle
-
-            // draw bottom border
-        let style =
-            if hasBottomBorder regionMap cell then outerStyle
-            else innerStyle
-        drawBorder ctx cell (1, 0) (1, 1) style
-
-    /// Draws the given region by drawing each of its cells and its
-    /// constraint.
-    let drawRegion ctx regionMap region =
-        for cell in region.Cells do
-            let fillStyle = getConstraintColor region
-            drawCell ctx regionMap fillStyle cell
-            drawConstraint ctx region
+    /// Renders the cells of the given region. The region's
+    /// constraint is displayed in its last cell.
+    let render regionMap region =
+        let constraintCell = Seq.max region.Cells
+        [
+            for cell in region.Cells do
+                let constraintStr =
+                    if cell = constraintCell then
+                        getConstraintString region
+                    else ""
+                renderCell regionMap region constraintStr cell
+        ]
