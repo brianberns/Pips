@@ -1,11 +1,117 @@
-﻿Watch:
+# Pips solver: web app
+
+A browser front end for the solver in [`Pips`](../Pips). Pick a date and
+a difficulty, and it fetches that day's [New York Times
+Pips](https://www.nytimes.com/games/pips) puzzle, draws it, and animates
+every solution it finds.
+
+Live at <https://brianberns.github.io/Pips/>.
+
+## Design
+
+The whole app is F#, compiled to JavaScript by
+[Fable](https://fable.io/). No F# is rewritten in another language along
+the way: the solver that runs in the browser is the same code that runs
+on .NET.
+
+### Sharing the model
+
+The project doesn't reference `Pips.fsproj`. Instead it links that
+project's source files individually, under a `Model` folder:
+
+```xml
+<Compile Include="..\Pips\Domino.fs" Link="Model/Domino.fs" />
+```
+
+This lets a file be swapped out for a browser-friendly version. Only one
+needs it so far: `Array2DSafe.fs`. The .NET version wraps a true 2D
+array (`'t[,]`); the web project compiles its own version in its place,
+backed by a jagged array (`'t[][]`), which is what JavaScript actually
+has. Both expose the same functions, so `Board` is none the wiser.
+
+### State
+
+State is managed with [Elmish](https://elmish.github.io/elmish/), the F#
+take on Model-View-Update. `App.fs` holds the whole thing:
+
+* `Model` — selected date and difficulty, the puzzles fetched for that
+  date, any solutions found, and what the board is currently showing.
+* `Msg` — every event the app can respond to.
+* `update` — the only place the model changes.
+* `subscribe` — starts a timer when, and only when, solutions are being
+  animated.
+
+Two consequences worth knowing:
+
+* Puzzles for all three difficulties arrive in one response, so changing
+  difficulty doesn't hit the network again.
+* The search runs on the UI thread and blocks it. `solvePuzzle` yields a
+  frame before starting, which lets the browser paint the "Solving…"
+  state first.
+
+### Views
+
+Views are written with [Feliz](https://fable-hub.github.io/Feliz/), which
+produces React elements from F#. There's no canvas: the board is real
+HTML, styled by `index.css`.
+
+* `Region.fs` renders each cell as a CSS grid item. A cell draws its own
+  left and top borders, so the line between two cells is drawn exactly
+  once; cells with no neighbor to the right or below draw those edges
+  themselves. Region constraints are shaded by how tight they are.
+* `Domino.fs` renders a domino as two halves, each a 3x3 grid holding up
+  to six pips. Dominoes are always laid out horizontally, then rotated a
+  quarter turn at a time into place, so a vertical domino is a rotated
+  horizontal one rather than a separate layout.
+* `Puzzle.fs` assembles the board, and lays a solution's dominoes over it.
+* `Program.fs` renders the controls and mounts the app.
+
+Sizes all derive from one custom property, `--cell-size`, so the puzzle
+scales with the viewport, and the tray of unplaced dominoes is simply the
+same markup with a smaller cell size. Colors come from custom properties
+too, which is all dark mode needs.
+
+### Fetching puzzles
+
+The New York Times endpoint doesn't allow cross-origin requests, so the
+app calls [`Pips.Server`](../Pips.Server) — an Azure function that
+fetches `https://www.nytimes.com/svc/pips/v1/{date}.json` and passes it
+back. `Daily.convert` turns the response into `Puzzle` values.
+
+## Development
+
+Fable compiles each `.fs` file to a `.fs.js` file beside it, and
+[Vite](https://vite.dev/) serves those. Run both in watch mode:
 
 ```
 dotnet fable watch --configuration Release --sourceMaps --run npx vite
 ```
 
-Build for production:
+Then open the URL Vite prints (<http://localhost:5173/> by default).
+Editing an F# file recompiles it and reloads the browser.
+
+Note the `--configuration Release`. The model asserts its invariants
+freely — `Puzzle.place` revalidates the entire puzzle every time a
+domino goes down — and those asserts are compiled out of a Release
+build. The source maps keep the F# readable in the browser's debugger
+either way.
+
+## Publishing
+
+GitHub Pages serves this site from the `docs` folder on `main`, so a
+production build writes directly there:
 
 ```
 dotnet fable --run npx vite build
+```
+
+That produces `docs/index.html`, `docs/index.js`, and `docs/index.css`.
+The file names are fixed rather than content-hashed, so each publish
+shows up as a diff of three files instead of a rename. Commit the result
+and push; Pages picks it up within a minute or so.
+
+To confirm what's live:
+
+```
+gh api repos/brianberns/Pips/pages/builds/latest --jq '{status,commit}'
 ```
