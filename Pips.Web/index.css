@@ -5,8 +5,7 @@
 :root {
     color-scheme: light dark;
 
-    --base-cell-size: clamp(26px, 7.5vmin, 38px);
-    --cell-size: var(--base-cell-size);
+    --cell-size: clamp(26px, 7.5vmin, 38px);
     --outer-width: 2px;
     --inner-width: 1px;
 
@@ -334,8 +333,6 @@ button:disabled {
 
 /* Unplaced dominoes, four to a row. */
 .tray {
-    --cell-size: calc(var(--base-cell-size) * 0.75);
-
     display: flex;
     flex-wrap: wrap;
     justify-content: center;

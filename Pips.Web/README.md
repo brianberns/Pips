@@ -71,9 +71,9 @@ HTML, styled by `index.css`.
 * `Program.fs` renders the controls and mounts the app.
 
 Sizes all derive from one custom property, `--cell-size`, so the puzzle
-scales with the viewport, and the tray of unplaced dominoes is simply the
-same markup with a smaller cell size. Colors come from custom properties
-too, which is all dark mode needs.
+scales with the viewport, and a domino is the same markup whether it sits
+on the board or in the tray of unplaced dominoes. Colors come from custom
+properties too, which is all dark mode needs.
 
 ### Fetching puzzles
 
