@@ -143,16 +143,9 @@ module View =
             let pluralStr =
                 if solutions.Puzzles.Length = 1 then ""
                 else "s"
-            let foundStr =
-                $"Found {solutions.Puzzles.Length}{countStr} \
-                    solution{pluralStr} in \
-                    %0.1f{solutions.Duration} ms"
-            match Model.tryGetSolution model with
-                | Some _ when solutions.Puzzles.Length > 1 ->
-                    let iSolution =
-                        model.Frame % solutions.Puzzles.Length
-                    $"{foundStr} · showing #{iSolution + 1}"
-                | _ -> foundStr
+            $"Found {solutions.Puzzles.Length}{countStr} \
+                solution{pluralStr} in \
+                %0.1f{solutions.Duration} ms"
 
         match model.Error, model.Loading, model.Solutions with
             | Some message, _, _ ->

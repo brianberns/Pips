@@ -127,6 +127,15 @@ h1 {
     color: var(--muted);
 }
 
+/*
+ * A date input is taller than a select on some platforms, so the
+ * select fills its column instead of keeping its own height. The
+ * two controls then match, however tall the browser makes them.
+ */
+.control > select {
+    flex: 1 0 auto;
+}
+
 .control-row {
     display: flex;
     align-items: center;
@@ -341,4 +350,55 @@ footer {
 
 footer a {
     color: var(--accent);
+}
+
+/*
+ * Phones held upright. The controls are given just enough room to
+ * stay on one row, since wrapping them pushes the puzzle down the
+ * page. Only spacing shrinks: inputs stay at their full font size,
+ * because iOS zooms in on any field smaller than 16px.
+ */
+@media (max-width: 30rem) {
+    body {
+        padding: 1rem 0.5rem 2rem;
+    }
+
+    .app {
+        gap: 0.75rem;
+    }
+
+    h1 {
+        font-size: 1.25rem;
+    }
+
+    .controls {
+        gap: 0.5rem;
+        padding: 0.5rem 0.625rem;
+    }
+
+    .control {
+        gap: 0.25rem;
+    }
+
+    .control > label {
+        font-size: 0.6875rem;
+    }
+
+    .control-row {
+        gap: 0.35rem;
+    }
+
+    input[type="date"],
+    select,
+    button {
+        padding: 0.4rem 0.45rem;
+    }
+
+    .step-button {
+        min-width: 2rem;
+    }
+
+    .primary-button {
+        min-width: 9rem;
+    }
 }
