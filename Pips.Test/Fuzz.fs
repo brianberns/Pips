@@ -354,5 +354,5 @@ module Fuzz =
 
     [<Property>]
     let ``Can find solution to solvable puzzle`` solved =
-        let solutions = Backtrack.solve solved.Puzzle
-        Seq.contains solved.Solution solutions
+        Backtrack.solve solved.Puzzle
+            |> Seq.exists (Puzzle.areEqual solved.Solution)

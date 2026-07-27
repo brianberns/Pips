@@ -1,11 +1,9 @@
 ﻿namespace Pips
 
-open System
-
 /// A 2D grid with dominoes on it. This is stored in a redundant
 /// data structure for speed. We have the location of each domino,
 /// and also a way to look up the value at any cell on the board.
-[<CustomEquality; CustomComparison>]
+[<NoEquality; NoComparison>]
 type Board =
     {
         /// Location of each domino placed on the board.
@@ -27,49 +25,6 @@ type Board =
     member board.Item(cell) =
         Array2DSafe.getItem
             cell.Row cell.Column board.Cells
-
-    /// Equality key.
-    member private board.DominoPlacesSet =
-        lazy set board.DominoPlaces
-
-    /// Equality override.
-    override board.Equals(other) =
-        board.Equals(other :?> Board)
-
-    /// Hash code override.
-    override board.GetHashCode() =
-        board.DominoPlacesSet.Value.GetHashCode()
-
-    /// Domino placement order doesn't matter for equality.
-    member board.Equals(other : Board) = 
-        board.DominoPlacesSet.Value = other.DominoPlacesSet.Value
-
-    interface IEquatable<Board> with
-
-        /// Domino placement order doesn't matter for equality.
-        member board.Equals(other : Board) = 
-            board.Equals(other)
-
-    /// Domino placement order doesn't matter for comparison.
-    member board.CompareTo(other : Board) =
-        compare
-            board.DominoPlacesSet.Value
-            other.DominoPlacesSet.Value
-
-    interface IComparable with
-
-        /// Domino placement order doesn't matter for comparison.
-        member board.CompareTo(other) =
-            board.CompareTo(other :?> Board)
-
-// avoid JS name collision
-#if !FABLE_COMPILER
-    interface IComparable<Board> with
-
-        /// Domino placement order doesn't matter for comparison.
-        member board.CompareTo(other) =
-            board.CompareTo(other)
-#endif
 
 module Board =
 

@@ -4,6 +4,18 @@ open Xunit
 
 module Puzzle =
 
+    let getDominoPlacesSet puzzle =
+        set puzzle.Board.DominoPlaces
+
+    let areEqual puzzleA puzzleB =
+        getDominoPlacesSet puzzleA =
+            getDominoPlacesSet puzzleB
+
+    let areEqualSeqs puzzlesA puzzlesB =
+        Array.forall2 areEqual
+            (Seq.toArray puzzlesA)
+            (Seq.toArray puzzlesB)
+
     let private place
         (leftPipCount, rightPipCount)
         (leftRow, leftCol)
@@ -32,10 +44,13 @@ module Puzzle =
             }
 
         let actual = Backtrack.solve puzzle
-        Assert.Equal([solution], actual)
+        Assert.True(areEqualSeqs [solution] actual)
 
         let actual = Backtrack.trySolve puzzle
-        Assert.Equal(Some solution, actual)
+        Assert.True(
+            match actual with
+                | Some puz -> areEqual puz solution
+                | None -> false)
 
     [<Fact>]
     let ``Small puzzle with few solutions`` () =
