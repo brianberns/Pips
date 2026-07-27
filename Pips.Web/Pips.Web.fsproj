@@ -13,22 +13,15 @@
     <None Include="README.md" />
     <Content Include="index.html" />
     <Content Include="index.css" />
-    <Compile Include="Array2DSafe.fs" />
-    <Compile Include="..\Pips\Prelude.fs" Link="Model/Prelude.fs" />
-    <Compile Include="..\Pips\Domino.fs" Link="Model/Domino.fs" />
-    <Compile Include="..\Pips\Cell.fs" Link="Model/Cell.fs" />
-    <Compile Include="..\Pips\Board.fs" Link="Model/Board.fs" />
-    <Compile Include="..\Pips\Region.fs" Link="Model/Region.fs" />
-    <Compile Include="..\Pips\Tiling.fs" Link="Model/Tiling.fs" />
-    <Compile Include="..\Pips\Puzzle.fs" Link="Model/Puzzle.fs" />
-    <Compile Include="..\Pips\Daily.fs" Link="Model/Daily.fs" />
-    <Compile Include="..\Pips\TilingTree.fs" Link="Model/TilingTree.fs" />
-    <Compile Include="..\Pips\Backtrack.fs" Link="Model/Backtrack.fs" />
     <Compile Include="Domino.fs" />
     <Compile Include="Region.fs" />
     <Compile Include="Puzzle.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pips\Pips.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -110,7 +110,7 @@ module Region =
 
     /// Renders the cells of the given region. The region's
     /// constraint is displayed in its last cell.
-    let render regionMap region =
+    let render regionMap (region : Region) =
         let constraintCell = Seq.max region.Cells
         [
             for cell in region.Cells do

@@ -16,18 +16,15 @@ on .NET.
 
 ### Sharing the model
 
-The project doesn't reference `Pips.fsproj`. Instead it links that
-project's source files individually, under a `Model` folder:
+The project simply references `Pips.fsproj`. Fable compiles that
+project's source files to JavaScript along with this project's own,
+which is why the solver needs no browser-specific version.
 
-```xml
-<Compile Include="..\Pips\Domino.fs" Link="Model/Domino.fs" />
-```
-
-This lets a file be swapped out for a browser-friendly version. Only one
-needs it so far: `Array2DSafe.fs`. The .NET version wraps a true 2D
-array (`'t[,]`); the web project compiles its own version in its place,
-backed by a jagged array (`'t[][]`), which is what JavaScript actually
-has. Both expose the same functions, so `Board` is none the wiser.
+Where the model does have to differ in the browser, it says so with a
+compiler directive. `Array2DSafe` is the only place so far: a real 2D
+array (`'t[,]`) on .NET, and a jagged array (`'t[][]`) under Fable, which
+is all JavaScript has. Both expose the same functions, so `Board` is none
+the wiser.
 
 ### State
 
