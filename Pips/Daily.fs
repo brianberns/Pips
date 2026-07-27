@@ -4,12 +4,7 @@
  * Support for NY Times daily JSON format.
  *)
 
-open System
 open System.IO
-#if !FABLE_COMPILER
-open System.Net.Http
-open System.Text.Json
-#endif
 
 type DailyRegion =
     {
@@ -87,6 +82,9 @@ module Daily =
             |> Map
 
 #if !FABLE_COMPILER
+    open System.Net.Http
+    open System.Text.Json
+
     /// Deserializes puzzles from the given JSON text.
     let private deserialize (text : string) =
         JsonSerializer.Deserialize<Daily>(text)
