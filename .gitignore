@@ -368,4 +368,3 @@ FodyWeavers.xsd
 
 # Deployment artifacts
 /Pips.Server/Properties
-/Pips.Web/dist
