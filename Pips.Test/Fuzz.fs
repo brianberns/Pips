@@ -60,13 +60,15 @@ module SolvedPuzzle =
     /// All normalized edges in the empty board.
     let allEmptyEdges : Edge[] =
         [|
-            for row = 0 to emptyBoard.Cells.GetLength(0) - 2 do
-                for col = 0 to emptyBoard.Cells.GetLength(1) - 2 do
-                    let cellA = Cell.create row col
-                    let cellB = Cell.create (row + 1) col
-                    let cellC = Cell.create row (col + 1)
-                    yield cellA, cellB   // down
-                    yield cellA, cellC   // right
+                // rightward along rows
+            for row = 0 to emptyBoard.NumRows - 1 do
+                for col = 0 to emptyBoard.NumColumns - 2 do
+                    yield Cell.create row col, Cell.create row (col + 1)
+
+                // downward along columns
+            for col = 0 to emptyBoard.NumColumns - 1 do
+                for row = 0 to emptyBoard.NumRows - 2 do
+                    yield Cell.create row col, Cell.create (row + 1) col
         |]
 
     /// Places dominoes on empty edges in the given puzzle.
