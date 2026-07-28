@@ -42,32 +42,17 @@ module SolvedPuzzle =
         Array.allPairs range range
             |> Array.map (uncurry Domino.create)
 
-    /// Height and width of board.
-    let boardSize = 5
-
-    /// Minimum number of dominoes to place.
-    let minNumDominoes = 5
-
-    /// Maximum number of dominoes to place.
-    let maxNumDominoes = 7
-
-    /// Maximum number of cells in a region.
-    let maxRegionSize = 6
-
-    /// Board we'll create puzzles on.
-    let emptyBoard = Board.create boardSize boardSize
-
-    /// All normalized edges in the empty board.
-    let allEmptyEdges : Edge[] =
+    /// All possible normalized edges in the empty board.
+    let getAllPossibleEdges (board : Board) : Edge[] =
         [|
                 // rightward along rows
-            for row = 0 to emptyBoard.NumRows - 1 do
-                for col = 0 to emptyBoard.NumColumns - 2 do
+            for row = 0 to board.NumRows - 1 do
+                for col = 0 to board.NumColumns - 2 do
                     yield Cell.create row col, Cell.create row (col + 1)
 
                 // downward along columns
-            for col = 0 to emptyBoard.NumColumns - 1 do
-                for row = 0 to emptyBoard.NumRows - 2 do
+            for col = 0 to board.NumColumns - 1 do
+                for row = 0 to board.NumRows - 2 do
                     yield Cell.create row col, Cell.create (row + 1) col
         |]
 
@@ -110,7 +95,22 @@ module SolvedPuzzle =
                     return! loop emptyEdges puzzle
             }
 
-        loop allEmptyEdges puzzle
+        loop (getAllPossibleEdges puzzle.Board) puzzle
+
+    /// Height and width of board.
+    let boardSize = 5
+
+    /// Minimum number of dominoes to place.
+    let minNumDominoes = 5
+
+    /// Maximum number of dominoes to place.
+    let maxNumDominoes = 7
+
+    /// Maximum number of cells in a region.
+    let maxRegionSize = 6
+
+    /// Board we'll create puzzles on.
+    let emptyBoard = Board.create boardSize boardSize
 
     /// Finds all cells contiguous with the given cell within
     /// the given cells on the given board.
@@ -148,7 +148,7 @@ module SolvedPuzzle =
     /// the given board.
     let tryCreateUnconstrainedRegion (cells : _[]) _board =
         gen {
-            if cells.Length = 1 then
+            if cells.Length <= 1 then   // large unconstrained regions are uninteresting
                 return Some {
                     Cells = cells
                     Type = RegionType.Any
@@ -194,18 +194,16 @@ module SolvedPuzzle =
     /// the given board.
     let tryCreateSumLessRegion (cells : _[]) board =
         gen {
-            if cells.Length <= 2 then
-                let pipCounts =
-                    getRegionPipValues cells board
-                let sum = Array.sum pipCounts
-                let max = pipCounts.Length * PipCount.maxValue
-                if sum < max then
-                    let! target = Gen.choose (sum + 1, max)
-                    return Some {
-                        Cells = cells
-                        Type = RegionType.SumLess target
-                    }
-                else return None
+            let pipCounts =
+                getRegionPipValues cells board
+            let sum = Array.sum pipCounts
+            let max = pipCounts.Length * PipCount.maxValue
+            if sum < max then
+                let! target = Gen.choose (sum + 1, max)
+                return Some {
+                    Cells = cells
+                    Type = RegionType.SumLess target
+                }
             else return None
         }
 
@@ -214,17 +212,15 @@ module SolvedPuzzle =
     let tryCreateSumGreaterRegion (cells : _[]) board =
         assert(PipCount.minValue = 0)
         gen {
-            if cells.Length <= 2 then
-                let pipCounts =
-                    getRegionPipValues cells board
-                let sum = Array.sum pipCounts
-                if sum > 0 then
-                    let! target = Gen.choose (0, sum - 1)
-                    return Some {
-                        Cells = cells
-                        Type = RegionType.SumGreater target
-                    }
-                else return None
+            let pipCounts =
+                getRegionPipValues cells board
+            let sum = Array.sum pipCounts
+            if sum > 0 then
+                let! target = Gen.choose (0, sum - 1)
+                return Some {
+                    Cells = cells
+                    Type = RegionType.SumGreater target
+                }
             else return None
         }
 
@@ -232,15 +228,13 @@ module SolvedPuzzle =
     /// given board.
     let tryCreateSumRegion (cells : _[]) board =
         gen {
-            if cells.Length <= 2 then
-                let pipCounts =
-                    getRegionPipValues cells board
-                let sum = Array.sum pipCounts
-                return Some {
-                    Cells = cells
-                    Type = RegionType.SumExact sum
-                }
-            else return None
+            let pipCounts =
+                getRegionPipValues cells board
+            let sum = Array.sum pipCounts
+            return Some {
+                Cells = cells
+                Type = RegionType.SumExact sum
+            }
         }
 
     /// A function that can create a region.
@@ -262,11 +256,16 @@ module SolvedPuzzle =
     /// the given board.
     let rec createRegion cells board =
         gen {
+                // choose an arbitrary seed cell
             let! cell = Gen.elements cells
+
+                // choose some cells around the seed
             let! nCellsMax = Gen.choose (2, maxRegionSize)
             let! contiguous =
                 getContigousCells cell cells board
                     |> Gen.truncate nCellsMax
+
+                // try to create at least one region from these cells
             let! regions =
                 regionFactories
                     |> Array.map (fun factory ->
@@ -274,9 +273,9 @@ module SolvedPuzzle =
                     |> Gen.sequenceToArray
                     |> Gen.map (Array.choose id)
             if Array.isEmpty regions then
-                return! createRegion cells board
+                return! createRegion cells board     // failure, try again
             else
-                let! region = Gen.elements regions
+                let! region = Gen.elements regions   // success, choose one of these regions
                 return region, cells - set contiguous
         }
 
@@ -316,18 +315,21 @@ module SolvedPuzzle =
             let puzzle =
                 {
                     UnplacedDominoes = set dominoes
-                    Regions = Array.empty
+                    Regions = Array.empty   // not really valid, but good enough
                     Board = emptyBoard
                 }
             let! solution = place puzzle
 
                 // gather all covered cells in the solution.
             let cells =
-                solution.Board.DominoPlaces
-                    |> Seq.collect (fun (_, (cellA, cellB)) ->
-                        [ cellA; cellB ])
-                    |> Seq.toArray
+                [|
+                    for (_, (cellA, cellB)) in solution.Board.DominoPlaces do
+                        cellA
+                        cellB
+                |]
+            assert(Seq.distinct cells |> Seq.length = cells.Length)
 
+                // create regions for covered cells
             let! regions = createRegions cells solution.Board
             let puzzle =
                 { puzzle with Regions = regions }
