@@ -112,8 +112,8 @@ module SolvedPuzzle =
     /// Board we'll create puzzles on.
     let emptyBoard = Board.create boardSize boardSize
 
-    /// Finds all cells contiguous with the given cell within
-    /// the given cells on the given board.
+    /// Finds cells contiguous with the given cell within the
+    /// given cells on the given board.
     let getContigousCells cell (cells : Set<_>) board nCellsMax =
 
         /// Visits the given cell.
