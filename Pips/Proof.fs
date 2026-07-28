@@ -48,7 +48,7 @@ module Proof =
                             else loop (lookahead - 1) tilingMap puzzle
                         if children.Length > 0
                             || puzzle.UnplacedDominoes.IsEmpty
-                            || lookahead = 0 then
+                            || lookahead <= 0 then
                             {
                                 Domino = domino
                                 Edge = edge
@@ -60,6 +60,7 @@ module Proof =
             Puzzle.getAllTilings puzzle
                 |> toTilingMap
 
+        assert(lookahead >= 0)
         loop lookahead tilingMap puzzle
 
     let print proof =

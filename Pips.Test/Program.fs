@@ -364,7 +364,16 @@ module Program =
             printSolution solutions[0]
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-08-23.json"
-    let puzzle = puzzleMap["easy"]
-    for proof in Proof.solve 2 puzzle do
-        Proof.print proof
+
+    do
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-25.json"
+        let puzzle = puzzleMap["easy"]
+        for proof in Proof.solve 1 puzzle do
+            Proof.print proof
+
+    printfn "-------------"
+    do
+        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-08-23.json"
+        let puzzle = puzzleMap["easy"]
+        for proof in Proof.solve 2 puzzle do
+            Proof.print proof
