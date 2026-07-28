@@ -12,14 +12,13 @@ module Proof =
             |> Seq.groupBy fst
             |> Seq.map (fun (edge, group) ->
                 edge, Seq.map snd group)
-            |> Map
 
     let solve puzzle =
 
         let rec search tilingMap puzzle =
             [|
                 for domino in puzzle.UnplacedDominoes do
-                    for (edge, tilings) in Map.toSeq tilingMap do
+                    for (edge, tilings) in tilingMap do
                         yield! loop tilings domino edge puzzle
                         if not (Domino.isDouble domino) then
                             let edge = Edge.reverse edge
