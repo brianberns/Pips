@@ -21,9 +21,9 @@ module Proof =
                 edge, Seq.map snd group |> Seq.toArray)
             |> Map
 
-    let solve puzzle =
+    let solve lookahead puzzle =
 
-        let rec loop tilingMap puzzle =
+        let rec loop lookahead tilingMap puzzle =
             [|
                 for domino in puzzle.UnplacedDominoes do
 
@@ -43,9 +43,12 @@ module Proof =
 
                     for (edge, tilings, puzzle) in tuples do
                         let tilingMap = toTilingMap tilings
-                        let children = loop tilingMap puzzle
+                        let children =
+                            if lookahead <= 0 then Array.empty
+                            else loop (lookahead - 1) tilingMap puzzle
                         if children.Length > 0
-                            || puzzle.UnplacedDominoes.IsEmpty then
+                            || puzzle.UnplacedDominoes.IsEmpty
+                            || lookahead = 0 then
                             {
                                 Domino = domino
                                 Edge = edge
@@ -57,4 +60,13 @@ module Proof =
             Puzzle.getAllTilings puzzle
                 |> toTilingMap
 
-        loop tilingMap puzzle
+        loop lookahead tilingMap puzzle
+
+    let print proof =
+
+        let rec loop depth proof =
+            printfn $"{System.String(' ', 3 * depth)}{proof.Domino} @ {proof.Edge}"
+            for child in proof.Children do
+                loop (depth + 1) child
+
+        loop 0 proof

@@ -242,12 +242,12 @@ module Program =
             let puzzleOpt =
                 let dateStr = date.ToString("yyyy-MM-dd")
                 Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                    |> Map.tryFind "easy"
+                    |> Map.tryFind "hard"
             match puzzleOpt with
                 | Some puzzle ->
                     let stopwatch = Stopwatch.StartNew()
-                    let proofs = Proof.solve puzzle
-                    Ok (stopwatch.Elapsed.TotalSeconds, proofs)
+                    let solutions = Backtrack.solveEager puzzle
+                    Ok (stopwatch.Elapsed.TotalSeconds, solutions)
                 | None -> Error "Missing puzzle"
 
         let run timeout work =
@@ -265,10 +265,11 @@ module Program =
                 Error "timeout"
 
         let print (date : DateOnly) = function
-            | Ok (time : float, proofs : Proof[]) ->
-                if proofs.Length = 0 then
-                    printfn $"{date}"
-                    printfn $"%A{proofs}"
+            | Ok (time : float, solutions) ->
+                let solutions = Seq.toArray solutions
+                printfn $"{date}: Found {solutions.Length} solution(s) in {time} seconds"
+                printfn ""
+                printfn $"{printSolution solutions[0]}"
             | Error msg ->
                 printfn $"{date}: {msg}"
                 printfn ""
@@ -365,5 +366,5 @@ module Program =
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
     let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-08-23.json"
     let puzzle = puzzleMap["easy"]
-    Proof.solve puzzle
-        |> printf "%A"
+    for proof in Proof.solve 2 puzzle do
+        Proof.print proof
