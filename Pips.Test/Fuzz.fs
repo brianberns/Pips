@@ -36,6 +36,16 @@ module SolvedPuzzle =
                 return Array.truncate n shuffled
             }
 
+        /// Threads the given generator function through the
+        /// given items, accumulating state.
+        let fold f state items =
+            (gen { return state }, items)
+                ||> Seq.fold (fun genState item ->
+                    gen {
+                        let! state = genState
+                        return! f state item
+                    })
+
     /// All dominoes from 0-0 to 6-6.
     let allDominoes =
         let range = [| PipCount.minValue .. PipCount.maxValue |]
@@ -117,24 +127,25 @@ module SolvedPuzzle =
     let getContigousCells cell (cells : Set<_>) board nCellsMax =
 
         /// Visits the given cell.
-        let rec visit cell (visited : Set<_>) =
+        let rec visit (visited : Set<_>) cell =
+            gen {
+                    // already visited or can't visit
+                if visited.Contains(cell)
+                    || visited.Count >= nCellsMax then
+                    return visited
+                else
+                        // mark this cell as visited
+                    let visited = visited.Add(cell)
 
-                // already visited or can't visit
-            if visited.Contains(cell)
-                || visited.Count >= nCellsMax then
-                visited
-            else
-                    // mark this cell as visited
-                let visited = visited.Add(cell)
+                        // visit this cell's neighbors
+                    let! neighbors =
+                        Board.getAdjacent cell board
+                            |> Seq.where cells.Contains
+                            |> Gen.shuffle
+                    return! Gen.fold visit visited neighbors
+            }
 
-                    // visit this cell's neighbors
-                let neighbors =
-                    Board.getAdjacent cell board
-                        |> Seq.where cells.Contains
-                (neighbors, visited)
-                    ||> Seq.foldBack visit
-
-        visit cell Set.empty
+        visit Set.empty cell
 
     /// Gets the pip values for a potential region containing
     /// the given cells on the given board.
@@ -262,9 +273,9 @@ module SolvedPuzzle =
 
                 // choose some cells around the seed
             let! nCellsMax = Gen.choose (2, maxRegionSize)
-            let contiguous =
+            let! contiguous =
                 getContigousCells cell cells board nCellsMax
-                    |> Seq.toArray
+                    |> Gen.map Seq.toArray
 
                 // try to create at least one region from these cells
             let! regions =
