@@ -1,5 +1,12 @@
 ﻿namespace Pips
 
+type Proof =
+    {
+        Domino : Domino
+        Edge : Edge
+        Children : Proof[]
+    }
+
 module Proof =
 
     let private toTilingMap tilings =
@@ -11,47 +18,40 @@ module Proof =
                         edge, (tiling : Tiling)))
             |> Seq.groupBy fst
             |> Seq.map (fun (edge, group) ->
-                edge, Seq.map snd group)
+                edge, Seq.map snd group |> Seq.toArray)
             |> Map
-
-    type Proof =
-        {
-            Domino : Domino
-            Edge : Edge
-            Children : seq<Proof>
-        }
 
     let solve puzzle =
 
         let rec loop tilingMap puzzle =
-            seq {
+            [|
                 for domino in puzzle.UnplacedDominoes do
-                    let pairs =
-                        seq {
-                            for (edge, tilings) in Map.toSeq tilingMap do
 
-                                let canPlace edge =
-                                    Puzzle.tryPlace domino edge puzzle
-                                        |> Option.isSome
+                    let tuples =
+                        let reverse = not (Domino.isDouble domino)
+                        Array.choose (fun (edge, tilings) ->
+                            puzzle
+                                |> Puzzle.tryPlace domino edge
+                                |> Option.map (fun puzzle ->
+                                    edge, tilings, puzzle))
+                            [|
+                                for (edge, tilings) in Map.toSeq tilingMap do
+                                    edge, tilings
+                                    if reverse then
+                                        Edge.reverse edge, tilings
+                            |]
 
-                                if canPlace edge then edge, tilings
-
-                                if not (Domino.isDouble domino) then
-                                    let edge = Edge.reverse edge
-                                    if canPlace edge then edge, tilings
-                        }
-
-                    match Seq.tryExactlyOne pairs with
-                        | Some (edge, tilings) ->
-                            let puzzle = Puzzle.place domino edge puzzle
-                            let tilingMap = toTilingMap tilings
+                    for (edge, tilings, puzzle) in tuples do
+                        let tilingMap = toTilingMap tilings
+                        let children = loop tilingMap puzzle
+                        if children.Length > 0
+                            || puzzle.UnplacedDominoes.IsEmpty then
                             {
                                 Domino = domino
                                 Edge = edge
-                                Children = loop tilingMap puzzle
+                                Children = children
                             }
-                        | None -> ()
-            }
+            |]
 
         let tilingMap =
             Puzzle.getAllTilings puzzle
