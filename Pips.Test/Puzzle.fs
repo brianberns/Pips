@@ -48,9 +48,9 @@ module Puzzle =
 
         let actual = Backtrack.trySolve puzzle
         Assert.True(
-            match actual with
-                | Some puz -> areEqual puz solution
-                | None -> false)
+            areEqualSeqs
+                [solution]
+                (Option.toArray actual))
 
     [<Fact>]
     let ``Small puzzle with few solutions`` () =
