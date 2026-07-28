@@ -14,36 +14,47 @@ module Proof =
                 edge, Seq.map snd group)
             |> Map
 
+    type Proof =
+        {
+            Domino : Domino
+            Edge : Edge
+            Children : seq<Proof>
+        }
+
     let solve puzzle =
 
-        let rec search tilingMap puzzle =
-            [|
+        let rec loop tilingMap puzzle =
+            seq {
                 for domino in puzzle.UnplacedDominoes do
-
                     let pairs =
-                        [|
+                        seq {
                             for (edge, tilings) in Map.toSeq tilingMap do
+
                                 let canPlace edge =
                                     Puzzle.tryPlace domino edge puzzle
                                         |> Option.isSome
+
                                 if canPlace edge then edge, tilings
+
                                 if not (Domino.isDouble domino) then
                                     let edge = Edge.reverse edge
                                     if canPlace edge then edge, tilings
-                        |]
+                        }
 
-                    if pairs.Length = 1 then
-
-                        let edge, tilings = Array.exactlyOne pairs
-                        yield domino, edge
-
-                        let puzzle = Puzzle.place domino edge puzzle
-                        let tilingMap = toTilingMap tilings
-                        yield! search tilingMap puzzle
-            |]
+                    match Seq.tryExactlyOne pairs with
+                        | Some (edge, tilings) ->
+                            let puzzle = Puzzle.place domino edge puzzle
+                            let tilingMap = toTilingMap tilings
+                            {
+                                Domino = domino
+                                Edge = edge
+                                Children = loop tilingMap puzzle
+                            }
+                        | None -> ()
+            }
 
         let tilingMap =
             Puzzle.getAllTilings puzzle
                 |> toTilingMap
 
-        search tilingMap puzzle
+        loop tilingMap puzzle
