@@ -12,11 +12,11 @@ module Domino =
     /// All dominoes sorted from smallest to largest.
     let private allDominoes =
         [|
-            for sum in 0 .. maxPipCount * 2 do
-                for left in 0 .. min sum maxPipCount do
-                    let right = sum - left
-                    yield Domino.create left right
-        |]
+            for left in 0 .. maxPipCount do
+                for right in 0 .. left do
+                    Domino.create left right
+        |] |> Array.sortBy (fun domino ->
+            domino.Left + domino.Right)
 
     /// Maps each domino to its index.
     let private dominoMap =
@@ -32,7 +32,7 @@ module Domino =
 
     /// Determines the hue of the given domino, in degrees.
     let private getHue domino =
-        360.0 * float dominoMap[domino] / float dominoMap.Count
+        360.0 * float dominoMap[domino] / float allDominoes.Length
 
     /// Pips of each pip count, as indexes into a 3x3 grid,
     /// numbered in reading order.
