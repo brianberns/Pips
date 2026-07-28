@@ -364,4 +364,7 @@ module Program =
             printSolution solutions[0]
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    printfn "%A" (solveOne ())
+    let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-25.json"
+    let puzzle = puzzleMap["easy"]
+    Proof.solve puzzle
+        |> printf "%A"

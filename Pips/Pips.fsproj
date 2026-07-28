@@ -16,6 +16,7 @@
     <Compile Include="Daily.fs" />
     <Compile Include="TilingTree.fs" />
     <Compile Include="Backtrack.fs" />
+    <Compile Include="Proof.fs" />
   </ItemGroup>
 
 </Project>

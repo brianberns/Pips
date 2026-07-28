@@ -1,6 +1,7 @@
 ﻿namespace Pips
 
 /// A cell in a grid.
+[<StructuredFormatDisplay("{String}")>]
 type Cell =
     {
         /// Row coordinate (0-based).
@@ -11,8 +12,12 @@ type Cell =
     }
 
     /// Display string.
-    override cell.ToString() =
+    member cell.String =
         $"({cell.Row}, {cell.Column})"
+
+    /// Display string.
+    override cell.ToString() =
+        cell.String
 
 module Cell =
 

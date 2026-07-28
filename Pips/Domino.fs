@@ -12,6 +12,7 @@
 type PipCount = int
 
 /// The two sides of a domino.
+[<StructuredFormatDisplay("{String}")>]
 type Domino =
     {
         /// Left side of the domino.
@@ -22,8 +23,12 @@ type Domino =
     }
 
     /// Display string.
-    override domino.ToString() =
+    member domino.String =
         $"[{domino.Left}-{domino.Right}]"
+
+    /// Display string.
+    override domino.ToString() =
+        domino.String
 
 (*
  * Note that an X-Y domino is technically not equal to a Y-X
