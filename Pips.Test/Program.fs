@@ -361,7 +361,7 @@ module Program =
             let solutions = Backtrack.solveEager solved.Puzzle
             printfn $"Found {solutions.Length} solution(s):"
             printfn ""
-            printfn $"{printSolution solutions[0]}"
+            printSolution solutions[0]
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
     printfn "%A" (solveOne ())
