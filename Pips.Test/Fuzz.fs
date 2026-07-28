@@ -114,13 +114,14 @@ module SolvedPuzzle =
 
     /// Finds all cells contiguous with the given cell within
     /// the given cells on the given board.
-    let getContigousCells cell (cells : Set<_>) board =
+    let getContigousCells cell (cells : Set<_>) board nCellsMax =
 
         /// Visits the given cell.
         let rec visit cell (visited : Set<_>) =
 
-                // already visited -> no-op
-            if visited.Contains(cell) then
+                // already visited or can't visit
+            if visited.Contains(cell)
+                || visited.Count >= nCellsMax then
                 visited
             else
                     // mark this cell as visited
@@ -261,9 +262,9 @@ module SolvedPuzzle =
 
                 // choose some cells around the seed
             let! nCellsMax = Gen.choose (2, maxRegionSize)
-            let! contiguous =
-                getContigousCells cell cells board
-                    |> Gen.truncate nCellsMax
+            let contiguous =
+                getContigousCells cell cells board nCellsMax
+                    |> Seq.toArray
 
                 // try to create at least one region from these cells
             let! regions =
