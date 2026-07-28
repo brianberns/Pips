@@ -99,11 +99,9 @@ module View =
     let private renderActions model dispatch =
 
         let solveText =
-            match model.View with
-                | PuzzleView ->
-                    if model.Solving then "Solving…"
-                    else "Show solution"
-                | SolutionView -> "Show puzzle"
+            if model.ShowSolution then "Hide solution"
+            elif model.Solving then "Solving…"
+            else "Show solution"
 
         Html.div [
             prop.className "control-row actions"
@@ -115,7 +113,8 @@ module View =
                         model.Solving
                             || (Model.tryGetPuzzle model)
                                 .IsNone)
-                    prop.onClick (fun _ -> dispatch ToggleView)
+                    prop.onClick (fun _ ->
+                        dispatch ToggleSolution)
                     prop.text solveText
                 ]
                 Html.button [
@@ -125,7 +124,7 @@ module View =
                         if model.Paused then "Resume"
                         else "Pause")
                     prop.disabled (
-                        model.View <> SolutionView
+                        not model.ShowSolution
                             || Model.getNumSolutions model <= 1)
                     prop.onClick (fun _ -> dispatch TogglePause)
                     prop.text (

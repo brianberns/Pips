@@ -5,7 +5,11 @@
 :root {
     color-scheme: light dark;
 
-    --cell-size: clamp(26px, 7.5vmin, 38px);
+    /*
+     * Default size of a board cell. The board and the tray each
+     * narrow this to whatever their own contents will fit.
+     */
+    --cell-size: 3rem;
     --outer-width: 2px;
     --inner-width: 1px;
 
@@ -24,16 +28,27 @@
 
     --grid-outer: #14161a;
     --grid-inner: #aeb4bf;
-    --cell-hue: 220;
-    --cell-saturation: 10%;
-    --cell-lightness: 97%;
-    --cell-shade-step: -5%;
+    --cell-bg: #f5f7fa;
+    --texture-ink: rgb(20 24 32 / 24%);
+
+    --badge-bg: #fbfcfe;
+    --badge-edge: #14161a;
 
     --domino-saturation: 100%;
     --domino-lightness: 80%;
     --domino-border: #14161a;
     --domino-divider: #9aa0ab;
     --pip: #101215;
+
+    /*
+     * A placed domino is see-through, so that the texture of the
+     * region underneath reads through it, and inset a little, so
+     * that the texture also shows around its edge.
+     */
+    --domino-alpha: 45%;
+
+    /* as a fraction of a cell, so it scales with the board */
+    --domino-inset: 0.06;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -53,14 +68,21 @@
 
         --grid-outer: #e8eaee;
         --grid-inner: #4a515f;
-        --cell-lightness: 23%;
-        --cell-shade-step: 4%;
+        --cell-bg: #262a33;
+        --texture-ink: rgb(232 234 238 / 20%);
+
+        --badge-bg: #1c1f26;
+        --badge-edge: #e8eaee;
 
         --domino-saturation: 55%;
         --domino-lightness: 60%;
         --domino-border: #0b0d11;
         --domino-divider: #3a3f49;
         --pip: #0b0d11;
+
+        /* dark cells swallow a translucent domino, so lean
+           less on transparency here */
+        --domino-alpha: 55%;
     }
 }
 
@@ -220,7 +242,15 @@ button:disabled {
     gap: 1.25rem;
 }
 
+/*
+ * Cells shrink to keep the whole board on screen, however many
+ * columns it has, but never grow past their natural size.
+ */
 .board {
+    --cell-size: min(
+        calc((100vw - 2.5rem) / var(--cols)),
+        3rem);
+
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--cols), var(--cell-size));
@@ -228,15 +258,61 @@ button:disabled {
 }
 
 .cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: hsl(
-        var(--cell-hue)
-        var(--cell-saturation)
-        calc(
-            var(--cell-lightness)
-                + var(--shade) * var(--cell-shade-step)));
+    /* an empty tile, so a cell with no texture stays blank */
+    --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3C/svg%3E");
+    --texture-size: calc(var(--cell-size) / 4);
+
+    position: relative;
+    background-color: var(--cell-bg);
+}
+
+/*
+ * Regions are told apart by texture rather than color, which is
+ * left to the dominoes. The texture is painted through a mask so
+ * that one tile serves both light and dark themes.
+ *
+ * Tiles are scaled to an exact fraction of a cell, so a whole
+ * number of them fits across every cell. Each cell then starts
+ * its texture at the same phase, and the pattern runs unbroken
+ * across a region without any of its cells having to know where
+ * they sit on the board.
+ */
+.cell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--texture-ink);
+    -webkit-mask-image: var(--texture);
+    mask-image: var(--texture);
+    -webkit-mask-size: var(--texture-size) var(--texture-size);
+    mask-size: var(--texture-size) var(--texture-size);
+}
+
+/* dots */
+.texture-0 {
+    --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='1.5' fill='white'/%3E%3C/svg%3E");
+}
+
+/* hatching, leaning right */
+.texture-1 {
+    --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M-1 1 L1 -1 M0 8 L8 0 M7 9 L9 7' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+}
+
+/* hatching, leaning left */
+.texture-2 {
+    --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M-1 7 L1 9 M0 0 L8 8 M7 -1 L9 1' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+}
+
+/* cross-hatching */
+.texture-3 {
+    --texture-size: calc(var(--cell-size) / 3);
+    --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M-1 1 L1 -1 M0 8 L8 0 M7 9 L9 7 M-1 7 L1 9 M0 0 L8 8 M7 -1 L9 1' stroke='white' stroke-width='1.2' fill='none'/%3E%3C/svg%3E");
+}
+
+/* rings */
+.texture-4 {
+    --texture-size: calc(var(--cell-size) / 3);
+    --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='2.2' fill='none' stroke='white' stroke-width='1.2'/%3E%3C/svg%3E");
 }
 
 /*
@@ -253,13 +329,14 @@ button:disabled {
     top: calc(
         var(--row) * var(--cell-size) - var(--width) / 2);
     background-color: var(--grid-inner);
+    z-index: 1;   /* lines cover the cells of every region */
 }
 
 .border-outer {
     --width: var(--outer-width);
 
     background-color: var(--grid-outer);
-    z-index: 1;   /* region boundaries cover cell dividers */
+    z-index: 2;   /* region boundaries cover cell dividers */
 }
 
 .border-horizontal {
@@ -272,16 +349,68 @@ button:disabled {
     height: calc(var(--cell-size) + var(--width));
 }
 
-.constraint {
-    font-size: calc(var(--cell-size) / 2.2);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
+/*
+ * A region's constraint sits on a vertex of the grid, which is
+ * the point furthest from every pip of a domino covering the
+ * cells around it. The badge is a diamond because a corner pip
+ * lies on the diagonal, where a diamond is narrowest: at the
+ * same clearance it holds about 40% more than a circle would.
+ */
+.badge {
+    --badge-size: calc(var(--cell-size) * 0.78);
+    --badge-font: calc(var(--cell-size) * 0.34);
+
+    position: absolute;
+    left: calc(var(--col) * var(--cell-size));
+    top: calc(var(--row) * var(--cell-size));
+    width: var(--badge-size);
+    height: var(--badge-size);
+    display: grid;
+    place-items: center;
+    transform: translate(-50%, -50%);
+    z-index: 4;   /* above the dominoes */
 }
 
-/* The dominoes of a solution cover the board's regions. */
-.board-solved .cell,
-.board-solved .border {
-    visibility: hidden;
+/* longer constraints are set smaller, since a diamond narrows
+   towards its points */
+.badge-2 {
+    --badge-font: calc(var(--cell-size) * 0.28);
+}
+
+.badge-3 {
+    --badge-font: calc(var(--cell-size) * 0.22);
+}
+
+/*
+ * The diamond is clipped out of two stacked layers, an edge and
+ * a fill, rather than given a border, so that the text can sit
+ * on top of it unclipped.
+ */
+.badge::before,
+.badge::after {
+    content: "";
+    position: absolute;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.badge::before {
+    inset: 0;
+    background-color: var(--badge-edge);
+}
+
+.badge::after {
+    inset: var(--outer-width);
+    background-color: var(--badge-bg);
+}
+
+/* lifted over the fill, which is tree-ordered after it */
+.badge > span {
+    position: relative;
+    z-index: 1;
+    font-size: var(--badge-font);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 /* Dominoes */
@@ -293,9 +422,13 @@ button:disabled {
     background-color: hsl(
         var(--hue)
         var(--domino-saturation)
-        var(--domino-lightness));
+        var(--domino-lightness)
+        / var(--alpha));
     border: var(--outer-width) solid var(--domino-border);
     border-radius: calc(var(--cell-size) / 8);
+
+    /* nothing lies behind a domino in the tray */
+    --alpha: 100%;
 }
 
 .domino-half {
@@ -323,16 +456,30 @@ button:disabled {
  * quarter turn at a time about its top left corner.
  */
 .domino-placed {
+    --alpha: var(--domino-alpha);
+    --inset: calc(var(--cell-size) * var(--domino-inset));
+
     position: absolute;
     left: calc(var(--col) * var(--cell-size));
     top: calc(var(--row) * var(--cell-size));
-    transform: rotate(calc(var(--twists) * 90deg));
+    width: calc(var(--cell-size) * 2 - 2 * var(--inset));
+    height: calc(var(--cell-size) - 2 * var(--inset));
+
+    /*
+     * The inset is applied after the rotation, so that it moves
+     * the domino along its own axes rather than the board's.
+     */
+    transform:
+        rotate(calc(var(--twists) * 90deg))
+        translate(var(--inset), var(--inset));
     transform-origin: 0 0;
-    z-index: 2;   /* above the board's lines */
+    z-index: 3;   /* above the board's lines */
 }
 
 /* Unplaced dominoes, four to a row. */
 .tray {
+    --cell-size: min(calc((100vw - 2.5rem) / 8), 3rem);
+
     display: flex;
     flex-wrap: wrap;
     justify-content: center;

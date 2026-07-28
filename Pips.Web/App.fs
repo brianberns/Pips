@@ -63,11 +63,6 @@ type Solutions =
         Duration : float
     }
 
-/// Is the board showing a puzzle or its solutions?
-type BoardView =
-    | PuzzleView
-    | SolutionView
-
 /// State of the application.
 type Model =
     {
@@ -94,8 +89,8 @@ type Model =
         /// Solving the selected puzzle?
         Solving : bool
 
-        /// Showing puzzle or solutions?
-        View : BoardView
+        /// Laying a solution over the puzzle?
+        ShowSolution : bool
 
         /// Solution animation has been paused?
         Paused : bool
@@ -110,7 +105,7 @@ type Msg =
     | OffsetDate of float
     | SetDifficulty of Difficulty
     | PuzzlesLoaded of Result<Map<string, Puzzle>, string>
-    | ToggleView
+    | ToggleSolution
     | SolutionsFound of Solutions
     | TogglePause
     | NextFrame
@@ -132,8 +127,8 @@ module Model =
 
     /// Solution currently displayed, if any.
     let tryGetSolution model =
-        match model.View, model.Solutions with
-            | SolutionView, Some solutions
+        match model.ShowSolution, model.Solutions with
+            | true, Some solutions
                 when solutions.Puzzles.Length > 0 ->
                 let iSolution =
                     model.Frame % solutions.Puzzles.Length
@@ -142,7 +137,7 @@ module Model =
 
     /// Is the solution animation running?
     let isAnimating model =
-        model.View = SolutionView
+        model.ShowSolution
             && not model.Paused
             && getNumSolutions model > 1
 
@@ -208,7 +203,7 @@ module App =
             model with
                 Solutions = None
                 Solving = false
-                View = PuzzleView
+                ShowSolution = false
                 Paused = false
                 Frame = 0
         }
@@ -225,7 +220,7 @@ module App =
                 Error = None
                 Solutions = None
                 Solving = false
-                View = PuzzleView
+                ShowSolution = false
                 Paused = false
                 Frame = 0
             }
@@ -281,20 +276,20 @@ module App =
                     }
                 model, Cmd.none
 
-                // toggle between puzzle and solutions, solving
-                // the puzzle first if necessary
-            | ToggleView ->
-                match model.View,
+                // lay a solution over the puzzle, or take it
+                // away again, solving the puzzle if necessary
+            | ToggleSolution ->
+                match model.ShowSolution,
                       model.Solutions,
                       Model.tryGetPuzzle model with
-                    | PuzzleView, None, Some puzzle ->
+                    | false, None, Some puzzle ->
                         { model with Solving = true },
                         solvePuzzle puzzle
-                    | PuzzleView, Some _, _ ->
-                        { model with View = SolutionView },
+                    | false, Some _, _ ->
+                        { model with ShowSolution = true },
                         Cmd.none
-                    | SolutionView, _, _ ->
-                        { model with View = PuzzleView },
+                    | true, _, _ ->
+                        { model with ShowSolution = false },
                         Cmd.none
                     | _ -> model, Cmd.none
 
@@ -305,10 +300,8 @@ module App =
                             Solutions = Some solutions
                             Solving = false
                             Frame = 0
-                            View =
-                                if solutions.Puzzles.Length > 0 then
-                                    SolutionView
-                                else PuzzleView
+                            ShowSolution =
+                                solutions.Puzzles.Length > 0
                     }
                 model, Cmd.none
 
