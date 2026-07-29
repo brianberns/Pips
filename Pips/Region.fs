@@ -62,6 +62,13 @@ module UnplacedPipCounts =
 
 module Region =
 
+    /// Creates a region.
+    let create cells ``type`` =
+        {
+            Cells = cells
+            Type = ``type``
+        }
+
     /// Gets the pip counts covering cells in the given region
     /// on the given board.
     let private getPipCounts (board : Board) region =
