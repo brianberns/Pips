@@ -3,24 +3,22 @@
 /// Placement of a domino on an edge.
 type Placement =
     {
-        /// Domino being placed.
-        Domino : Domino
-
         /// Edge on which the domino is being placed.
         Edge : Edge
 
-        /// Subsequent placements.
-        Children : Placement[]
+        /// Subsequent placements of remaining dominoes.
+        ChildMap : PlacementMap
     }
+
+and PlacementMap = Map<Domino, Placement[]>
 
 module Placement =
 
     /// Creates a placement.
-    let create domino edge children =
+    let create edge childMap =
         {
-            Domino = domino
             Edge = edge
-            Children = children
+            ChildMap = childMap
         }
 
     /// Maps each edge in the given tilings to the
@@ -48,8 +46,8 @@ module Placement =
     /// Searches the given puzzle for valid placements.
     let search lookahead puzzle =
 
-        let rec loop lookahead tilingMap puzzle =
-            [|
+        let rec loop lookahead tilingMap puzzle : PlacementMap =
+            Map [|
                     // attempt to place each domino
                 for domino in puzzle.UnplacedDominoes do
 
@@ -68,21 +66,22 @@ module Placement =
                                         Edge.reverse edge, tilings
                             |]
 
-                        // recurse and construct placements
-                    for (edge, tilings, puzzle) in tuples do
-
-                            // loop for child placements?
-                        let children =
-                            if lookahead <= 0 then Array.empty
-                            else
-                                let tilingMap = toTilingMap tilings
-                                loop (lookahead - 1) tilingMap puzzle
-
-                            // valid placement found, or end of search
-                        if children.Length > 0
-                            || puzzle.UnplacedDominoes.IsEmpty
-                            || lookahead <= 0 then
-                            create domino edge children
+                        // construct placements for this domino
+                    let placements =
+                        [|
+                            for (edge, tilings, puzzle) in tuples do
+                                if puzzle.UnplacedDominoes.IsEmpty
+                                    || lookahead <= 0 then
+                                    create edge Map.empty
+                                else
+                                    let childMap =
+                                        let tilingMap = toTilingMap tilings
+                                        loop (lookahead - 1) tilingMap puzzle
+                                    assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
+                                    if childMap.Count = puzzle.UnplacedDominoes.Count then
+                                        create edge childMap
+                        |]
+                    domino, placements
             |]
 
             // start search with all tilings
@@ -92,6 +91,18 @@ module Placement =
                 |> toTilingMap
         loop lookahead tilingMap puzzle
 
+    let print placementMap =
+
+        let rec loop depth (placementMap : PlacementMap) =
+            let indent = System.String(' ', 3 * depth)
+            for domino, placements in Map.toSeq placementMap do
+                for placement in placements do
+                    printfn $"{indent}{domino} at {placement.Edge}"
+                    loop (depth + 1) placement.ChildMap
+
+        loop 0 placementMap
+
+(*
 type ForcedPlacementReason =
     | Lookahead of int
 
@@ -134,3 +145,4 @@ module ForcedPlacement =
                     |> Array.groupBy _.Domino
                     |> Array.tryPick (fun (domino, placements) ->
                         tryForce lookahead domino placements))
+*)
