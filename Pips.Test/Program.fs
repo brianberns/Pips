@@ -342,17 +342,20 @@ module Program =
             let dateStr = date.ToString("yyyy-MM-dd")
             Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                 |> Map.find "easy"
-                |> Placement.searchForced 2
+                |> ForcedPlacement.search 2
 
         let startDate = DateOnly.Parse("8/18/2025")
         let endDate = DateOnly.Parse("11/25/2025")
         let lastOffset = endDate.DayNumber - startDate.DayNumber
         for offset = 0 to lastOffset do
             let date = startDate.AddDays(offset)
-            printfn "----------------------------------------------------------------------"
-            printfn $"{date}"
-            for placement in solve date do
-                Placement.print placement
+            let dateStr = date.ToString("MM/dd/yyyy")
+            let valueStr =
+                solve date
+                    |> Option.map (fun forced ->
+                        $"{forced.Domino} on {forced.Edges[0]} by {forced.Reason}")
+                    |> Option.defaultValue "No forced move found"
+            printfn $"{dateStr}: {valueStr}"
 
     let generate () =
 

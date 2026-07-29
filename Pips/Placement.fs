@@ -15,6 +15,13 @@ type Placement =
 
 module Placement =
 
+    let create domino edge children =
+        {
+            Domino = domino
+            Edge = edge
+            Children = children
+        }
+
     /// Maps each edge in the given tilings to the
     /// tilings in which it appears.
     let private toTilingMap tilings =
@@ -66,11 +73,7 @@ module Placement =
                         if children.Length > 0
                             || puzzle.UnplacedDominoes.IsEmpty
                             || lookahead <= 0 then
-                            {
-                                Domino = domino
-                                Edge = edge
-                                Children = children
-                            }
+                            create domino edge children
             |]
 
             // start search with all tilings
@@ -80,7 +83,26 @@ module Placement =
                 |> toTilingMap
         loop lookahead tilingMap puzzle
 
-    let private tryForce placements =
+type ForcedPlacementReason =
+    | Lookahead of int
+
+type ForcedPlacement =
+    {
+        Domino : Domino
+        Edges : Edge[]
+        Reason : ForcedPlacementReason
+    }
+
+module ForcedPlacement =
+
+    let create domino edges reason =
+        {
+            Domino = domino
+            Edges = edges
+            Reason = reason
+        }
+
+    let private tryForce lookahead domino placements =
         let cellSets =
             placements
                 |> Array.map (fun placement ->
@@ -88,29 +110,18 @@ module Placement =
                     set [ cellA; cellB ])
                 |> set
         if cellSets.Count = 1 then
-            Some placements[0]
+            let edges =
+                placements
+                    |> Seq.map _.Edge
+                    |> Seq.toArray
+            Some (create domino edges (Lookahead lookahead))
         else None
 
     /// Searches the given puzzle for forced placements.
-    let searchForced maxLookahead puzzle =
+    let search maxLookahead puzzle =
         [ 0 .. maxLookahead ]
             |> Seq.tryPick (fun lookahead ->
-                let placements =
-                    search lookahead puzzle
-                        |> Array.groupBy _.Domino
-                        |> Array.choose (fun (_, group) ->
-                            tryForce group)   // only one way to place this domino?
-                if placements.Length > 0 then
-                    Some placements
-                else None)
-            |> Option.defaultValue Array.empty
-
-    let print placement =
-
-        let rec loop depth placement =
-            let indent = System.String(' ', 3 * depth)
-            printfn $"{indent}{placement.Domino} @ {placement.Edge}"
-            for child in placement.Children do
-                loop (depth + 1) child
-
-        loop 0 placement
+                Placement.search lookahead puzzle
+                    |> Array.groupBy _.Domino
+                    |> Array.tryPick (fun (domino, placements) ->
+                        tryForce lookahead domino placements))
