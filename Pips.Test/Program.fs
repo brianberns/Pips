@@ -342,7 +342,7 @@ module Program =
             let dateStr = date.ToString("yyyy-MM-dd")
             Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                 |> Map.find "easy"
-                |> Placement.search 2
+                |> Placement.searchForced 2
 
         let startDate = DateOnly.Parse("8/18/2025")
         let endDate = DateOnly.Parse("11/25/2025")

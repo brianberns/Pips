@@ -29,8 +29,8 @@ module Placement =
                 edge, Seq.map snd group |> Seq.toArray)
             |> Map
 
-    /// Search loop.
-    let rec private searchLoop lookahead tilingMap puzzle =
+    /// Searches the given puzzle for valid placements.
+    let rec search lookahead tilingMap puzzle =
         [|
                 // attempt to place each domino
             for domino in puzzle.UnplacedDominoes do
@@ -58,7 +58,7 @@ module Placement =
                         if lookahead <= 0 then Array.empty
                         else
                             let tilingMap = toTilingMap tilings
-                            searchLoop (lookahead - 1) tilingMap puzzle
+                            search (lookahead - 1) tilingMap puzzle
 
                         // valid placement found, or end of search
                     if children.Length > 0
@@ -71,8 +71,8 @@ module Placement =
                         }
         |]
 
-    /// Searches the given puzzle for valid placements.
-    let search maxLookahead puzzle =
+    /// Searches the given puzzle for forced placements.
+    let searchForced maxLookahead puzzle =
 
             // start search with all tilings
         assert(maxLookahead >= 0)
@@ -85,7 +85,7 @@ module Placement =
             |> Seq.tryPick (fun lookahead ->
                 let placements =
                     puzzle
-                        |> searchLoop lookahead tilingMap
+                        |> search lookahead tilingMap
                         |> Seq.groupBy _.Domino
                         |> Seq.choose (fun (_, group) ->
                             Seq.tryExactlyOne group)   // only one way to place this domino?
