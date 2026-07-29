@@ -29,57 +29,71 @@ module Placement =
                 edge, Seq.map snd group |> Seq.toArray)
             |> Map
 
+    /// Search loop.
+    let rec private searchLoop lookahead tilingMap puzzle =
+        [|
+                // attempt to place each domino
+            for domino in puzzle.UnplacedDominoes do
+
+                    // attempt to place domino on available edges
+                let tuples =
+                    let reverse = not (Domino.isDouble domino)
+                    Array.choose (fun (edge, tilings) ->
+                        puzzle
+                            |> Puzzle.tryPlace domino edge
+                            |> Option.map (fun puzzle ->
+                                edge, tilings, puzzle))
+                        [|
+                            for (edge, tilings) in Map.toSeq tilingMap do
+                                edge, tilings
+                                if reverse then
+                                    Edge.reverse edge, tilings
+                        |]
+
+                    // recurse and construct placements
+                for (edge, tilings, puzzle) in tuples do
+
+                        // loop for child placements?
+                    let children =
+                        if lookahead <= 0 then Array.empty
+                        else
+                            let tilingMap = toTilingMap tilings
+                            searchLoop (lookahead - 1) tilingMap puzzle
+
+                        // valid placement found, or end of search
+                    if children.Length > 0
+                        || puzzle.UnplacedDominoes.IsEmpty
+                        || lookahead <= 0 then
+                        {
+                            Domino = domino
+                            Edge = edge
+                            Children = children
+                        }
+        |]
+
     /// Searches the given puzzle for valid placements.
-    let search lookahead puzzle =
+    let search maxLookahead puzzle =
 
-        /// Search loop.
-        let rec loop lookahead tilingMap puzzle =
-            [|
-                    // attempt to place each domino
-                for domino in puzzle.UnplacedDominoes do
-
-                        // attempt to place domino on available edges
-                    let tuples =
-                        let reverse = not (Domino.isDouble domino)
-                        Array.choose (fun (edge, tilings) ->
-                            puzzle
-                                |> Puzzle.tryPlace domino edge
-                                |> Option.map (fun puzzle ->
-                                    edge, tilings, puzzle))
-                            [|
-                                for (edge, tilings) in Map.toSeq tilingMap do
-                                    edge, tilings
-                                    if reverse then
-                                        Edge.reverse edge, tilings
-                            |]
-
-                        // recurse and construct placements
-                    for (edge, tilings, puzzle) in tuples do
-
-                            // loop for child placements?
-                        let children =
-                            if lookahead <= 0 then Array.empty
-                            else
-                                let tilingMap = toTilingMap tilings
-                                loop (lookahead - 1) tilingMap puzzle
-
-                            // valid placement found, or end of search
-                        if children.Length > 0
-                            || puzzle.UnplacedDominoes.IsEmpty
-                            || lookahead <= 0 then
-                            {
-                                Domino = domino
-                                Edge = edge
-                                Children = children
-                            }
-            |]
-
-            // search using all tilings
-        assert(lookahead >= 0)
+            // start search with all tilings
+        assert(maxLookahead >= 0)
         let tilingMap =
             Puzzle.getAllTilings puzzle
                 |> toTilingMap
-        loop lookahead tilingMap puzzle
+
+            // find first lookahead level with forced placements
+        [ 0 .. maxLookahead ]
+            |> Seq.tryPick (fun lookahead ->
+                let placements =
+                    puzzle
+                        |> searchLoop lookahead tilingMap
+                        |> Seq.groupBy _.Domino
+                        |> Seq.choose (fun (_, group) ->
+                            Seq.tryExactlyOne group)   // only one way to place this domino?
+                        |> Seq.toArray
+                if placements.Length > 0 then
+                    Some placements
+                else None)
+            |> Option.defaultValue Array.empty
 
     let print placement =
 
