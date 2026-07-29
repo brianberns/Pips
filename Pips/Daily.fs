@@ -30,10 +30,7 @@ module DailyRegion =
                 | "sum", Some target     -> RegionType.SumExact target
                 | "unequal", None        -> RegionType.Unequal
                 | typ -> failwith $"Unexpected region type: {typ}"
-        {
-            Cells = cells
-            Type = typ
-        }
+        Region.create cells typ
 
 type DailyPuzzle =
     {

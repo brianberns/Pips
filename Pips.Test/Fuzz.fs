@@ -161,10 +161,7 @@ module SolvedPuzzle =
     let tryCreateUnconstrainedRegion (cells : _[]) _board =
         gen {
             if cells.Length <= 1 then   // large unconstrained regions are uninteresting
-                return Some {
-                    Cells = cells
-                    Type = RegionType.Any
-                }
+                return Some (Region.create cells RegionType.Any)
             else return None
         }
 
@@ -177,10 +174,7 @@ module SolvedPuzzle =
                     getRegionPipValues cells board
                         |> Array.distinct
                 if pipCounts.Length = 1 then
-                    return Some {
-                        Cells = cells
-                        Type = RegionType.Equal
-                    }
+                    return Some (Region.create cells RegionType.Equal)
                 else return None
             else return None
         }
@@ -194,10 +188,7 @@ module SolvedPuzzle =
                     getRegionPipValues cells board
                         |> Array.distinct
                 if pipCounts.Length = cells.Length then
-                    return Some {
-                        Cells = cells
-                        Type = RegionType.Unequal
-                    }
+                    return Some (Region.create cells RegionType.Unequal)
                 else return None
             else return None
         }
@@ -212,10 +203,9 @@ module SolvedPuzzle =
             let max = pipCounts.Length * PipCount.maxValue
             if sum < max then
                 let! target = Gen.choose (sum + 1, max)
-                return Some {
-                    Cells = cells
-                    Type = RegionType.SumLess target
-                }
+                return Some (
+                    Region.create cells
+                        (RegionType.SumLess target))
             else return None
         }
 
@@ -229,10 +219,9 @@ module SolvedPuzzle =
             let sum = Array.sum pipCounts
             if sum > 0 then
                 let! target = Gen.choose (0, sum - 1)
-                return Some {
-                    Cells = cells
-                    Type = RegionType.SumGreater target
-                }
+                return Some (
+                    Region.create cells
+                        (RegionType.SumGreater target))
             else return None
         }
 
@@ -243,10 +232,9 @@ module SolvedPuzzle =
             let pipCounts =
                 getRegionPipValues cells board
             let sum = Array.sum pipCounts
-            return Some {
-                Cells = cells
-                Type = RegionType.SumExact sum
-            }
+            return Some (
+                Region.create cells
+                    (RegionType.SumExact sum))
         }
 
     /// A function that can create a region.

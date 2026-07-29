@@ -61,22 +61,18 @@ module Puzzle =
                     Domino.create 5 5
                 ]
                 [|
-                    {
-                        Cells =
-                            [|
-                                Cell.create 0 0
-                                Cell.create 0 1
-                            |]
-                        Type = RegionType.SumGreater 7
-                    }
-                    {
-                        Cells =
-                            [|
-                                Cell.create 1 0
-                                Cell.create 1 1
-                            |]
-                        Type = RegionType.SumExact 6
-                    }
+                    Region.create
+                        [|
+                            Cell.create 0 0
+                            Cell.create 0 1
+                        |]
+                        (RegionType.SumGreater 7)
+                    Region.create
+                        [|
+                            Cell.create 1 0
+                            Cell.create 1 1
+                        |]
+                        (RegionType.SumExact 6)
                 |]
         let actual = Backtrack.solve puzzle
         Assert.Equal(2, Seq.length actual)
@@ -90,16 +86,14 @@ module Puzzle =
                     Domino.create 4 3
                 ]
                 [|
-                    {
-                        Cells =
-                            [|
-                                Cell.create 1 1
-                                Cell.create 0 1
-                                Cell.create 1 2
-                                Cell.create 0 2
-                            |]
-                        Type = RegionType.Unequal
-                    }
+                    Region.create
+                        [|
+                            Cell.create 1 1
+                            Cell.create 0 1
+                            Cell.create 1 2
+                            Cell.create 0 2
+                        |]
+                        RegionType.Unequal
                 |]
         let actual = Backtrack.solve puzzle
         Assert.Equal(16, Seq.length actual)
