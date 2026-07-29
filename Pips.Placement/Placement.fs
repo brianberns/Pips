@@ -15,6 +15,7 @@ type Placement =
 
 module Placement =
 
+    /// Creates a placement.
     let create domino edge children =
         {
             Domino = domino

@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Pips.Placement\Pips.Placement.fsproj" />
     <ProjectReference Include="..\Pips\Pips.fsproj" />
   </ItemGroup>
 
