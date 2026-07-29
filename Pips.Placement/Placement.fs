@@ -37,6 +37,14 @@ module Placement =
                 edge, Seq.map snd group |> Seq.toArray)
             |> Map
 
+    let private tryPlace domino edge tilings puzzle =
+        puzzle
+            |> Puzzle.tryPlace domino edge
+            |> Option.bind (fun puzzle ->
+                if Puzzle.isValidTiled tilings puzzle then
+                    Some puzzle
+                else None)
+
     /// Searches the given puzzle for valid placements.
     let search lookahead puzzle =
 
@@ -50,7 +58,7 @@ module Placement =
                         let reverse = not (Domino.isDouble domino)
                         Array.choose (fun (edge, tilings) ->
                             puzzle
-                                |> Puzzle.tryPlace domino edge
+                                |> tryPlace domino edge tilings
                                 |> Option.map (fun puzzle ->
                                     edge, tilings, puzzle))
                             [|
