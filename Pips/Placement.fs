@@ -80,18 +80,26 @@ module Placement =
                 |> toTilingMap
         loop lookahead tilingMap puzzle
 
+    let private tryForce placements =
+        let cellSets =
+            placements
+                |> Array.map (fun placement ->
+                    let (cellA, cellB) = placement.Edge
+                    set [ cellA; cellB ])
+                |> set
+        if cellSets.Count = 1 then
+            Some placements[0]
+        else None
+
     /// Searches the given puzzle for forced placements.
     let searchForced maxLookahead puzzle =
-
-            // find first lookahead level with forced placements
         [ 0 .. maxLookahead ]
             |> Seq.tryPick (fun lookahead ->
                 let placements =
                     search lookahead puzzle
-                        |> Seq.groupBy _.Domino
-                        |> Seq.choose (fun (_, group) ->
-                            Seq.tryExactlyOne group)   // only one way to place this domino?
-                        |> Seq.toArray
+                        |> Array.groupBy _.Domino
+                        |> Array.choose (fun (_, group) ->
+                            tryForce group)   // only one way to place this domino?
                 if placements.Length > 0 then
                     Some placements
                 else None)
