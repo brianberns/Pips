@@ -368,12 +368,12 @@ module Program =
     do
         let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-25.json"
         let puzzle = puzzleMap["easy"]
-        for proof in Proof.solve 1 puzzle do
-            Proof.print proof
+        for placement in Placement.search 1 puzzle do
+            Placement.print placement
 
     printfn "-------------"
     do
         let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-08-23.json"
         let puzzle = puzzleMap["easy"]
-        for proof in Proof.solve 2 puzzle do
-            Proof.print proof
+        for placement in Placement.search 2 puzzle do
+            Placement.print placement
