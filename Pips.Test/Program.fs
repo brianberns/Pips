@@ -138,11 +138,6 @@ module Program =
         let maxRow = solution.Board.NumRows - 1
         let maxCol = solution.Board.NumColumns - 1
 
-        let cells =
-            solution.Regions
-                |> Seq.collect _.Cells
-                |> set
-
         let dominoMap =
             Map [
                 for (_, (c1, c2)) in solution.Board.DominoPlaces do
@@ -341,6 +336,24 @@ module Program =
         printfn ""
         printfn $"Total: {timeSpanA + timeSpanB}"
 
+    let searchPlacements () =
+
+        let solve (date : DateOnly) =
+            let dateStr = date.ToString("yyyy-MM-dd")
+            Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+                |> Map.find "easy"
+                |> Placement.search 2
+
+        let startDate = DateOnly.Parse("8/18/2025")
+        let endDate = DateOnly.Parse("11/25/2025")
+        let lastOffset = endDate.DayNumber - startDate.DayNumber
+        for offset = 0 to lastOffset do
+            let date = startDate.AddDays(offset)
+            printfn "----------------------------------------------------------------------"
+            printfn $"{date}"
+            for placement in solve date do
+                Placement.print placement
+
     let generate () =
 
         let samples =
@@ -364,18 +377,4 @@ module Program =
             printSolution solutions[0]
 
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-
-    do
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-09-25.json"
-        let puzzle = puzzleMap["easy"]
-        puzzle
-            |> Placement.search 3
-            |> Seq.iter Placement.print
-
-    printfn "-------------"
-    do
-        let puzzleMap = Daily.loadHttp "https://www.nytimes.com/svc/pips/v1/2025-08-23.json"
-        let puzzle = puzzleMap["easy"]
-        puzzle
-            |> Placement.search 3
-            |> Seq.iter Placement.print
+    searchPlacements ()
