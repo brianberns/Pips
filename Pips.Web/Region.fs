@@ -62,7 +62,7 @@ module Region =
     /// line between two cells is drawn exactly once. Cells on
     /// the right or bottom edge of the board have no neighbor
     /// to draw those lines, so they draw them instead.
-    let private renderCell regionMap iTextureOpt cell =
+    let private renderCell regionMap (hueOpt : float option) cell =
         let toRight = { cell with Column = cell.Column + 1 }
         let below = { cell with Row = cell.Row + 1 }
         [
@@ -70,13 +70,13 @@ module Region =
                 prop.key $"{cell}"
                 prop.classes [
                     "cell"
-                    match iTextureOpt with
-                        | Some iTexture -> $"texture-{iTexture}"
-                        | None -> ()
+                    if hueOpt.IsNone then "cell-any"
                 ]
                 prop.style [
                     style.gridRowStart (cell.Row + 1)
                     style.gridColumnStart (cell.Column + 1)
+                    style.custom (
+                        "--hue", $"{hueOpt |> Option.defaultValue 0.0}")
                 ]
             ]
 
@@ -96,40 +96,32 @@ module Region =
         ]
 
     /// Renders the cells of the given region, filled with the
-    /// given texture, or left blank if it has none.
-    let render regionMap iTextureOpt (region : Region) =
+    /// given hue, or gray if it has none (an unconstrained
+    /// region is always gray, regardless of any color it was
+    /// assigned).
+    let render regionMap hueOpt (region : Region) =
         [
             for cell in region.Cells do
-                yield! renderCell regionMap iTextureOpt cell
+                yield! renderCell regionMap hueOpt cell
         ]
 
-    /// How far a badge is drawn into its own region, in cells.
-    let private badgePull = 0.175
-
     /// Determines where the given region's badge goes, in cell
-    /// coordinates.
-    ///
-    /// A badge marks the top left corner of the region's first
+    /// coordinates: the shared corner of the region's first
     /// cell, reading left to right and top to bottom. Regions
-    /// never share a cell, so they never share a first cell,
-    /// and so no two badges are ever drawn at the same corner.
-    /// Distinct corners are a whole cell apart, which is wider
-    /// than a badge, and the pull below shifts every badge
-    /// alike, so badges cannot collide.
+    /// never share a cell, so they never share this corner with
+    /// another region's badge.
     ///
-    /// The badge is drawn into its region far enough to show
-    /// plainly whose it is. A corner is the point furthest from
-    /// every pip of a domino covering the cells around it, so
-    /// this costs as little as it can: the badge hides the one
-    /// corner pip of its own cell, and no other.
+    /// The badge sits exactly on the grid, rather than pulled
+    /// into its own region, because it is filled with that
+    /// region's own color: matching color, not position, is
+    /// what tells a reader whose badge it is.
     let getBadgeAnchor (region : Region) =
         let cell = Array.min region.Cells
-        float cell.Row + badgePull,
-        float cell.Column + badgePull
+        float cell.Row, float cell.Column
 
-    /// Renders the given constraint as a badge at the given
-    /// point on the board.
-    let renderBadge (row, col) (constraintStr : string) =
+    /// Renders the given constraint as a badge, filled with the
+    /// given hue, at the given point on the board.
+    let renderBadge (row, col) hue (constraintStr : string) =
         Html.div [
             prop.key $"{constraintStr}@{row},{col}"
             prop.classes [
@@ -139,6 +131,7 @@ module Region =
             prop.style [
                 style.custom ("--row", $"{row}")
                 style.custom ("--col", $"{col}")
+                style.custom ("--hue", $"{hue}")
             ]
             prop.children [
                 Html.span constraintStr

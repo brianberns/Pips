@@ -58,13 +58,21 @@ HTML, styled by `index.css`.
   once; cells with no neighbor to the right or below draw those edges
   themselves. Each line overhangs its ends by half its width, so lines
   meeting at a corner overlap rather than leaving a notch — which is why
-  they aren't just CSS borders on the cells. Region constraints are
-  shaded by how tight they are.
+  they aren't just CSS borders on the cells. An unconstrained region is
+  left gray; every other region is filled with a hue. A region's
+  constraint, if it has one, sits in a diamond badge on the lattice
+  point at its first cell, filled with that region's own color — color,
+  not position, is what says whose badge it is.
 * `Domino.fs` renders a domino as two halves, each a 3x3 grid holding up
   to six pips. Dominoes are always laid out horizontally, then rotated a
   quarter turn at a time into place, so a vertical domino is a rotated
-  horizontal one rather than a separate layout.
-* `Puzzle.fs` assembles the board, and lays a solution's dominoes over it.
+  horizontal one rather than a separate layout. A placed domino is a
+  fixed ivory, not derived from the theme, and translucent, so the
+  region underneath still reads once it's covered.
+* `Puzzle.fs` assembles the board — including choosing each region's
+  hue by greedy graph coloring, so that no two regions meeting at an
+  edge or even just a corner are colored alike — and lays a solution's
+  dominoes over it.
 * `Program.fs` renders the controls and mounts the app.
 
 Sizes all derive from one custom property, `--cell-size`, so the puzzle

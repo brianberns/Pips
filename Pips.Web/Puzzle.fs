@@ -14,35 +14,57 @@ module Puzzle =
                     yield cell, region
         ]
 
-    /// Number of textures available to fill regions.
-    let private numTextures = 5
+    /// Number of hues available to color regions. Kept low so
+    /// that consecutive hues are far enough apart to tell apart
+    /// at a glance -- tested empirically down to 5 before a
+    /// region ever runs out of hues distinct from its neighbors.
+    let private numHues = 6
 
-    /// Chooses a texture for each of the given regions that has
-    /// a constraint to show, so that no two such regions sharing
-    /// a border are filled with the same one. Regions are indexed
-    /// by their position in the array.
+    /// Hue of the given color class, in degrees.
+    let private getHue iColor =
+        360.0 * float iColor / float numHues
+
+    /// Cells that share at least a corner with the given cell.
+    /// Two regions can meet at a single lattice point without
+    /// ever sharing an edge, and a badge sits on exactly that
+    /// point, so corner-touching regions need distinct colors
+    /// just as much as edge-adjacent ones do.
+    let private getTouching cell =
+        [|
+            for dRow in -1 .. 1 do
+                for dCol in -1 .. 1 do
+                    if dRow <> 0 || dCol <> 0 then
+                        { cell with
+                            Row = cell.Row + dRow
+                            Column = cell.Column + dCol }
+        |]
+
+    /// Chooses a color for every region that has a constraint to
+    /// show, so that no two such regions meeting at a shared
+    /// edge or corner are colored alike. Regions are indexed by
+    /// their position in the array.
     ///
-    /// Regions are filled greedily, most crowded first. A map of
-    /// regions is planar, so this rarely calls for more than
-    /// four textures, but a region with many neighbors can still
-    /// exhaust them, in which case two neighbors have to share.
-    let private assignTextures (regions : Region[]) =
+    /// Regions are colored greedily, most crowded first. A
+    /// region can have far more corner neighbors than a planar
+    /// map would otherwise suggest, so a region with many of
+    /// them can still exhaust the palette, in which case two
+    /// neighbors have to share.
+    let private assignColors (regions : Region[]) =
 
-            // a region that doesn't constrain its cells is left
-            // blank, so it neither takes a texture nor rules one
-            // out for its neighbors
-        let textured =
+            // an unconstrained region is always gray, so it
+            // neither takes a color nor rules one out for its
+            // neighbors
+        let colorable =
             [|
                 for iRegion = 0 to regions.Length - 1 do
-                    let region = regions[iRegion]
-                    if (Region.tryGetConstraint region).IsSome then
+                    if regions[iRegion].Type <> RegionType.Any then
                         yield iRegion
             |]
 
-            // which region does each textured cell belong to?
+            // which region does each colorable cell belong to?
         let cellRegions =
             Map [
-                for iRegion in textured do
+                for iRegion in colorable do
                     for cell in regions[iRegion].Cells do
                         yield cell, iRegion
             ]
@@ -50,10 +72,10 @@ module Puzzle =
             // which regions does each region touch?
         let neighbors =
             Map [
-                for iRegion in textured do
+                for iRegion in colorable do
                     yield iRegion, set [
                         for cell in regions[iRegion].Cells do
-                            for adj in Cell.getAdjacent cell do
+                            for adj in getTouching cell do
                                 match Map.tryFind adj cellRegions with
                                     | Some iOther when iOther <> iRegion ->
                                         yield iOther
@@ -63,29 +85,29 @@ module Puzzle =
 
             // the most crowded regions get first pick
         let order =
-            textured
+            colorable
                 |> Array.sortByDescending (fun iRegion ->
                     neighbors[iRegion].Count)
 
         (Map.empty, order)
-            ||> Array.fold (fun textures iRegion ->
+            ||> Array.fold (fun colors iRegion ->
                 let taken =
                     neighbors[iRegion]
                         |> Seq.choose (fun iOther ->
-                            Map.tryFind iOther textures)
+                            Map.tryFind iOther colors)
                         |> set
-                let iTexture =
-                    Seq.init numTextures id
+                let iColor =
+                    Seq.init numHues id
                         |> Seq.tryFind (taken.Contains >> not)
                         |> Option.defaultValue 0
-                Map.add iRegion iTexture textures)
+                Map.add iRegion iColor colors)
 
     /// Renders the given puzzle's board. A solution is laid over
     /// the board rather than replacing it, so that the regions
     /// and their constraints remain visible underneath.
     let renderBoard puzzle solutionOpt =
         let regionMap = getRegionMap puzzle
-        let textures = assignTextures puzzle.Regions
+        let colors = assignColors puzzle.Regions
 
         Html.div [
             prop.className "board"
@@ -99,7 +121,7 @@ module Puzzle =
                 for iRegion = 0 to puzzle.Regions.Length - 1 do
                     yield! Region.render
                         regionMap
-                        (Map.tryFind iRegion textures)
+                        (Map.tryFind iRegion colors |> Option.map getHue)
                         puzzle.Regions[iRegion]
 
                     // dominoes of the solution, if any
@@ -112,11 +134,13 @@ module Puzzle =
                     // constraints, which sit above the dominoes.
                     // Regions that don't constrain their cells
                     // have nothing to say, and so have no badge.
-                for region in puzzle.Regions do
+                for iRegion = 0 to puzzle.Regions.Length - 1 do
+                    let region = puzzle.Regions[iRegion]
                     match Region.tryGetConstraint region with
                         | Some text ->
                             Region.renderBadge
                                 (Region.getBadgeAnchor region)
+                                (getHue colors[iRegion])
                                 text
                         | None -> ()
             ]
