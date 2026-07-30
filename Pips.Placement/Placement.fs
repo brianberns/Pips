@@ -70,8 +70,8 @@ module Placement =
                     let placements =
                         [|
                             for (edge, tilings, puzzle) in tuples do
-                                if puzzle.UnplacedDominoes.IsEmpty
-                                    || lookahead <= 0 then
+                                if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
+                                    || lookahead <= 0 then           // lookahead horizon reached
                                     create edge Map.empty
                                 else
                                     let childMap =
@@ -81,7 +81,8 @@ module Placement =
                                     if childMap.Count = puzzle.UnplacedDominoes.Count then
                                         create edge childMap
                         |]
-                    domino, placements
+                    if placements.Length > 0 then
+                        domino, placements
             |]
 
             // start search with all tilings
@@ -96,9 +97,12 @@ module Placement =
         let rec loop depth (placementMap : PlacementMap) =
             let indent = System.String(' ', 3 * depth)
             for domino, placements in Map.toSeq placementMap do
-                for placement in placements do
-                    printfn $"{indent}{domino} at {placement.Edge}"
-                    loop (depth + 1) placement.ChildMap
+                if placements.Length = 0 then
+                    printfn $"{indent}{domino} at None"
+                else
+                    for placement in placements do
+                        printfn $"{indent}{domino} at {placement.Edge}"
+                        loop (depth + 1) placement.ChildMap
 
         loop 0 placementMap
 
