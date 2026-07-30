@@ -52,35 +52,33 @@ module Placement =
                 for domino in puzzle.UnplacedDominoes do
 
                         // attempt to place domino on available edges
-                    let tuples =
-                        let reverse = not (Domino.isDouble domino)
-                        Array.choose (fun (edge, tilings) ->
-                            puzzle
-                                |> tryPlace domino edge tilings
-                                |> Option.map (fun puzzle ->
-                                    edge, tilings, puzzle))
-                            [|
-                                for (edge, tilings) in Map.toSeq tilingMap do
-                                    edge, tilings
-                                    if reverse then
-                                        Edge.reverse edge, tilings
-                            |]
-
-                        // construct placements for this domino
                     let placements =
+                        let reverse = not (Domino.isDouble domino)
                         [|
-                            for (edge, tilings, puzzle) in tuples do
-                                if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
-                                    || lookahead <= 0 then           // lookahead horizon reached
-                                    create edge Map.empty
-                                else
-                                    let childMap =
-                                        let tilingMap = toTilingMap tilings
-                                        loop (lookahead - 1) tilingMap puzzle
-                                    assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
-                                    if childMap.Count = puzzle.UnplacedDominoes.Count then
-                                        create edge childMap
+                            for (edge, tilings) in Map.toSeq tilingMap do
+                                edge, tilings
+                                if reverse then
+                                    Edge.reverse edge, tilings
                         |]
+                            |> Array.choose (fun (edge, tilings) ->
+                                option {
+                                    let! puzzle =
+                                        tryPlace domino edge tilings puzzle
+                                    return edge, tilings, puzzle
+                                })
+                            |> Array.Parallel.choose (fun (edge, tilings, puzzle) ->
+                                option {
+                                    if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
+                                        || lookahead <= 0 then           // lookahead horizon reached
+                                        return create edge Map.empty
+                                    else
+                                        let childMap =
+                                            let tilingMap = toTilingMap tilings
+                                            loop (lookahead - 1) tilingMap puzzle
+                                        assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
+                                        if childMap.Count = puzzle.UnplacedDominoes.Count then
+                                            return create edge childMap
+                                })
                     if placements.Length > 0 then
                         domino, placements
             |]
