@@ -35,14 +35,6 @@ module Placement =
                 edge, Seq.map snd group |> Seq.toArray)
             |> Map
 
-    let private tryPlace domino edge tilings puzzle =
-        option {
-            let! puzzle =
-                Puzzle.tryPlace domino edge puzzle
-            if Puzzle.isValidTiled tilings puzzle then
-                return puzzle
-        }
-
     /// Searches the given puzzle for valid placements.
     let search lookahead puzzle =
 
@@ -58,36 +50,36 @@ module Placement =
                         Edge.reverse edge, tilings
                 |]
 
+                // attempt to place each domino
             Map [|
-                    // attempt to place each domino
                 for domino in puzzle.UnplacedDominoes do
-
-                        // don't reverse edges for doubles
                     let pairs =
-                        if Domino.isDouble domino then withoutReverse
+                        if Domino.isDouble domino then withoutReverse   // don't reverse edges for doubles
                         else withReverse
-
-                        // attempt to place domino on available edges
                     let placements =
-                        pairs
-                            |> Array.Parallel.choose (fun (edge, tilings) ->
-                                option {
-                                    let! puzzle =
-                                        tryPlace domino edge tilings puzzle
-                                    if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
-                                        || lookahead <= 0 then           // lookahead horizon reached
-                                        return create edge Map.empty
-                                    else
-                                        let childMap =
-                                            let tilingMap = toTilingMap tilings
-                                            loop (lookahead - 1) tilingMap puzzle
-                                        assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
-                                        if childMap.Count = puzzle.UnplacedDominoes.Count then
-                                            return create edge childMap
-                                })
+                        Array.Parallel.choose (fun (edge, tilings) ->
+                            tryPlace lookahead domino edge tilings puzzle)
+                            pairs
                     if placements.Length > 0 then
                         domino, placements
             |]
+
+        and tryPlace lookahead domino edge tilings puzzle =
+            option {
+                let! puzzle =
+                    Puzzle.tryPlace domino edge puzzle
+                if Puzzle.isValidTiled tilings puzzle then
+                    if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
+                        || lookahead <= 0 then           // lookahead horizon reached
+                        return create edge Map.empty
+                    else
+                        let childMap =
+                            let tilingMap = toTilingMap tilings
+                            loop (lookahead - 1) tilingMap puzzle
+                        assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
+                        if childMap.Count = puzzle.UnplacedDominoes.Count then
+                            return create edge childMap
+            }
 
             // start search with all tilings
         assert(lookahead >= 0)

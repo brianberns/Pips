@@ -341,7 +341,7 @@ module Program =
         let solve (date : DateOnly) =
             let dateStr = date.ToString("yyyy-MM-dd")
             Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                |> Map.find "easy"
+                |> Map.find "medium"
                 |> ForcedPlacement.search 2
 
         let startDate = DateOnly.Parse("8/18/2025")
