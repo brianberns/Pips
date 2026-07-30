@@ -106,7 +106,6 @@ module Placement =
 
         loop 0 placementMap
 
-(*
 type ForcedPlacementReason =
     | Lookahead of int
 
@@ -146,7 +145,6 @@ module ForcedPlacement =
         [ 0 .. maxLookahead ]
             |> Seq.tryPick (fun lookahead ->
                 Placement.search lookahead puzzle
-                    |> Array.groupBy _.Domino
-                    |> Array.tryPick (fun (domino, placements) ->
+                    |> Map.toSeq
+                    |> Seq.tryPick (fun (domino, placements) ->
                         tryForce lookahead domino placements))
-*)
