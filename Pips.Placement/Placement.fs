@@ -10,6 +10,7 @@ type Placement =
         ChildMap : PlacementMap
     }
 
+/// Placements for multiple dominoes.
 and PlacementMap = Map<Domino, Placement[]>
 
 module Placement =
@@ -36,57 +37,68 @@ module Placement =
             |> Map
 
     /// Searches the given puzzle for valid placements.
-    let search lookahead puzzle =
+    let rec private searchLoop lookahead tilingMap puzzle : PlacementMap =
 
-        let rec loop lookahead tilingMap puzzle : PlacementMap =
-
-                // prepare possible edges
-            let withoutReverse =
-                Map.toArray tilingMap
-            let withReverse =
-                [|
-                    for (edge, tilings) in Map.toSeq tilingMap do
-                        edge, tilings
-                        Edge.reverse edge, tilings
-                |]
-
-                // attempt to place each domino
-            Map [|
-                for domino in puzzle.UnplacedDominoes do
-                    let pairs =
-                        if Domino.isDouble domino then withoutReverse   // don't reverse edges for doubles
-                        else withReverse
-                    let placements =
-                        Array.Parallel.choose (fun (edge, tilings) ->
-                            tryPlace lookahead domino edge tilings puzzle)
-                            pairs
-                    if placements.Length > 0 then
-                        domino, placements
+            // prepare possible edges
+        let withoutReverse =
+            Map.toArray tilingMap
+        let withReverse =
+            [|
+                for (edge, tilings) in Map.toSeq tilingMap do
+                    edge, tilings
+                    Edge.reverse edge, tilings
             |]
 
-        and tryPlace lookahead domino edge tilings puzzle =
-            option {
-                let! puzzle =
-                    Puzzle.tryPlace domino edge puzzle
-                if Puzzle.isValidTiled tilings puzzle then
-                    if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
-                        || lookahead <= 0 then           // lookahead horizon reached
-                        return create edge Map.empty
-                    else
-                        let childMap =
-                            let tilingMap = toTilingMap tilings
-                            loop (lookahead - 1) tilingMap puzzle
-                        assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
-                        if childMap.Count = puzzle.UnplacedDominoes.Count then
-                            return create edge childMap
-            }
+            // attempt to place each domino
+        Map [|
+            for domino in puzzle.UnplacedDominoes do
+                let pairs =
+                    if Domino.isDouble domino then withoutReverse   // don't reverse edges for doubles
+                    else withReverse
+                let placements =
+                    Array.Parallel.choose (fun (edge, tilings) ->
+                        tryPlace lookahead domino edge tilings puzzle)
+                        pairs
+                if placements.Length > 0 then
+                    domino, placements
+        |]
 
-            // start search with all tilings
+    /// Tries to place a domino on the given edge in the
+    /// given puzzle.
+    and tryPlace lookahead domino edge tilings puzzle =
+        option {
+
+                // try to place the domino
+            let! puzzle =
+                Puzzle.tryPlace domino edge puzzle
+
+                // apply extra validation rules
+            if Puzzle.isValidTiled tilings puzzle then
+
+                    // end search?
+                if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
+                    || lookahead <= 0 then           // lookahead horizon reached
+                    return create edge Map.empty
+
+                    // recurse
+                else
+                    let childMap =
+                        let tilingMap = toTilingMap tilings
+                        searchLoop (lookahead - 1) tilingMap puzzle
+                    assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
+
+                        // can every remaining domino be placed?
+                    if childMap.Count = puzzle.UnplacedDominoes.Count then
+                        return create edge childMap
+        }
+
+    /// Searches the given puzzle for valid placements.
+    let search lookahead puzzle =
         assert(lookahead >= 0)
         let tilingMap =
             Puzzle.getAllTilings puzzle
                 |> toTilingMap
-        loop lookahead tilingMap puzzle
+        searchLoop lookahead tilingMap puzzle
 
     let print placementMap =
 
