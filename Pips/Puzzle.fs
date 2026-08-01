@@ -121,9 +121,9 @@ module Puzzle =
 
             // validate each region in detail
         let unplacedPipCounts = getUnplacedPipCounts puzzle
-        let pairOpt =
+        let pairs =
             puzzle.Regions
-                |> Array.tryPick (fun region ->
+                |> Array.choose (fun region ->
                     let result =
                         Region.validate
                             puzzle.Board
@@ -132,6 +132,5 @@ module Puzzle =
                     if result.IsValid then None
                     else Some (region, result))
 
-        match pairOpt with
-            | Some pair -> Error pair   // validation failed
-            | None -> Ok puzzle         // success
+        if pairs.Length = 0 then Ok puzzle     // success
+        else Error pairs                       // validation failed

@@ -365,8 +365,11 @@ module Program =
                 let result = Puzzle.tryPlaceValid domino edge puzzle
                 match result with
                     | Ok _ -> printfn $"   {edge} success"
-                    | Error (region, reason) ->
-                        printfn $"   {edge} makes region {region.Cells[0]} invalid because {reason}"
+                    | Error [||] -> failwith "Unexpected"
+                    | Error pairs ->
+                        printfn $"   {edge}"
+                        for region, reason in pairs do
+                            printfn $"      makes region {region.Cells[0]} invalid because {reason}"
 
             tryPlace edge
             if not (Domino.isDouble domino) then
