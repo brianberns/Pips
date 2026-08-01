@@ -82,7 +82,7 @@ module Region =
         /// least the given number of elements.
         let isLengthAtLeast n source =
             source
-                |> Seq.truncate n
+                |> Seq.truncate n   // this is lazy, so it doesn't enumerate the sequence
                 |> Seq.length = n
 
     /// Validates an Equal region.
