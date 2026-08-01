@@ -60,6 +60,18 @@ module UnplacedPipCounts =
             Descending = Array.rev sorted
         }
 
+type ValidationResult =
+
+    /// Region is valid.
+    | Valid
+
+    /// A region's constraint has been violated.
+    | ConstraintViolated
+
+    /// There are not enough unplaced dominoes remaining to
+    /// satisfy a region's constraint.
+    | NotEnough
+
 module Region =
 
     /// Creates a region.
@@ -93,19 +105,24 @@ module Region =
 
             // are all values equal so far?
         let equal =
-            if pipCounts.Length < 2 then true
+            if pipCounts.Length < 2 then Valid
             else
                 let value = pipCounts[0]
-                Array.forall ((=) value) pipCounts[1..]   // fail early if a second value is found
+                if Array.forall ((=) value) pipCounts[1..] then   // fail early if a second value is found
+                    Valid
+                else
+                    ConstraintViolated
 
             // are there enough matching values available?
-        if equal && pipCounts.Length > 0 then
+        if equal.IsValid && pipCounts.Length > 0 then
             let value = pipCounts[0]
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
-            unplacedPipCounts.Unsorted
-                |> Seq.where ((=) value)
-                |> Seq.isLengthAtLeast nNeeded
+            let enough =
+                unplacedPipCounts.Unsorted
+                    |> Seq.where ((=) value)
+                    |> Seq.isLengthAtLeast nNeeded
+            if enough then Valid else NotEnough
 
         else equal
 
@@ -123,13 +140,15 @@ module Region =
             let distinctValues = set distinctValues
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
-            unplacedPipCounts.Unsorted
-                |> Seq.where (
-                    distinctValues.Contains >> not)
-                |> Seq.distinct
-                |> Seq.isLengthAtLeast nNeeded
+            let enough =
+                unplacedPipCounts.Unsorted
+                    |> Seq.where (
+                        distinctValues.Contains >> not)
+                    |> Seq.distinct
+                    |> Seq.isLengthAtLeast nNeeded
+            if enough then Valid else NotEnough
 
-        else false
+        else ConstraintViolated
 
     /// Validates a SumLess region.
     let private validateSumLess board unplacedPipCounts target region =
@@ -139,7 +158,7 @@ module Region =
         let sum = Array.sum pipCounts
 
             // target already exceeded? (assume no negative pip counts)
-        if sum > target then false
+        if sum > target then ConstraintViolated
 
             // are there enough small values available?
         else
@@ -148,7 +167,9 @@ module Region =
             let smallest =
                 unplacedPipCounts.Ascending[0 .. nNeeded-1]
                     |> Array.sum
-            sum + smallest < target
+            let enough =
+                sum + smallest < target
+            if enough then Valid else NotEnough
 
     /// Validates a SumGreater region.
     let private validateSumGreater board unplacedPipCounts target region =
@@ -163,7 +184,9 @@ module Region =
         let largest =
             unplacedPipCounts.Descending[0 .. nNeeded-1]
                 |> Array.sum
-        sum + largest > target
+        let enough =
+            sum + largest > target
+        if enough then Valid else NotEnough
 
     /// Determines if k elements can sum to the given target.
     let private canSum source target k =
@@ -192,45 +215,51 @@ module Region =
         let sum = Array.sum pipCounts
 
             // target already exceeded? (assume no negative pip counts)
-        if sum > target then false
+        if sum > target then ConstraintViolated
         else
             let nNeeded =
                 region.Cells.Length - pipCounts.Length
 
                 // must hit target exactly when all cells covered
             if nNeeded = 0 then
-                sum = target
+                if sum = target then Valid else ConstraintViolated
 
             else
                     // are there enough small values available?
-                let valid =
+                let result =
                     let smallest =
                         unplacedPipCounts.Ascending[0 .. nNeeded-1]
                             |> Array.sum
-                    sum + smallest <= target
+                    let enough =
+                        sum + smallest <= target
+                    if enough then Valid else NotEnough
 
                     // are there enough large values available?
-                let valid =
-                    if valid then
+                let result =
+                    if result.IsValid then
                         let largest =
                             unplacedPipCounts.Descending[0 .. nNeeded-1]
                                 |> Array.sum
-                        sum + largest >= target
-                    else false
+                        let enough =
+                            sum + largest >= target
+                        if enough then Valid else NotEnough
+                    else result
 
                     // can we hit the target exactly?
-                if valid then
-                    canSum
-                        unplacedPipCounts.Unsorted
-                        (target - sum)
-                        nNeeded
-                else false
+                if result.IsValid then
+                    let exact =
+                        canSum
+                            unplacedPipCounts.Unsorted
+                            (target - sum)
+                            nNeeded
+                    if exact then Valid else NotEnough
+                else result
 
     /// Validates the given region on the given board with the
     /// given unplaced dominoes.
-    let isValid board unplacedPipCounts region =
+    let validate board unplacedPipCounts region =
         match region.Type with
-            | RegionType.Any -> true
+            | RegionType.Any -> Valid
             | RegionType.Equal ->
                 validateEqual board unplacedPipCounts region
             | RegionType.Unequal ->
@@ -241,6 +270,11 @@ module Region =
                 validateSumGreater board unplacedPipCounts target region
             | RegionType.SumExact target ->
                 validateSumExact board unplacedPipCounts target region
+
+    /// Validates the given region on the given board with the
+    /// given unplaced dominoes.
+    let isValid board unplacedPipCounts region =
+        validate board unplacedPipCounts region = Valid
 
     /// Determines whether the given region on the given board has
     /// been solved (with no uncovered cells).
