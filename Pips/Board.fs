@@ -21,7 +21,7 @@ type Board =
     member board.NumColumns =
         Array2DSafe.length1 board.Cells
 
-    /// Pip count of each cell.
+    /// Pip count of the given cell.
     member board.Item(cell) =
         Array2DSafe.getItem
             cell.Row cell.Column board.Cells
@@ -44,10 +44,10 @@ module Board =
     let isEmpty cell (board : Board) =
         board[cell] = emptyCell
 
-    /// Places the given domino in the given location on the
+    /// Places the given domino on the given empty edge on the 
     /// board. The left side of the domino is placed on the left
     /// cell and the right side of the domino is placed on the
-    /// right cell. We use a 2D array for speed.
+    /// right cell.
     let place domino ((cellLeft, cellRight) as edge : Edge) board =
         assert(Cell.areAdjacent cellLeft cellRight)
         assert(isEmpty cellLeft board)
@@ -65,8 +65,8 @@ module Board =
                 (domino, edge) :: board.DominoPlaces
         }
 
-    /// Gets all possible cells adjacent to the given cell on
-    /// the given board.
+    /// Gets all cells adjacent to the given cell on the given
+    /// board.
     let getAdjacent cell (board : Board) =
         let nRows = board.NumRows
         let nCols = board.NumColumns
