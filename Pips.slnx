@@ -3,10 +3,14 @@
     <File Path="README.md" />
     <File Path="Tiling.svg" />
   </Folder>
+  <Folder Name="/Test/">
+    <Project Path="Test/Benchmark/Pips.Test.Benchmark.fsproj" />
+    <Project Path="Test/UnitTest/Pips.Test.UnitTest.fsproj" />
+  </Folder>
+  <Folder Name="/Web/">
+    <Project Path="Web/Server/Pips.Web.Server.fsproj" />
+    <Project Path="Web/Solve/Pips.Web.Solve.fsproj" />
+  </Folder>
   <Project Path="Pips.Placement/Pips.Placement.fsproj" />
   <Project Path="Pips/Pips.fsproj" />
-  <Project Path="Test/Benchmark/Pips.Test.Benchmark.fsproj" />
-  <Project Path="Test/UnitTest/Pips.Test.UnitTest.fsproj" />
-  <Project Path="Web/Server/Pips.Web.Server.fsproj" />
-  <Project Path="Web/Solve/Pips.Web.Solve.fsproj" />
 </Solution>
