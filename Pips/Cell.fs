@@ -42,15 +42,19 @@ module Cell =
             || (cellA.Column = cellB.Column
                 && abs (cellA.Row - cellB.Row) = 1)
 
-/// A pair of adjacent cells.
+/// A pair of adjacent cells. (Since this is just a type
+/// synonym, adjacency is assumed, rather than enforced
+/// here.)
 type Edge = Cell * Cell
 
 module Edge =
 
     /// Does the given edge contain the given cell?
     let contains cell ((cellA, cellB) : Edge) =
+        assert(Cell.areAdjacent cellA cellB)
         cell = cellA || cell = cellB
 
     /// Reverses the given edge.
     let reverse ((cellA, cellB) : Edge) : Edge =
+        assert(Cell.areAdjacent cellA cellB)
         cellB, cellA
