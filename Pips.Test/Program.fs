@@ -321,27 +321,6 @@ module Program =
         printfn ""
         printfn $"Total: {timeSpanA + timeSpanB}"
 
-    let searchPlacements () =
-
-        let solve (date : DateOnly) =
-            let dateStr = date.ToString("yyyy-MM-dd")
-            Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
-                |> Map.find "medium"
-                |> ForcedPlacement.search 2
-
-        let startDate = DateOnly.Parse("8/18/2025")
-        let endDate = DateOnly.Parse("11/25/2025")
-        let lastOffset = endDate.DayNumber - startDate.DayNumber
-        for offset = 0 to lastOffset do
-            let date = startDate.AddDays(offset)
-            let dateStr = date.ToString("MM/dd/yyyy")
-            let valueStr =
-                solve date
-                    |> Option.map (fun forced ->
-                        $"{forced.Domino} on {forced.Edges[0]} by {forced.Reason}")
-                    |> Option.defaultValue "No forced move found"
-            printfn $"{dateStr}: {valueStr}"
-
     let generate () =
 
         let samples =
@@ -364,5 +343,47 @@ module Program =
             printfn ""
             printSolution solutions[0]
 
+    let searchPlacement lookahead puzzle =
+        Placement.search lookahead puzzle
+            |> Map.toSeq
+            |> Seq.tryPick (fun (domino, placements) ->
+                Seq.tryExactlyOne placements
+                    |> Option.map (fun placement ->
+                        lookahead, domino, placement))
+
+    let explainPlacement lookahead domino placement puzzle =
+
+        printfn $"{domino} must be placed at {placement.Edge}"
+
+        let edges =
+            puzzle
+                |> Puzzle.getAllTilings
+                |> Set.unionMany
+                |> Set.remove(placement.Edge)
+        for edge in edges do
+            let result = Puzzle.tryPlaceValid domino edge puzzle
+            match result with
+                | Ok puzzle -> failwith "Unexpected"
+                | Error (region, reason) ->
+                    printfn $"   {edge} makes region {region.Cells[0]} invalid because {reason}"
+
+    let explainPuzzle puzzle =
+
+        printPuzzle puzzle
+        printfn ""
+
+        [0; 1; 2]
+            |> Seq.tryPick (fun lookahead ->
+                searchPlacement lookahead puzzle)
+            |> Option.iter (fun (lookahead, domino, placement) ->
+                explainPlacement lookahead domino placement puzzle)
+
+    let explainOne () =
+        let puzzle =
+            let dateStr = "2025-08-21"
+            Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
+                |> Map.find "easy"
+        explainPuzzle puzzle
+
     System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-    searchPlacements ()
+    explainOne ()
