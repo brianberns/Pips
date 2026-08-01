@@ -37,7 +37,9 @@ module Cell =
             || (cellA.Column = cellB.Column
                 && abs (cellA.Row - cellB.Row) = 1)
 
-/// A pair of adjacent cells.
+/// A pair of adjacent cells. (Since this is just a type
+/// synonym, adjacency is assumed, rather than enforced
+/// here.)
 type Edge = Cell * Cell
 
 module Edge =
