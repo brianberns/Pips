@@ -359,13 +359,18 @@ module Program =
             puzzle
                 |> Puzzle.getAllTilings
                 |> Set.unionMany
-                |> Set.remove(placement.Edge)
         for edge in edges do
-            let result = Puzzle.tryPlaceValid domino edge puzzle
-            match result with
-                | Ok puzzle -> failwith "Unexpected"
-                | Error (region, reason) ->
-                    printfn $"   {edge} makes region {region.Cells[0]} invalid because {reason}"
+
+            let tryPlace edge =
+                let result = Puzzle.tryPlaceValid domino edge puzzle
+                match result with
+                    | Ok _ -> printfn $"   {edge} success"
+                    | Error (region, reason) ->
+                        printfn $"   {edge} makes region {region.Cells[0]} invalid because {reason}"
+
+            tryPlace edge
+            if not (Domino.isDouble domino) then
+                tryPlace (Edge.reverse edge)
 
     let explainPuzzle puzzle =
 
