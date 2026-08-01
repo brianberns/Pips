@@ -7,6 +7,25 @@ open FsCheck.FSharp
 
 module Program =
 
+    let getCornerChar up down left right =
+        match up, down, left, right with
+            | false, false, true, true -> "─"
+            | true, true, false, false -> "│"
+            | false, true, false, true -> "┌"
+            | false, true, true, false -> "┐"
+            | true, false, false, true -> "└"
+            | true, false, true, false -> "┘"
+            | false, true, true, true -> "┬"
+            | true, false, true, true -> "┴"
+            | true, true, false, true -> "├"
+            | true, true, true, false -> "┤"
+            | true, true, true, true -> "┼"
+            | true, false, false, false -> "│"
+            | false, true, false, false -> "│"
+            | false, false, true, false -> "─"
+            | false, false, false, true -> "─"
+            | _ -> " "
+
     let printPuzzle puzzle =
 
         let maxRow = puzzle.Board.NumRows - 1
@@ -47,24 +66,7 @@ module Program =
             let left = hasHorizontalRegionBorder row (col - 1)
             let down = hasVerticalRegionBorder row col
             let up = hasVerticalRegionBorder (row - 1) col
-
-            match up, down, left, right with
-                | false, false, true, true -> "─"
-                | true, true, false, false -> "│"
-                | false, true, false, true -> "┌"
-                | false, true, true, false -> "┐"
-                | true, false, false, true -> "└"
-                | true, false, true, false -> "┘"
-                | false, true, true, true -> "┬"
-                | true, false, true, true -> "┴"
-                | true, true, false, true -> "├"
-                | true, true, true, false -> "┤"
-                | true, true, true, true -> "┼"
-                | true, false, false, false -> "│"
-                | false, true, false, false -> "│"
-                | false, false, true, false -> "─"
-                | false, false, false, true -> "─"
-                | _ -> " "
+            getCornerChar up down left right
 
         let getRegionDisplay (region : Region) =
             match region.Type with
@@ -175,24 +177,7 @@ module Program =
             let left = hasHorizontalDominoBorder row (col - 1)
             let down = hasVerticalDominoBorder row col
             let up = hasVerticalDominoBorder (row - 1) col
-
-            match up, down, left, right with
-                | false, false, true, true -> "─"
-                | true, true, false, false -> "│"
-                | false, true, false, true -> "┌"
-                | false, true, true, false -> "┐"
-                | true, false, false, true -> "└"
-                | true, false, true, false -> "┘"
-                | false, true, true, true -> "┬"
-                | true, false, true, true -> "┴"
-                | true, true, false, true -> "├"
-                | true, true, true, false -> "┤"
-                | true, true, true, true -> "┼"
-                | true, false, false, false -> "│"
-                | false, true, false, false -> "│"
-                | false, false, true, false -> "─"
-                | false, false, false, true -> "─"
-                | _ -> " "
+            getCornerChar up down left right
 
         for row in 0 .. maxRow do
 
