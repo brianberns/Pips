@@ -1,7 +1,6 @@
 namespace Pips.Web
 
 open Feliz
-
 open Pips
 
 module Region =

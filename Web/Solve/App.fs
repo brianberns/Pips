@@ -1,15 +1,10 @@
 namespace Pips.Web
 
 open System
-
 open Browser
-
 open Elmish
-
 open Fable.Core.JsInterop
-
 open Thoth.Fetch
-
 open Pips
 
 module FetchError =

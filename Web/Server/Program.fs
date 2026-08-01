@@ -1,5 +1,6 @@
+namespace Pips.Web
+
 open Microsoft.Extensions.Hosting
-open Microsoft.Azure.Functions.Worker
 
 module Program =
     [<EntryPoint>]

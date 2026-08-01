@@ -1,4 +1,4 @@
-namespace Pips
+namespace Pips.Web
 
 open System
 open System.Net
@@ -15,7 +15,11 @@ module Daily =
     let run ([<HttpTrigger(AuthorizationLevel.Anonymous, "get")>] req : HttpRequestData) =
         task {
             let dateValue = req.Query["date"]
-            let date = DateOnly.Parse(dateValue)
+            let date =
+                if isNull dateValue then
+                    DateOnly.FromDateTime(DateTime.Today)
+                else
+                    DateOnly.Parse(dateValue)
             let dateStr = date.ToString("yyyy-MM-dd")
             let uri = $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
             let! text = client.GetStringAsync(uri)

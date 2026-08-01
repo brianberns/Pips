@@ -1,6 +1,7 @@
-﻿namespace Pips
+﻿namespace Pips.Test
 
 open Xunit
+open Pips
 
 module Puzzle =
 

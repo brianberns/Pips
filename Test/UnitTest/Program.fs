@@ -1,9 +1,11 @@
-﻿namespace Pips
+﻿namespace Pips.Test
 
 open System
 open System.Diagnostics
 
 open FsCheck.FSharp
+
+open Pips
 
 module Program =
 

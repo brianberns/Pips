@@ -21,16 +21,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Pips\Pips.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
     <PackageReference Include="Fable.Core" Version="5.2.0" />
     <PackageReference Include="Fable.Elmish" Version="5.0.2" />
     <PackageReference Include="Feliz" Version="3.3.3" />
     <PackageReference Include="Feliz.UseElmish" Version="5.0.0" />
     <PackageReference Include="Thoth.Fetch" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Pips\Pips.fsproj" />
   </ItemGroup>
 
 </Project>

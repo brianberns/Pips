@@ -1,4 +1,4 @@
-﻿namespace Pips
+﻿namespace Pips.Test
 
 open FsCheck.FSharp
 open FsCheck.Xunit

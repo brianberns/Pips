@@ -1,4 +1,4 @@
-﻿namespace Pips
+﻿namespace Pips.Test
 
 open BenchmarkDotNet.Running
 

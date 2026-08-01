@@ -1,7 +1,8 @@
 ﻿
-namespace Pips
+namespace Pips.Test
 
 open BenchmarkDotNet.Attributes
+open Pips
 
 module Puzzle =
 
