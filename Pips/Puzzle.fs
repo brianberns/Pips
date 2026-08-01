@@ -47,18 +47,17 @@ module Puzzle =
             Board = Board.create (maxRow + 1) (maxColumn + 1)
         }
 
+    /// Gathers all unplaced domino pip counts.
+    let private getUnplacedPipCounts puzzle =
+        UnplacedPipCounts.create [|
+            for domino in puzzle.UnplacedDominoes do
+                domino.Left   // unroll Domino.toSeq for speed
+                domino.Right
+        |]
+
     /// Is the given puzzle in a valid state?
     let isValid puzzle =
-
-            // gather all unplaced domino pip counts
-        let unplacedPipCounts =
-            UnplacedPipCounts.create [|
-                for domino in puzzle.UnplacedDominoes do
-                    domino.Left   // unroll Domino.toSeq for speed
-                    domino.Right
-            |]
-
-            // validate each region
+        let unplacedPipCounts = getUnplacedPipCounts puzzle
         puzzle.Regions
             |> Array.forall (
                 Region.isValid
@@ -87,16 +86,20 @@ module Puzzle =
             |> Tiling.getAll
 
     /// Places the given domino in the given location in
+    /// the given puzzle. This might not be a valid placement.
+    let private placeRaw domino edge puzzle =
+        {
+            puzzle with
+                UnplacedDominoes =
+                    puzzle.UnplacedDominoes.Remove(domino)
+                Board =
+                    Board.place domino edge puzzle.Board
+        }
+
+    /// Places the given domino in the given location in
     /// the given puzzle. This must be a valid placement.
     let place domino edge puzzle =
-        let puzzle =
-            {
-                puzzle with
-                    UnplacedDominoes =
-                        puzzle.UnplacedDominoes.Remove(domino)
-                    Board =
-                        Board.place domino edge puzzle.Board
-            }
+        let puzzle = placeRaw domino edge puzzle
         assert(isValid puzzle)
         puzzle
 
@@ -104,16 +107,31 @@ module Puzzle =
     /// the given puzzle, if possible.
     let tryPlace domino edge puzzle =
         assert(isValid puzzle)
-
-            // try to place the domino
-        let puzzle =
-            {
-                puzzle with
-                    UnplacedDominoes =
-                        puzzle.UnplacedDominoes.Remove(domino)
-                    Board =
-                        Board.place domino edge puzzle.Board
-            }
-
+        let puzzle = placeRaw domino edge puzzle
         if isValid puzzle then Some puzzle
         else None
+
+    /// Places the given domino in the given location in
+    /// the given puzzle, if possible.
+    let tryPlaceValid domino edge puzzle =
+        assert(isValid puzzle)
+
+            // place the domino
+        let puzzle = placeRaw domino edge puzzle
+
+            // validate each region in detail
+        let unplacedPipCounts = getUnplacedPipCounts puzzle
+        let pairOpt =
+            puzzle.Regions
+                |> Array.tryPick (fun region ->
+                    let result =
+                        Region.validate
+                            puzzle.Board
+                            unplacedPipCounts
+                            region
+                    if result.IsValid then None
+                    else Some (region, result))
+
+        match pairOpt with
+            | Some pair -> Error pair   // validation failed
+            | None -> Ok puzzle         // success
