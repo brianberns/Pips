@@ -358,24 +358,48 @@ module Program =
         printfn $"{domino} must be placed at {placement.Edge}"
 
         let edges =
-            puzzle
-                |> Puzzle.getAllTilings
-                |> Set.unionMany
-        for edge in edges do
+            let forward =
+                puzzle
+                    |> Puzzle.getAllTilings
+                    |> Set.unionMany
+            let reverse =
+                Set.map Edge.reverse forward
+            Set.union forward reverse
 
-            let tryPlace edge =
-                let result = Puzzle.tryPlaceValid domino edge puzzle
-                match result with
-                    | Ok _ -> printfn $"   {edge} success"
-                    | Error [||] -> failwith "Unexpected"
-                    | Error pairs ->
-                        printfn $"   {edge}"
-                        for region, reason in pairs do
-                            printfn $"      makes region {region.Cells[0]} invalid because {reason}"
+        let allReasons =
+            [|
+                for edge in edges do
+                    match Puzzle.tryPlaceValid domino edge puzzle with
+                        | Ok _ -> ()
+                        | Error pairs ->
+                            for pair in pairs do
+                                pair, edge
+            |]
+                |> Array.groupBy fst
+                |> Array.map (fun (pair, group) ->
+                    pair, Array.map snd group)
+                |> Array.sortByDescending (snd >> Array.length)
 
-            tryPlace edge
-            if not (Domino.isDouble domino) then
-                tryPlace (Edge.reverse edge)
+        let successEdges, reasons =
+            ((edges, List.empty), allReasons)
+                ||> Array.fold (
+                    fun
+                        (unusedEdges, acc)
+                        ((region, result), usedEdges) ->
+                        let usedEdges =
+                            Set.intersect unusedEdges (set usedEdges)
+                        let unusedEdges = unusedEdges - usedEdges
+                        let acc = ((region, result), usedEdges) :: acc
+                        unusedEdges, acc)
+
+        assert(successEdges.Contains(placement.Edge))
+        for edge in successEdges do
+            printfn $"   Success: Edge {edge}"
+
+        for ((region, result), edges) in List.rev reasons do
+            printfn $"   Region {region.Cells.[0]} invalid because {result}"
+            for edge in edges do
+                printfn $"      Edge {edge}"
 
     let explainPuzzle puzzle =
 
