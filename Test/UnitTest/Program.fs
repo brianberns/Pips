@@ -366,7 +366,7 @@ module Program =
                 Set.map Edge.reverse forward
             Set.union forward reverse
 
-        let allReasons =
+        let reasons =
             [|
                 for edge in edges do
                     match Puzzle.tryPlaceValid domino edge puzzle with
@@ -378,25 +378,30 @@ module Program =
                 |> Array.groupBy fst
                 |> Array.map (fun (pair, group) ->
                     pair, Array.map snd group)
-                |> Array.sortByDescending (snd >> Array.length)
 
-        let successEdges, reasons =
-            ((edges, List.empty), allReasons)
-                ||> Array.fold (
-                    fun
-                        (unusedEdges, acc)
-                        ((region, result), usedEdges) ->
-                        let usedEdges =
-                            Set.intersect unusedEdges (set usedEdges)
-                        let unusedEdges = unusedEdges - usedEdges
-                        let acc = ((region, result), usedEdges) :: acc
-                        unusedEdges, acc)
+        let reasons =
+            reasons
+                |> Array.unfold (fun reasons ->
+                    if reasons.Length = 0 then None
+                    else
+                        let maxPair, maxEdges =
+                            reasons
+                                |> Array.maxBy (snd >> Array.length)
+                        let maxEdges = set maxEdges
+                        let reasons =
+                            [|
+                                for pair, edges in reasons do
+                                    if pair <> maxPair then
+                                        for edge in edges do
+                                            if not (maxEdges.Contains(edge)) then
+                                                pair, edge
+                            |]
+                                |> Array.groupBy fst
+                                |> Array.map (fun (pair, group) ->
+                                    pair, Array.map snd group)
+                        Some ((maxPair, maxEdges), reasons))
 
-        assert(successEdges.Contains(placement.Edge))
-        for edge in successEdges do
-            printfn $"   Success: Edge {edge}"
-
-        for ((region, result), edges) in List.rev reasons do
+        for ((region, result), edges) in reasons do
             printfn $"   Region {region.Cells.[0]} invalid because {result}"
             for edge in edges do
                 printfn $"      Edge {edge}"
