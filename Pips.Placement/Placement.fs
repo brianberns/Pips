@@ -70,26 +70,23 @@ module Placement =
 
                 // try to place the domino
             let! puzzle =
-                Puzzle.tryPlace domino edge puzzle
+                Puzzle.tryPlaceTiled domino edge puzzle
 
-                // apply extra validation rules
-            if Puzzle.isValidTiled tilings puzzle then
+                // end search?
+            if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
+                || lookahead <= 0 then           // lookahead horizon reached
+                return create edge Map.empty
 
-                    // end search?
-                if puzzle.UnplacedDominoes.IsEmpty   // puzzle is solved
-                    || lookahead <= 0 then           // lookahead horizon reached
-                    return create edge Map.empty
+                // recurse
+            else
+                let childMap =
+                    let tilingMap = toTilingMap tilings
+                    searchLoop (lookahead - 1) tilingMap puzzle
+                assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
 
-                    // recurse
-                else
-                    let childMap =
-                        let tilingMap = toTilingMap tilings
-                        searchLoop (lookahead - 1) tilingMap puzzle
-                    assert(childMap.Count <= puzzle.UnplacedDominoes.Count)
-
-                        // can every remaining domino be placed?
-                    if childMap.Count = puzzle.UnplacedDominoes.Count then
-                        return create edge childMap
+                    // can every remaining domino be placed?
+                if childMap.Count = puzzle.UnplacedDominoes.Count then
+                    return create edge childMap
         }
 
     /// Searches the given puzzle for valid placements.

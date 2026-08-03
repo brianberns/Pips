@@ -362,14 +362,16 @@ module Program =
                 puzzle
                     |> Puzzle.getAllTilings
                     |> Set.unionMany
-            let reverse =
-                Set.map Edge.reverse forward
-            Set.union forward reverse
+            if Domino.isDouble domino then
+                forward
+            else
+                let reverse = Set.map Edge.reverse forward
+                Set.union forward reverse
 
         let reasonEdgesFlat =
             [|
                 for edge in edges do
-                    match Puzzle.tryPlaceValid domino edge puzzle with
+                    match Puzzle.tryPlaceTiledValid domino edge puzzle with
                         | Ok _ -> ()
                         | Error pairs ->
                             for pair in pairs do
@@ -418,7 +420,7 @@ module Program =
 
     let explainOne () =
         let puzzle =
-            let dateStr = "2025-08-21"
+            let dateStr = "2025-08-22"
             Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                 |> Map.find "easy"
         explainPuzzle puzzle
