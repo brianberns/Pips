@@ -346,17 +346,22 @@ module Program =
             printSolution solutions[0]
 
     let searchPlacement lookahead puzzle =
-        Placement.search lookahead puzzle
+        let placementMap =
+            Placement.search lookahead puzzle
+        Placement.print placementMap
+        printfn ""
+        placementMap
             |> Map.toSeq
             |> Seq.tryPick (fun (domino, placements) ->
                 Seq.tryExactlyOne placements
                     |> Option.map (fun placement ->
                         lookahead, domino, placement))
 
-    let explainPlacement lookahead domino placement puzzle =
+    /// Explains where the given domino can and can't be placed
+    /// in the given puzzle.
+    let explainDomino domino puzzle =
 
-        printfn $"{domino} must be placed at {placement.Edge}"
-
+            // get all edges on which this domino might be placed
         let edges =
             let forward =
                 puzzle
@@ -368,44 +373,61 @@ module Program =
                 let reverse = Set.map Edge.reverse forward
                 Set.union forward reverse
 
-        let reasonEdgesFlat =
-            [|
-                for edge in edges do
-                    match Puzzle.tryPlaceTiledValid domino edge puzzle with
-                        | Ok _ -> ()
-                        | Error pairs ->
-                            for pair in pairs do
-                                pair, edge
-            |]
+            // separate valid from invalid edges
+        let validEdges, invalidEdgeArrays =
+            edges
+                |> Seq.toArray
+                |> Array.partitionWith (fun edge ->
+                    let result =
+                        Puzzle.tryPlaceTiledValid domino edge puzzle
+                    match result with
+                        | Ok _ -> Choice1Of2 edge
+                        | Error pairs -> Choice2Of2 (edge, pairs))
+        let invalidEdgesFlat =
+            Array.collect (fun (edge, pairs) ->
+                Array.map (fun pair -> pair, edge) pairs)
+                invalidEdgeArrays
 
-        let reasonEdgesGrouped =
-            reasonEdgesFlat
-                |> Array.unfold (fun reasonEdgesFlat ->
-                    if reasonEdgesFlat.Length = 0 then None
+            // look for most common explanations first
+        let invalidEdgesGrouped =
+            invalidEdgesFlat
+                |> Array.unfold (fun edgesFlat ->
+                    if edgesFlat.Length = 0 then None
                     else
-                        let reasonEdgesGrouped =
-                            reasonEdgesFlat
+                            // get the region/result pair with the most common explanation
+                        let edgesGrouped =
+                            edgesFlat
                                 |> Array.groupBy fst
-                                |> Array.map (fun (reason, group) ->
-                                    reason, Array.map snd group)
-                        let maxReason, maxEdges =
-                            reasonEdgesGrouped
+                                |> Array.map (fun (pair, group) ->
+                                    pair, Array.map snd group)
+                        let maxPair, maxEdges =
+                            edgesGrouped
                                 |> Array.maxBy (snd >> Array.length)
-                        let maxEdgesSet = set maxEdges
-                        let reasonEdgesFlat =
+
+                            // remove the explained edges from further consideration
+                        let edgesFlat =
+                            let maxEdgesSet = set maxEdges
                             [|
-                                for pair, edges in reasonEdgesGrouped do
-                                    if pair <> maxReason then
+                                for pair, edges in edgesGrouped do
+                                    if pair <> maxPair then
                                         for edge in edges do
                                             if not (maxEdgesSet.Contains(edge)) then
                                                 pair, edge
                             |]
-                        Some ((maxReason, maxEdges), reasonEdgesFlat))
 
-        for ((region, result), edges) in reasonEdgesGrouped do
-            printfn $"   Region {region.Cells.[0]} invalid because {result}"
+                        Some ((maxPair, maxEdges), edgesFlat))
+
+        for edge in validEdges do
+            printfn $"Edge {edge} is valid"
+        for ((region, result), edges) in invalidEdgesGrouped do
+            printfn $"Region {region.Cells.[0]} invalid because {result}"
             for edge in edges do
-                printfn $"      Edge {edge}"
+                printfn $"   Edge {edge}"
+
+    let explainPlacement lookahead domino placement puzzle =
+        printfn $"{domino} must be placed at {placement.Edge}"
+        printfn ""
+        explainDomino domino puzzle
 
     let explainPuzzle puzzle =
 
@@ -420,7 +442,7 @@ module Program =
 
     let explainOne () =
         let puzzle =
-            let dateStr = "2025-08-22"
+            let dateStr = "2025-08-23"
             Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                 |> Map.find "easy"
         explainPuzzle puzzle
