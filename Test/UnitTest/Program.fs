@@ -384,9 +384,11 @@ module Program =
                         | Ok _ -> Choice1Of2 edge
                         | Error pairs -> Choice2Of2 (edge, pairs))
         let invalidEdgesFlat =
-            Array.collect (fun (edge, pairs) ->
-                Array.map (fun pair -> pair, edge) pairs)
-                invalidEdgeArrays
+            [|
+                for edge, pairs in invalidEdgeArrays do
+                    for pair in pairs do
+                        pair, edge
+            |]
 
             // look for most common explanations first
         let invalidEdgesGrouped =
@@ -409,10 +411,9 @@ module Program =
                             let maxEdgesSet = set maxEdges
                             [|
                                 for pair, edges in edgesGrouped do
-                                    if pair <> maxPair then
-                                        for edge in edges do
-                                            if not (maxEdgesSet.Contains(edge)) then
-                                                pair, edge
+                                    for edge in edges do
+                                        if not (maxEdgesSet.Contains(edge)) then
+                                            pair, edge
                             |]
 
                         Some ((maxPair, maxEdges), edgesFlat))
