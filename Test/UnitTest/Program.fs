@@ -346,16 +346,15 @@ module Program =
             printSolution solutions[0]
 
     let searchPlacement lookahead puzzle =
-        let placementMap =
-            Placement.search lookahead puzzle
-        Placement.print placementMap
-        printfn ""
-        placementMap
-            |> Map.toSeq
-            |> Seq.tryPick (fun (domino, placements) ->
-                Seq.tryExactlyOne placements
-                    |> Option.map (fun placement ->
-                        lookahead, domino, placement))
+        let placementMap = Placement.search lookahead puzzle
+        // Placement.print placementMap
+        // printfn ""
+        [|
+            for domino, placements in Map.toSeq placementMap do
+                match Seq.tryExactlyOne placements with
+                    | Some placement -> domino, placement
+                    | None -> ()
+        |]
 
     /// Explains where the given domino can and can't be placed
     /// in the given puzzle.
@@ -418,28 +417,61 @@ module Program =
 
                         Some ((maxPair, maxEdges), edgesFlat))
 
+        printfn $"Domino {domino}"
         for edge in validEdges do
-            printfn $"Edge {edge} is valid"
+            printfn $"   Edge {edge} is valid"
         for ((region, result), edges) in invalidEdgesGrouped do
-            printfn $"Region {region.Cells.[0]} invalid because {result}"
+            printfn $"   Region {region.Cells.[0]} invalid because {result}"
             for edge in edges do
-                printfn $"   Edge {edge}"
+                printfn $"      Edge {edge}"
 
-    let explainPlacement lookahead domino placement puzzle =
+    /// Chooses and explains one of the given domino placements.
+    let explainPlacement lookahead domPlacements puzzle =
+
+            // find the easiest placement to explain
+        let placementMap = Placement.search 0 puzzle
+        let domino, placement =
+            domPlacements
+                |> Seq.minBy (fun (domino, _) ->
+                    placementMap[domino].Length)
+
         printfn $"{domino} must be placed at {placement.Edge}"
         printfn ""
-        explainDomino domino puzzle
+
+        if lookahead = 0 then
+            explainDomino domino puzzle
+        else
+
+            for otherPlacement in placementMap[domino] do
+                if otherPlacement.Edge <> placement.Edge then
+                    printfn $"{domino} cannot be placed at {otherPlacement.Edge}"
+                    let puzzle =
+                        Puzzle.place domino otherPlacement.Edge puzzle
+                    let placementMap = Placement.search 0 puzzle   // deeper searches not yet supported
+                    let domino =
+                        puzzle.UnplacedDominoes
+                            |> Seq.find (fun domino ->
+                                not (placementMap.ContainsKey(domino)))
+                    explainDomino domino puzzle
 
     let explainPuzzle puzzle =
 
         printPuzzle puzzle
         printfn ""
 
-        [0; 1; 2]
-            |> Seq.tryPick (fun lookahead ->
-                searchPlacement lookahead puzzle)
-            |> Option.iter (fun (lookahead, domino, placement) ->
-                explainPlacement lookahead domino placement puzzle)
+        let pairOpt =
+            [0; 1; 2]
+                |> Seq.tryPick (fun lookahead ->
+                    let domPlacements = searchPlacement lookahead puzzle
+                    option {
+                        if domPlacements.Length > 0 then
+                            return lookahead, domPlacements
+                    })
+
+        match pairOpt with
+            | Some (lookahead, domPlacements) ->
+                explainPlacement lookahead domPlacements puzzle
+            | None -> printfn "No forced placement found"
 
     let explainOne () =
         let puzzle =
