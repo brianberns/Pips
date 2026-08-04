@@ -356,36 +356,6 @@ module Program =
                     | None -> ()
         |]
 
-    /// Chooses and explains one of the given domino placements.
-    let explainPlacement lookahead domPlacements puzzle =
-
-            // find the easiest placement to explain
-        let placementMap = Placement.search 0 puzzle
-        let domino, placement =
-            domPlacements
-                |> Seq.minBy (fun (domino, _) ->
-                    placementMap[domino].Length)
-
-        printfn $"{domino} must be placed at {placement.Edge}"
-        printfn ""
-
-        if lookahead = 0 then
-            Explain.explainDomino domino puzzle
-                |> Explain.print
-        else
-            for otherPlacement in placementMap[domino] do
-                if otherPlacement.Edge <> placement.Edge then
-                    printfn $"{domino} cannot be placed at {otherPlacement.Edge}"
-                    let puzzle =
-                        Puzzle.place domino otherPlacement.Edge puzzle
-                    let placementMap = Placement.search 0 puzzle   // deeper searches not yet supported
-                    let domino =
-                        puzzle.UnplacedDominoes
-                            |> Seq.find (fun domino ->
-                                not (placementMap.ContainsKey(domino)))
-                    Explain.explainDomino domino puzzle
-                        |> Explain.print
-
     let explainPuzzle puzzle =
 
         printPuzzle puzzle
@@ -402,7 +372,9 @@ module Program =
 
         match pairOpt with
             | Some (lookahead, domPlacements) ->
-                explainPlacement lookahead domPlacements puzzle
+                PlacementExplanation.explainPlacement
+                    lookahead domPlacements puzzle
+                    |> PlacementExplanation.print
             | None -> printfn "No forced placement found"
 
     let explainOne () =

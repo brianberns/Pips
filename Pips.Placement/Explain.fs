@@ -1,13 +1,13 @@
 namespace Pips
 
-type Explanation =
+type DominoExplanation =
     {
         Domino : Domino
         ValidEdges : Edge[]
         InvalidEdgesGrouped : ((Region * ValidationResult) * Edge[])[]
     }
 
-module Explain =
+module DominoExplanation =
 
     /// Explains where the given domino can and can't be placed
     /// in the given puzzle.
@@ -76,7 +76,7 @@ module Explain =
             InvalidEdgesGrouped = invalidEdgesGrouped
         }
 
-    let print explanation =
+    let printDomino explanation =
 
         printfn $"Domino {explanation.Domino}"
         for edge in explanation.ValidEdges do
@@ -85,4 +85,53 @@ module Explain =
             printfn $"   Region {region.Cells.[0]} invalid because {result}"
             for edge in edges do
                 printfn $"      Edge {edge}"
-    
+
+type PlacementExplanation =
+    {
+        ParentExplanation : DominoExplanation
+        ChildExplanations : (Edge * Option<DominoExplanation>)[]
+    }
+
+module PlacementExplanation =
+
+    /// Chooses and explains one of the given domino placements.
+    let explainPlacement lookahead domPlacements puzzle =
+
+            // find the easiest placement to explain
+        let placementMap = Placement.search 0 puzzle
+        let domino, _ =
+            domPlacements
+                |> Seq.minBy (fun (domino, _ : Placement) ->
+                    placementMap[domino].Length)
+
+        let parentExplanation =
+            DominoExplanation.explainDomino domino puzzle
+
+        let childExplanations =
+            [|
+                for placement in placementMap[domino] do
+                    let puzzle =
+                        Puzzle.place domino placement.Edge puzzle
+                    let placementMap = Placement.search 0 puzzle   // deeper searches not yet supported
+                    let dominoOpt =
+                        puzzle.UnplacedDominoes
+                            |> Seq.tryFind (fun domino ->
+                                not (placementMap.ContainsKey(domino)))
+                            |> Option.map (fun domino ->
+                                DominoExplanation.explainDomino domino puzzle)
+                    placement.Edge, dominoOpt
+            |]
+
+        {
+            ParentExplanation = parentExplanation
+            ChildExplanations = childExplanations
+        }
+
+    let print placementExplanation =
+        DominoExplanation.printDomino placementExplanation.ParentExplanation
+        for edge, childExplanationOpt in placementExplanation.ChildExplanations do
+            printfn ""
+            printfn $"Edge: {edge}"
+            match childExplanationOpt with
+                | Some childExplanation -> DominoExplanation.printDomino childExplanation
+                | None -> printfn "Valid"
