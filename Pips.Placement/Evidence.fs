@@ -84,15 +84,26 @@ module DominoEvidence =
             InvalidEdgesGrouped = invalidEdgesGrouped
         }
 
-    let printDomino evidence =
+    let print evidence =
 
-        printfn $"Domino {evidence.Domino}"
-        for edge in evidence.ValidEdges do
-            printfn $"   Edge {edge} is valid"
-        for ((region, result), edges) in evidence.InvalidEdgesGrouped do
-            printfn $"   Region {region.Cells.[0]} invalid because {result}"
-            for edge in edges do
+        printfn $"Consider domino {evidence.Domino}:"
+
+        if evidence.ValidEdges.Length > 0 then
+            printfn ""
+            printfn "   It can be placed on the following edges:"
+            for edge in evidence.ValidEdges do
                 printfn $"      Edge {edge}"
+
+        if evidence.InvalidEdgesGrouped.Length > 0 then
+            printfn ""
+            printfn "   It cannot be placed on the following edges:"
+            for ((region, result), edges) in evidence.InvalidEdgesGrouped do
+                printfn $"      Reason: Region {region.Cells.[0]} becomes invalid ({result})"
+                for edge in edges do
+                    printfn $"         Edge {edge}"
+
+        printfn ""
+        printfn "   Edges not listed are disallowed by geometry"
 
 type PlacementEvidence =
     {
@@ -136,10 +147,10 @@ module PlacementEvidence =
         }
 
     let print evidence =
-        DominoEvidence.printDomino evidence.ParentEvidence
+        DominoEvidence.print evidence.ParentEvidence
         for edge, childEvidenceOpt in evidence.ChildEvidences do
             printfn ""
             printfn $"Edge: {edge}"
             match childEvidenceOpt with
-                | Some childEvidence -> DominoEvidence.printDomino childEvidence
+                | Some childEvidence -> DominoEvidence.print childEvidence
                 | None -> printfn "Valid"

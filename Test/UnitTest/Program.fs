@@ -360,6 +360,8 @@ module Program =
 
         printPuzzle puzzle
         printfn ""
+        printfn "----------------------------------------------------------------------"
+        printfn ""
 
         let pairOpt =
             [0; 1; 2]
