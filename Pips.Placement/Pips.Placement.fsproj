@@ -9,6 +9,7 @@
     <Compile Include="Prelude.fs" />
     <Compile Include="Puzzle.fs" />
     <Compile Include="Placement.fs" />
+    <Compile Include="Explain.fs" />
   </ItemGroup>
 
   <ItemGroup>
