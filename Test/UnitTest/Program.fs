@@ -372,9 +372,9 @@ module Program =
 
         match pairOpt with
             | Some (lookahead, domPlacements) ->
-                PlacementExplanation.explainPlacement
+                PlacementEvidence.get
                     lookahead domPlacements puzzle
-                    |> PlacementExplanation.print
+                    |> PlacementEvidence.print
             | None -> printfn "No forced placement found"
 
     let explainOne () =

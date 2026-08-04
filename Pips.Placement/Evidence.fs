@@ -1,17 +1,25 @@
 namespace Pips
 
-type DominoExplanation =
+/// Evidence of where a domino can and can't be placed.
+type DominoEvidence =
     {
+        /// Domino being placed.
         Domino : Domino
+
+        /// Valid edges.
         ValidEdges : Edge[]
-        InvalidEdgesGrouped : ((Region * ValidationResult) * Edge[])[]
+
+        /// Invalid edges grouped by region and (in)validation
+        /// result.
+        InvalidEdgesGrouped :
+            ((Region * ValidationResult) * Edge[])[]
     }
 
-module DominoExplanation =
+module DominoEvidence =
 
     /// Explains where the given domino can and can't be placed
     /// in the given puzzle.
-    let explainDomino domino puzzle =
+    let get domino puzzle =
 
             // get all edges on which this domino might be placed
         let edges =
@@ -76,26 +84,26 @@ module DominoExplanation =
             InvalidEdgesGrouped = invalidEdgesGrouped
         }
 
-    let printDomino explanation =
+    let printDomino evidence =
 
-        printfn $"Domino {explanation.Domino}"
-        for edge in explanation.ValidEdges do
+        printfn $"Domino {evidence.Domino}"
+        for edge in evidence.ValidEdges do
             printfn $"   Edge {edge} is valid"
-        for ((region, result), edges) in explanation.InvalidEdgesGrouped do
+        for ((region, result), edges) in evidence.InvalidEdgesGrouped do
             printfn $"   Region {region.Cells.[0]} invalid because {result}"
             for edge in edges do
                 printfn $"      Edge {edge}"
 
-type PlacementExplanation =
+type PlacementEvidence =
     {
-        ParentExplanation : DominoExplanation
-        ChildExplanations : (Edge * Option<DominoExplanation>)[]
+        ParentEvidence : DominoEvidence
+        ChildEvidences : (Edge * Option<DominoEvidence>)[]
     }
 
-module PlacementExplanation =
+module PlacementEvidence =
 
     /// Chooses and explains one of the given domino placements.
-    let explainPlacement lookahead domPlacements puzzle =
+    let get lookahead domPlacements puzzle =
 
             // find the easiest placement to explain
         let placementMap = Placement.search 0 puzzle
@@ -104,10 +112,10 @@ module PlacementExplanation =
                 |> Seq.minBy (fun (domino, _ : Placement) ->
                     placementMap[domino].Length)
 
-        let parentExplanation =
-            DominoExplanation.explainDomino domino puzzle
+        let parentEvidence =
+            DominoEvidence.get domino puzzle
 
-        let childExplanations =
+        let childEvidences =
             [|
                 for placement in placementMap[domino] do
                     let puzzle =
@@ -118,20 +126,20 @@ module PlacementExplanation =
                             |> Seq.tryFind (fun domino ->
                                 not (placementMap.ContainsKey(domino)))
                             |> Option.map (fun domino ->
-                                DominoExplanation.explainDomino domino puzzle)
+                                DominoEvidence.get domino puzzle)
                     placement.Edge, dominoOpt
             |]
 
         {
-            ParentExplanation = parentExplanation
-            ChildExplanations = childExplanations
+            ParentEvidence = parentEvidence
+            ChildEvidences = childEvidences
         }
 
-    let print placementExplanation =
-        DominoExplanation.printDomino placementExplanation.ParentExplanation
-        for edge, childExplanationOpt in placementExplanation.ChildExplanations do
+    let print evidence =
+        DominoEvidence.printDomino evidence.ParentEvidence
+        for edge, childEvidenceOpt in evidence.ChildEvidences do
             printfn ""
             printfn $"Edge: {edge}"
-            match childExplanationOpt with
-                | Some childExplanation -> DominoExplanation.printDomino childExplanation
+            match childEvidenceOpt with
+                | Some childEvidence -> DominoEvidence.printDomino childEvidence
                 | None -> printfn "Valid"
