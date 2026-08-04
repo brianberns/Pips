@@ -84,31 +84,31 @@ module DominoEvidence =
             InvalidEdgesGrouped = invalidEdgesGrouped
         }
 
-    let print evidence =
+    let print level evidence =
 
-        printfn $"Consider domino {evidence.Domino}:"
+        let indent = System.String(' ', 3 * 2 * level)
+        printfn $"{indent}Consider domino {evidence.Domino}:"
 
         if evidence.ValidEdges.Length > 0 then
             printfn ""
-            printfn "   It can be placed on the following edges:"
+            printfn $"{indent}   It can be placed on the following edges:"
             for edge in evidence.ValidEdges do
-                printfn $"      Edge {edge}"
+                printfn $"{indent}      Edge {edge}"
 
         if evidence.InvalidEdgesGrouped.Length > 0 then
             printfn ""
-            printfn "   It cannot be placed on the following edges:"
+            printfn $"{indent}   It cannot be placed on the following edges:"
             for ((region, result), edges) in evidence.InvalidEdgesGrouped do
-                printfn $"      Reason: Region {region.Cells.[0]} becomes invalid ({result})"
+                printfn $"{indent}      Reason: Region {region.Cells.[0]} becomes invalid ({result})"
                 for edge in edges do
-                    printfn $"         Edge {edge}"
+                    printfn $"{indent}         Edge {edge}"
 
-        printfn ""
-        printfn "   Edges not listed are disallowed by geometry"
+        // note: edges not explicitly listed are disallowed by geometry
 
 type PlacementEvidence =
     {
         ParentEvidence : DominoEvidence
-        ChildEvidences : (Edge * Option<DominoEvidence>)[]
+        InvalidChildEvidences : (Edge * DominoEvidence)[]
     }
 
 module PlacementEvidence =
@@ -126,7 +126,7 @@ module PlacementEvidence =
         let parentEvidence =
             DominoEvidence.get domino puzzle
 
-        let childEvidences =
+        let invalidChildEvidences =
             [|
                 for placement in placementMap[domino] do
                     let puzzle =
@@ -136,21 +136,38 @@ module PlacementEvidence =
                         puzzle.UnplacedDominoes
                             |> Seq.tryFind (fun domino ->
                                 not (placementMap.ContainsKey(domino)))
-                            |> Option.map (fun domino ->
-                                DominoEvidence.get domino puzzle)
-                    placement.Edge, dominoOpt
+                    match dominoOpt with
+                        | Some domino ->
+                            placement.Edge,
+                            DominoEvidence.get domino puzzle
+                        | None -> ()
             |]
 
         {
             ParentEvidence = parentEvidence
-            ChildEvidences = childEvidences
+            InvalidChildEvidences = invalidChildEvidences
         }
 
     let print evidence =
-        DominoEvidence.print evidence.ParentEvidence
-        for edge, childEvidenceOpt in evidence.ChildEvidences do
-            printfn ""
-            printfn $"Edge: {edge}"
-            match childEvidenceOpt with
-                | Some childEvidence -> DominoEvidence.print childEvidence
-                | None -> printfn "Valid"
+
+        let parent = evidence.ParentEvidence
+        DominoEvidence.print 0 parent
+
+        if evidence.InvalidChildEvidences.Length > 0 then
+            for edge, child in evidence.InvalidChildEvidences do
+                printfn ""
+                printfn $"   But placing it on edge {edge} leads to a contradiction on the next move:"
+                printfn ""
+                DominoEvidence.print 1 child
+
+        let edgeStr =
+            parent.ValidEdges
+                |> Seq.where (fun validEdge ->
+                    evidence.InvalidChildEvidences
+                        |> Array.forall (fun (invalidEdge, _) ->
+                            invalidEdge <> validEdge))
+                |> Seq.map (fun edge ->
+                    $"edge {edge}")
+                |> String.concat " or "
+        printfn ""
+        printfn $"   Therefore, domino {parent.Domino} must be placed on {edgeStr}"

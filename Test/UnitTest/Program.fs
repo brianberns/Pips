@@ -381,7 +381,7 @@ module Program =
 
     let explainOne () =
         let puzzle =
-            let dateStr = "2025-08-23"
+            let dateStr = "2025-08-22"
             Daily.loadHttp $"https://www.nytimes.com/svc/pips/v1/{dateStr}.json"
                 |> Map.find "easy"
         explainPuzzle puzzle
